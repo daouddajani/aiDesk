@@ -163,6 +163,16 @@
         "failed": "Could not take ownership. Please try again."
       }
     },
+    "reassign": {
+      "placeholder": "Reassign to...",
+      "submit": "Reassign",
+      "errors": {
+        "unauthorized": "Not authorized.",
+        "agentRequired": "Choose an agent.",
+        "invalidAgent": "That agent isn't part of your company.",
+        "failed": "Could not reassign the ticket. Please try again."
+      }
+    },
     "comment": {
       "placeholder": "Write a reply or internal note...",
       "internalLabel": "Internal note (not emailed to requester)",

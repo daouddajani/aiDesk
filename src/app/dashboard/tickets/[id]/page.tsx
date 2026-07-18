@@ -7,6 +7,7 @@ import { buildAgentNameMap } from "@/lib/agentNames";
 import { getInitials } from "@/lib/initials";
 import { getAIProviderForCompany, type SuggestedAnswer } from "@/lib/ai";
 import { TakeOwnershipButton } from "./TakeOwnershipButton";
+import { ReassignTicketForm } from "./ReassignTicketForm";
 import { CommentForm } from "./CommentForm";
 import { CloseTicketForm } from "./CloseTicketForm";
 
@@ -300,6 +301,18 @@ export default async function TicketDetailPage({
               ? (agentNameById.get(ticket.assigned_agent_id) ?? "—")
               : t("tickets.unassigned")}
           </MetaRow>
+          {ticket.status !== "closed" && (
+            <div className="pb-2">
+              <ReassignTicketForm
+                ticketId={ticket.id}
+                currentAgentId={ticket.assigned_agent_id}
+                agentOptions={(agents ?? []).map((a) => ({
+                  id: a.id,
+                  name: agentNameById.get(a.id) ?? t("common.unnamed"),
+                }))}
+              />
+            </div>
+          )}
           {!ticket.assigned_agent_id && ticket.ai_suggested_agent_id && (
             <MetaRow label={t("tickets.aiSuggestedAgent")}>
               {agentNameById.get(ticket.ai_suggested_agent_id) ?? "—"}

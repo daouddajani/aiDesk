@@ -58,6 +58,48 @@ export async function takeOwnership(_prevState: unknown, formData: FormData) {
   return { success: true };
 }
 
+export async function reassignTicket(_prevState: unknown, formData: FormData) {
+  const t = await getTranslations("tickets.reassign.errors");
+  const ctx = await requireCompanyMember();
+  if (!ctx) return { error: t("unauthorized") };
+
+  const ticketId = String(formData.get("ticketId") ?? "");
+  const agentId = String(formData.get("agentId") ?? "");
+  if (!ticketId || !agentId) return { error: t("agentRequired") };
+
+  // Confirms the target is an agent/admin of the caller's own company —
+  // tickets.assigned_agent_id has no FK-level company check, so this is
+  // the only thing stopping a cross-company assignment.
+  const { data: agent } = await ctx.supabase
+    .from("profiles")
+    .select("id")
+    .eq("id", agentId)
+    .eq("company_id", ctx.companyId)
+    .in("role", ["company_admin", "company_agent"])
+    .maybeSingle();
+
+  if (!agent) return { error: t("invalidAgent") };
+
+  const { data: ticket } = await ctx.supabase
+    .from("tickets")
+    .select("status")
+    .eq("id", ticketId)
+    .single();
+
+  const { error } = await ctx.supabase
+    .from("tickets")
+    .update({
+      assigned_agent_id: agentId,
+      status: ticket?.status === "new" ? "pending" : ticket?.status,
+    })
+    .eq("id", ticketId);
+
+  if (error) return { error: t("failed") };
+
+  revalidatePath(`/dashboard/tickets/${ticketId}`);
+  return { success: true };
+}
+
 export async function addComment(_prevState: unknown, formData: FormData) {
   const t = await getTranslations("tickets.comment.errors");
   const ctx = await requireCompanyMember();
