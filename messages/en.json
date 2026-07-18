@@ -128,6 +128,12 @@
   },
   "dashboard": {
     "title": "Tickets",
+    "mineOnly": "My tickets",
+    "allTickets": "All tickets",
+    "dateFrom": "From",
+    "dateTo": "To",
+    "apply": "Apply",
+    "clearDates": "Clear dates",
     "statusTabs": {
       "all": "All"
     },
@@ -154,6 +160,10 @@
     "aiSuggestedAgent": "AI suggested agent:",
     "suggestedAnswers": {
       "title": "Suggested past solutions"
+    },
+    "assignmentHistory": {
+      "title": "Assignment history",
+      "entry": "{changedBy} reassigned this ticket from {from} to {to}"
     },
     "takeOwnership": {
       "submit": "Take ownership",

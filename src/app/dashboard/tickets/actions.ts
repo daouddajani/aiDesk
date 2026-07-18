@@ -30,6 +30,42 @@ async function requireCompanyMember() {
   return { supabase, userId: user.id, companyId: profile.company_id };
 }
 
+async function assignTicket(
+  ctx: NonNullable<Awaited<ReturnType<typeof requireCompanyMember>>>,
+  ticketId: string,
+  newAgentId: string,
+) {
+  const { data: ticket } = await ctx.supabase
+    .from("tickets")
+    .select("status, assigned_agent_id")
+    .eq("id", ticketId)
+    .single();
+
+  const { error } = await ctx.supabase
+    .from("tickets")
+    .update({
+      assigned_agent_id: newAgentId,
+      status: ticket?.status === "new" ? "pending" : ticket?.status,
+    })
+    .eq("id", ticketId);
+
+  if (error || !ticket) return { error };
+
+  // Skip logging a no-op reassignment (e.g. taking ownership of a ticket
+  // already assigned to you).
+  if (ticket.assigned_agent_id !== newAgentId) {
+    await ctx.supabase.from("ticket_assignment_log").insert({
+      ticket_id: ticketId,
+      company_id: ctx.companyId,
+      changed_by: ctx.userId,
+      previous_agent_id: ticket.assigned_agent_id,
+      new_agent_id: newAgentId,
+    });
+  }
+
+  return { error: null };
+}
+
 export async function takeOwnership(_prevState: unknown, formData: FormData) {
   const t = await getTranslations("tickets.takeOwnership.errors");
   const ctx = await requireCompanyMember();
@@ -38,20 +74,7 @@ export async function takeOwnership(_prevState: unknown, formData: FormData) {
   const ticketId = String(formData.get("ticketId") ?? "");
   if (!ticketId) return { error: t("ticketMissing") };
 
-  const { data: ticket } = await ctx.supabase
-    .from("tickets")
-    .select("status")
-    .eq("id", ticketId)
-    .single();
-
-  const { error } = await ctx.supabase
-    .from("tickets")
-    .update({
-      assigned_agent_id: ctx.userId,
-      status: ticket?.status === "new" ? "pending" : ticket?.status,
-    })
-    .eq("id", ticketId);
-
+  const { error } = await assignTicket(ctx, ticketId, ctx.userId);
   if (error) return { error: t("failed") };
 
   revalidatePath(`/dashboard/tickets/${ticketId}`);
@@ -80,20 +103,7 @@ export async function reassignTicket(_prevState: unknown, formData: FormData) {
 
   if (!agent) return { error: t("invalidAgent") };
 
-  const { data: ticket } = await ctx.supabase
-    .from("tickets")
-    .select("status")
-    .eq("id", ticketId)
-    .single();
-
-  const { error } = await ctx.supabase
-    .from("tickets")
-    .update({
-      assigned_agent_id: agentId,
-      status: ticket?.status === "new" ? "pending" : ticket?.status,
-    })
-    .eq("id", ticketId);
-
+  const { error } = await assignTicket(ctx, ticketId, agentId);
   if (error) return { error: t("failed") };
 
   revalidatePath(`/dashboard/tickets/${ticketId}`);

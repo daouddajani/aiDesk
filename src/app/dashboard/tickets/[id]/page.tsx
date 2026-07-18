@@ -115,22 +115,31 @@ export default async function TicketDetailPage({
     }
   }
 
-  const [{ data: comments }, { data: ticketAttachments }, { data: agents }] =
-    await Promise.all([
-      supabase
-        .from("ticket_comments")
-        .select("id, author_id, body, is_internal, created_at")
-        .eq("ticket_id", id)
-        .order("created_at", { ascending: true }),
-      supabase
-        .from("attachments")
-        .select("id, filename, mime_type, size, storage_path")
-        .eq("ticket_id", id),
-      supabase
-        .from("profiles")
-        .select("id, full_name")
-        .eq("company_id", profile.company_id),
-    ]);
+  const [
+    { data: comments },
+    { data: ticketAttachments },
+    { data: agents },
+    { data: assignmentLog },
+  ] = await Promise.all([
+    supabase
+      .from("ticket_comments")
+      .select("id, author_id, body, is_internal, created_at")
+      .eq("ticket_id", id)
+      .order("created_at", { ascending: true }),
+    supabase
+      .from("attachments")
+      .select("id, filename, mime_type, size, storage_path")
+      .eq("ticket_id", id),
+    supabase
+      .from("profiles")
+      .select("id, full_name")
+      .eq("company_id", profile.company_id),
+    supabase
+      .from("ticket_assignment_log")
+      .select("id, changed_by, previous_agent_id, new_agent_id, created_at")
+      .eq("ticket_id", id)
+      .order("created_at", { ascending: false }),
+  ]);
 
   const commentIds = (comments ?? []).map((c) => c.id);
   const { data: commentAttachments } = commentIds.length
@@ -288,6 +297,7 @@ export default async function TicketDetailPage({
           </div>
         </div>
 
+        <div className="flex flex-col gap-5">
         <div className={`rounded-2xl border border-border bg-surface p-5 ${CARD_SHADOW}`}>
           <MetaRow label={t("dashboard.table.status")}>
             <span
@@ -328,9 +338,7 @@ export default async function TicketDetailPage({
         </div>
 
         {suggestedAnswers.length > 0 && (
-          <div
-            className={`rounded-2xl border border-border bg-surface p-5 lg:col-start-2 ${CARD_SHADOW}`}
-          >
+          <div className={`rounded-2xl border border-border bg-surface p-5 ${CARD_SHADOW}`}>
             <h3 className="mb-3 text-[13px] font-extrabold tracking-wide text-ink-sub uppercase">
               {t("tickets.suggestedAnswers.title")}
             </h3>
@@ -349,6 +357,38 @@ export default async function TicketDetailPage({
             </div>
           </div>
         )}
+
+        {(assignmentLog ?? []).length > 0 && (
+          <div className={`rounded-2xl border border-border bg-surface p-5 ${CARD_SHADOW}`}>
+            <h3 className="mb-3 text-[13px] font-extrabold tracking-wide text-ink-sub uppercase">
+              {t("tickets.assignmentHistory.title")}
+            </h3>
+            <div className="space-y-3">
+              {(assignmentLog ?? []).map((entry) => (
+                <div key={entry.id} className="text-[12.5px] leading-relaxed">
+                  <p className="text-ink">
+                    {t("tickets.assignmentHistory.entry", {
+                      changedBy:
+                        agentNameById.get(entry.changed_by) ??
+                        t("common.unnamed"),
+                      from: entry.previous_agent_id
+                        ? (agentNameById.get(entry.previous_agent_id) ??
+                          t("common.unnamed"))
+                        : t("tickets.unassigned"),
+                      to:
+                        agentNameById.get(entry.new_agent_id) ??
+                        t("common.unnamed"),
+                    })}
+                  </p>
+                  <p className="text-ink-sub">
+                    {new Date(entry.created_at).toLocaleString()}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        </div>
       </div>
     </div>
   );

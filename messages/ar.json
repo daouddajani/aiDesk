@@ -128,6 +128,12 @@
   },
   "dashboard": {
     "title": "التذاكر",
+    "mineOnly": "تذاكري",
+    "allTickets": "كل التذاكر",
+    "dateFrom": "من",
+    "dateTo": "إلى",
+    "apply": "تطبيق",
+    "clearDates": "مسح التواريخ",
     "statusTabs": {
       "all": "الكل"
     },
@@ -154,6 +160,10 @@
     "aiSuggestedAgent": "الموظف المقترح بالذكاء الاصطناعي:",
     "suggestedAnswers": {
       "title": "حلول سابقة مقترحة"
+    },
+    "assignmentHistory": {
+      "title": "سجل الإسناد",
+      "entry": "قام {changedBy} بإعادة إسناد هذه التذكرة من {from} إلى {to}"
     },
     "takeOwnership": {
       "submit": "تولّي التذكرة",
