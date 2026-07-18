@@ -34,22 +34,25 @@ async function assignTicket(
   ctx: NonNullable<Awaited<ReturnType<typeof requireCompanyMember>>>,
   ticketId: string,
   newAgentId: string,
-) {
+): Promise<"closed" | "failed" | null> {
   const { data: ticket } = await ctx.supabase
     .from("tickets")
     .select("status, assigned_agent_id")
     .eq("id", ticketId)
     .single();
 
+  if (!ticket) return "failed";
+  if (ticket.status === "closed") return "closed";
+
   const { error } = await ctx.supabase
     .from("tickets")
     .update({
       assigned_agent_id: newAgentId,
-      status: ticket?.status === "new" ? "pending" : ticket?.status,
+      status: ticket.status === "new" ? "pending" : ticket.status,
     })
     .eq("id", ticketId);
 
-  if (error || !ticket) return { error };
+  if (error) return "failed";
 
   // Skip logging a no-op reassignment (e.g. taking ownership of a ticket
   // already assigned to you).
@@ -63,7 +66,7 @@ async function assignTicket(
     });
   }
 
-  return { error: null };
+  return null;
 }
 
 export async function takeOwnership(_prevState: unknown, formData: FormData) {
@@ -74,8 +77,9 @@ export async function takeOwnership(_prevState: unknown, formData: FormData) {
   const ticketId = String(formData.get("ticketId") ?? "");
   if (!ticketId) return { error: t("ticketMissing") };
 
-  const { error } = await assignTicket(ctx, ticketId, ctx.userId);
-  if (error) return { error: t("failed") };
+  const result = await assignTicket(ctx, ticketId, ctx.userId);
+  if (result === "closed") return { error: t("closed") };
+  if (result === "failed") return { error: t("failed") };
 
   revalidatePath(`/dashboard/tickets/${ticketId}`);
   return { success: true };
@@ -103,7 +107,65 @@ export async function reassignTicket(_prevState: unknown, formData: FormData) {
 
   if (!agent) return { error: t("invalidAgent") };
 
-  const { error } = await assignTicket(ctx, ticketId, agentId);
+  const result = await assignTicket(ctx, ticketId, agentId);
+  if (result === "closed") return { error: t("closed") };
+  if (result === "failed") return { error: t("failed") };
+
+  revalidatePath(`/dashboard/tickets/${ticketId}`);
+  return { success: true };
+}
+
+export async function startTimer(_prevState: unknown, formData: FormData) {
+  const t = await getTranslations("tickets.timer.errors");
+  const ctx = await requireCompanyMember();
+  if (!ctx) return { error: t("unauthorized") };
+
+  const ticketId = String(formData.get("ticketId") ?? "");
+  if (!ticketId) return { error: t("ticketMissing") };
+
+  const { data: ticket } = await ctx.supabase
+    .from("tickets")
+    .select("status")
+    .eq("id", ticketId)
+    .single();
+
+  if (ticket?.status === "closed") return { error: t("closed") };
+
+  // An agent can only work on one ticket at a time — stop any other
+  // running timer of theirs before starting this one.
+  await ctx.supabase
+    .from("ticket_time_entries")
+    .update({ ended_at: new Date().toISOString() })
+    .eq("agent_id", ctx.userId)
+    .is("ended_at", null);
+
+  const { error } = await ctx.supabase.from("ticket_time_entries").insert({
+    ticket_id: ticketId,
+    company_id: ctx.companyId,
+    agent_id: ctx.userId,
+  });
+
+  if (error) return { error: t("failed") };
+
+  revalidatePath(`/dashboard/tickets/${ticketId}`);
+  return { success: true };
+}
+
+export async function stopTimer(_prevState: unknown, formData: FormData) {
+  const t = await getTranslations("tickets.timer.errors");
+  const ctx = await requireCompanyMember();
+  if (!ctx) return { error: t("unauthorized") };
+
+  const ticketId = String(formData.get("ticketId") ?? "");
+  if (!ticketId) return { error: t("ticketMissing") };
+
+  const { error } = await ctx.supabase
+    .from("ticket_time_entries")
+    .update({ ended_at: new Date().toISOString() })
+    .eq("ticket_id", ticketId)
+    .eq("agent_id", ctx.userId)
+    .is("ended_at", null);
+
   if (error) return { error: t("failed") };
 
   revalidatePath(`/dashboard/tickets/${ticketId}`);
@@ -280,6 +342,46 @@ export async function closeTicket(_prevState: unknown, formData: FormData) {
       // Non-fatal, see comment above.
     }
   }
+
+  revalidatePath(`/dashboard/tickets/${ticketId}`);
+  return { success: true };
+}
+
+export async function reopenTicket(_prevState: unknown, formData: FormData) {
+  const t = await getTranslations("tickets.reopenForm.errors");
+  const ctx = await requireCompanyMember();
+  if (!ctx) return { error: t("unauthorized") };
+
+  const ticketId = String(formData.get("ticketId") ?? "");
+  const reason = String(formData.get("reason") ?? "").trim();
+
+  if (!ticketId) return { error: t("ticketMissing") };
+  if (!reason) return { error: t("reasonRequired") };
+
+  const { data: ticket } = await ctx.supabase
+    .from("tickets")
+    .select("status")
+    .eq("id", ticketId)
+    .single();
+
+  if (ticket?.status !== "closed") return { error: t("notClosed") };
+
+  const { error } = await ctx.supabase
+    .from("tickets")
+    .update({ status: "pending", closed_at: null })
+    .eq("id", ticketId);
+
+  if (error) return { error: t("failed") };
+
+  // The reopen reason is logged as an internal activity comment — not
+  // emailed to the requester, same convention as other internal notes.
+  const logTranslate = await getTranslations("tickets.reopenForm");
+  await ctx.supabase.from("ticket_comments").insert({
+    ticket_id: ticketId,
+    author_id: ctx.userId,
+    body: logTranslate("logEntry", { reason }),
+    is_internal: true,
+  });
 
   revalidatePath(`/dashboard/tickets/${ticketId}`);
   return { success: true };

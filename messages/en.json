@@ -165,11 +165,26 @@
       "title": "Assignment history",
       "entry": "{changedBy} reassigned this ticket from {from} to {to}"
     },
+    "timer": {
+      "tracked": "Time tracked:",
+      "start": "Start timer",
+      "stop": "Stop timer",
+      "errors": {
+        "unauthorized": "Not authorized.",
+        "ticketMissing": "Missing ticket.",
+        "closed": "Can't start a timer on a closed ticket.",
+        "failed": "Could not update the timer. Please try again."
+      }
+    },
+    "timeDetails": {
+      "title": "Time details"
+    },
     "takeOwnership": {
       "submit": "Take ownership",
       "errors": {
         "unauthorized": "Not authorized.",
         "ticketMissing": "Missing ticket.",
+        "closed": "Can't take ownership of a closed ticket.",
         "failed": "Could not take ownership. Please try again."
       }
     },
@@ -180,7 +195,23 @@
         "unauthorized": "Not authorized.",
         "agentRequired": "Choose an agent.",
         "invalidAgent": "That agent isn't part of your company.",
+        "closed": "Can't reassign a closed ticket.",
         "failed": "Could not reassign the ticket. Please try again."
+      }
+    },
+    "reopenForm": {
+      "trigger": "Reopen ticket",
+      "title": "Reopen ticket",
+      "reasonLabel": "Reason for reopening",
+      "reasonPlaceholder": "Why does this ticket need to be reopened?",
+      "submit": "Reopen ticket",
+      "logEntry": "Ticket reopened: {reason}",
+      "errors": {
+        "unauthorized": "Not authorized.",
+        "ticketMissing": "Missing ticket.",
+        "reasonRequired": "A reason is required to reopen the ticket.",
+        "notClosed": "This ticket isn't closed.",
+        "failed": "Could not reopen the ticket. Please try again."
       }
     },
     "comment": {

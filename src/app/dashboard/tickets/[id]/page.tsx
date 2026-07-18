@@ -6,10 +6,13 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { buildAgentNameMap } from "@/lib/agentNames";
 import { getInitials } from "@/lib/initials";
 import { getAIProviderForCompany, type SuggestedAnswer } from "@/lib/ai";
+import { formatDuration } from "@/lib/duration";
 import { TakeOwnershipButton } from "./TakeOwnershipButton";
 import { ReassignTicketForm } from "./ReassignTicketForm";
 import { CommentForm } from "./CommentForm";
 import { CloseTicketForm } from "./CloseTicketForm";
+import { ReopenTicketForm } from "./ReopenTicketForm";
+import { TicketTimer } from "./TicketTimer";
 
 const CARD_SHADOW =
   "shadow-card";
@@ -52,6 +55,52 @@ function MetaRow({
       <span className="text-ink">{children}</span>
     </div>
   );
+}
+
+type TimeEntry = {
+  id: string;
+  agent_id: string;
+  started_at: string;
+  ended_at: string | null;
+};
+
+// A currently-running entry (ended_at null) counts its elapsed time up to
+// `now`. The caller's own running entry is ticked live client-side instead,
+// so it's passed in as `excludeEntryId` to avoid double-counting.
+function summarizeTimeEntries(
+  entries: TimeEntry[],
+  excludeEntryId: string | undefined,
+  agentNameById: Map<string, string>,
+  unnamedLabel: string,
+) {
+  const now = Date.now();
+  const seconds = (entry: TimeEntry) => {
+    const start = new Date(entry.started_at).getTime();
+    const end = entry.ended_at ? new Date(entry.ended_at).getTime() : now;
+    return Math.max(0, (end - start) / 1000);
+  };
+
+  const staticTotalSeconds = entries.reduce(
+    (sum, entry) => (entry.id === excludeEntryId ? sum : sum + seconds(entry)),
+    0,
+  );
+
+  const perAgentSeconds = new Map<string, number>();
+  for (const entry of entries) {
+    perAgentSeconds.set(
+      entry.agent_id,
+      (perAgentSeconds.get(entry.agent_id) ?? 0) + seconds(entry),
+    );
+  }
+  const timeByAgent = [...perAgentSeconds.entries()]
+    .map(([agentId, secs]) => ({
+      agentId,
+      name: agentNameById.get(agentId) ?? unnamedLabel,
+      seconds: secs,
+    }))
+    .sort((a, b) => b.seconds - a.seconds);
+
+  return { staticTotalSeconds, timeByAgent };
 }
 
 export default async function TicketDetailPage({
@@ -120,6 +169,7 @@ export default async function TicketDetailPage({
     { data: ticketAttachments },
     { data: agents },
     { data: assignmentLog },
+    { data: timeEntries },
   ] = await Promise.all([
     supabase
       .from("ticket_comments")
@@ -139,6 +189,10 @@ export default async function TicketDetailPage({
       .select("id, changed_by, previous_agent_id, new_agent_id, created_at")
       .eq("ticket_id", id)
       .order("created_at", { ascending: false }),
+    supabase
+      .from("ticket_time_entries")
+      .select("id, agent_id, started_at, ended_at")
+      .eq("ticket_id", id),
   ]);
 
   const commentIds = (comments ?? []).map((c) => c.id);
@@ -150,6 +204,17 @@ export default async function TicketDetailPage({
     : { data: [] as (Attachment & { comment_id: string })[] };
 
   const agentNameById = await buildAgentNameMap(agents ?? []);
+
+  const myRunningEntry = (timeEntries ?? []).find(
+    (entry) => entry.agent_id === user.id && !entry.ended_at,
+  );
+
+  const { staticTotalSeconds, timeByAgent } = summarizeTimeEntries(
+    timeEntries ?? [],
+    myRunningEntry?.id,
+    agentNameById,
+    t("common.unnamed"),
+  );
 
   const ticketAttachmentLinks = await Promise.all(
     (ticketAttachments ?? []).map(async (a) => ({
@@ -190,11 +255,26 @@ export default async function TicketDetailPage({
               </h1>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <TakeOwnershipButton ticketId={ticket.id} />
               {ticket.status !== "closed" && (
-                <CloseTicketForm ticketId={ticket.id} />
+                <>
+                  <TakeOwnershipButton ticketId={ticket.id} />
+                  <CloseTicketForm ticketId={ticket.id} />
+                </>
+              )}
+              {ticket.status === "closed" && (
+                <ReopenTicketForm ticketId={ticket.id} />
               )}
             </div>
+          </div>
+
+          <div className="mb-5">
+            <TicketTimer
+              ticketId={ticket.id}
+              isRunningForMe={Boolean(myRunningEntry)}
+              runningStartedAt={myRunningEntry?.started_at ?? null}
+              staticTotalSeconds={staticTotalSeconds}
+              canStart={ticket.status !== "closed"}
+            />
           </div>
 
           <div className="mb-6 rounded-xl bg-surface-alt p-4 text-[13.5px] leading-relaxed whitespace-pre-wrap text-ink">
@@ -383,6 +463,27 @@ export default async function TicketDetailPage({
                   <p className="text-ink-sub">
                     {new Date(entry.created_at).toLocaleString()}
                   </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {timeByAgent.length > 0 && (
+          <div className={`rounded-2xl border border-border bg-surface p-5 ${CARD_SHADOW}`}>
+            <h3 className="mb-3 text-[13px] font-extrabold tracking-wide text-ink-sub uppercase">
+              {t("tickets.timeDetails.title")}
+            </h3>
+            <div className="space-y-2">
+              {timeByAgent.map((row) => (
+                <div
+                  key={row.agentId}
+                  className="flex items-center justify-between text-[13px]"
+                >
+                  <span className="text-ink">{row.name}</span>
+                  <span className="font-semibold text-ink-sub">
+                    {formatDuration(row.seconds)}
+                  </span>
                 </div>
               ))}
             </div>
