@@ -124,7 +124,13 @@
     "kpiOnProcess": "قيد المعالجة",
     "kpiClosed": "مغلقة",
     "recentTickets": "أحدث التذاكر",
-    "viewAll": "عرض الكل"
+    "viewAll": "عرض الكل",
+    "yourPerformance": "أداؤك",
+    "kpiOpenAssigned": "تذاكر مفتوحة",
+    "kpiClosedAssigned": "تذاكر مغلقة",
+    "kpiAvgResolution": "متوسط وقت الحل",
+    "agentPerformance": "أداء الموظفين",
+    "viewFullPerformance": "عرض الأداء الكامل"
   },
   "dashboard": {
     "title": "التذاكر",

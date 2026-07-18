@@ -124,7 +124,13 @@
     "kpiOnProcess": "In progress",
     "kpiClosed": "Closed",
     "recentTickets": "Recent tickets",
-    "viewAll": "View all"
+    "viewAll": "View all",
+    "yourPerformance": "Your performance",
+    "kpiOpenAssigned": "Open tickets",
+    "kpiClosedAssigned": "Closed tickets",
+    "kpiAvgResolution": "Avg. resolution time",
+    "agentPerformance": "Agent performance",
+    "viewFullPerformance": "View full performance"
   },
   "dashboard": {
     "title": "Tickets",

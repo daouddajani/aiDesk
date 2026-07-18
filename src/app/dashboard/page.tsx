@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { buildAgentNameMap } from "@/lib/agentNames";
+import { formatDuration } from "@/lib/duration";
 
 const STATUS_BADGE_CLASSES: Record<string, string> = {
   new: "bg-info-soft text-info",
@@ -11,13 +12,47 @@ const STATUS_BADGE_CLASSES: Record<string, string> = {
   closed: "bg-surface-alt text-ink-sub",
 };
 
-function KpiCard({ label, value }: { label: string; value: number }) {
+function KpiCard({
+  label,
+  value,
+}: {
+  label: string;
+  value: React.ReactNode;
+}) {
   return (
     <div className="rounded-2xl border border-border bg-surface p-5 shadow-card">
       <div className="text-[12.5px] font-semibold text-ink-sub">{label}</div>
       <div className="mt-1.5 text-[26px] font-extrabold text-ink">{value}</div>
     </div>
   );
+}
+
+type TicketPerf = {
+  status: string;
+  assigned_agent_id: string | null;
+  received_at: string;
+  closed_at: string | null;
+};
+
+// Basic performance stats per app.md: tickets closed, average resolution
+// time, current open count.
+function agentPerformance(tickets: TicketPerf[], agentId: string) {
+  const mine = tickets.filter((t) => t.assigned_agent_id === agentId);
+  const closed = mine.filter((t) => t.status === "closed");
+  const open = mine.length - closed.length;
+
+  const resolutionSeconds = closed
+    .filter((t) => t.closed_at)
+    .map(
+      (t) =>
+        (new Date(t.closed_at!).getTime() - new Date(t.received_at).getTime()) /
+        1000,
+    );
+  const avgResolutionSeconds = resolutionSeconds.length
+    ? resolutionSeconds.reduce((a, b) => a + b, 0) / resolutionSeconds.length
+    : null;
+
+  return { total: mine.length, open, closed: closed.length, avgResolutionSeconds };
 }
 
 export default async function DashboardHomePage() {
@@ -48,7 +83,7 @@ export default async function DashboardHomePage() {
     await Promise.all([
       supabase
         .from("tickets")
-        .select("status")
+        .select("status, assigned_agent_id, received_at, closed_at")
         .eq("company_id", profile.company_id),
       supabase
         .from("tickets")
@@ -76,6 +111,20 @@ export default async function DashboardHomePage() {
 
   const displayName = (profile.full_name ?? user.email ?? "").split(" ")[0];
 
+  const allTickets = (tickets ?? []) as TicketPerf[];
+  const myPerformance =
+    profile.role === "company_agent"
+      ? agentPerformance(allTickets, user.id)
+      : null;
+  const agentPerformanceRows =
+    profile.role === "company_admin"
+      ? (agents ?? []).map((agent) => ({
+          agentId: agent.id,
+          name: agentNameById.get(agent.id) ?? t("common.unnamed"),
+          ...agentPerformance(allTickets, agent.id),
+        }))
+      : [];
+
   return (
     <div className="space-y-6">
       <div>
@@ -91,6 +140,89 @@ export default async function DashboardHomePage() {
         <KpiCard label={t("home.kpiOnProcess")} value={counts.on_process} />
         <KpiCard label={t("home.kpiClosed")} value={counts.closed} />
       </div>
+
+      {myPerformance && (
+        <div className="space-y-3">
+          <h3 className="text-[15.5px] font-extrabold text-ink">
+            {t("home.yourPerformance")}
+          </h3>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <KpiCard label={t("home.kpiOpenAssigned")} value={myPerformance.open} />
+            <KpiCard
+              label={t("home.kpiClosedAssigned")}
+              value={myPerformance.closed}
+            />
+            <KpiCard
+              label={t("home.kpiAvgResolution")}
+              value={
+                myPerformance.avgResolutionSeconds !== null
+                  ? formatDuration(myPerformance.avgResolutionSeconds)
+                  : "—"
+              }
+            />
+          </div>
+        </div>
+      )}
+
+      {profile.role === "company_admin" && (
+        <div className="rounded-2xl border border-border bg-surface shadow-card">
+          <div className="flex items-center justify-between p-5 pb-0">
+            <h3 className="text-[15.5px] font-extrabold text-ink">
+              {t("home.agentPerformance")}
+            </h3>
+            <Link
+              href="/dashboard/performance"
+              className="text-[13px] font-bold text-primary hover:underline"
+            >
+              {t("home.viewFullPerformance")} →
+            </Link>
+          </div>
+          <div className="overflow-x-auto p-5">
+            <table className="w-full text-start text-[13.5px]">
+              <thead>
+                <tr className="divide-x divide-border border-b border-border">
+                  <th className="px-3 py-2.5 text-[11.5px] font-bold tracking-wide text-ink-sub uppercase">
+                    {t("performance.table.agent")}
+                  </th>
+                  <th className="px-3 py-2.5 text-[11.5px] font-bold tracking-wide text-ink-sub uppercase">
+                    {t("performance.table.open")}
+                  </th>
+                  <th className="px-3 py-2.5 text-[11.5px] font-bold tracking-wide text-ink-sub uppercase">
+                    {t("performance.table.closed")}
+                  </th>
+                  <th className="px-3 py-2.5 text-[11.5px] font-bold tracking-wide text-ink-sub uppercase">
+                    {t("home.kpiAvgResolution")}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {agentPerformanceRows.map((row) => (
+                  <tr
+                    key={row.agentId}
+                    className="divide-x divide-border border-b border-border last:border-0 hover:bg-surface-alt"
+                  >
+                    <td className="px-3 py-3 font-medium text-ink">{row.name}</td>
+                    <td className="px-3 py-3 text-ink-sub">{row.open}</td>
+                    <td className="px-3 py-3 text-ink-sub">{row.closed}</td>
+                    <td className="px-3 py-3 text-ink-sub">
+                      {row.avgResolutionSeconds !== null
+                        ? formatDuration(row.avgResolutionSeconds)
+                        : "—"}
+                    </td>
+                  </tr>
+                ))}
+                {agentPerformanceRows.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="px-3 py-8 text-center text-ink-sub">
+                      {t("performance.noTeamMembers")}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       <div className="rounded-2xl border border-border bg-surface p-5 shadow-card">
         <div className="mb-4 flex items-center justify-between">
