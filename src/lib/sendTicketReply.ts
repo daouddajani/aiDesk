@@ -1,0 +1,175 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
+import nodemailer from "nodemailer";
+import { refreshAccessToken } from "./microsoftGraph";
+
+type ReplyAttachment = {
+  filename: string;
+  mimeType: string;
+  content: Buffer;
+};
+
+type ReplyCompany = {
+  id: string;
+  mailbox_provider: "microsoft" | "imap" | null;
+  mailbox_imap_config: {
+    smtpHost: string;
+    smtpPort: number;
+    username: string;
+  } | null;
+};
+
+type ReplyTicket = {
+  source_message_id: string | null;
+  sender_email: string;
+  subject: string;
+};
+
+async function persistRotatedRefreshToken(
+  adminClient: SupabaseClient,
+  companyId: string,
+  refreshToken: string,
+) {
+  await adminClient.rpc("set_company_mailbox_secret", {
+    p_company_id: companyId,
+    p_secret: refreshToken,
+    p_mailbox_email: null,
+    p_provider: "microsoft",
+  });
+}
+
+async function sendGraphReply(
+  adminClient: SupabaseClient,
+  company: ReplyCompany,
+  ticket: ReplyTicket,
+  bodyText: string,
+  attachments: ReplyAttachment[],
+): Promise<{ error?: string }> {
+  if (!ticket.source_message_id) {
+    return { error: "This ticket has no source email to reply to." };
+  }
+
+  const { data: refreshToken } = await adminClient.rpc(
+    "get_company_mailbox_secret",
+    { p_company_id: company.id },
+  );
+  if (!refreshToken) return { error: "Mailbox is not connected." };
+
+  const tokens = await refreshAccessToken(refreshToken);
+  await persistRotatedRefreshToken(adminClient, company.id, tokens.refresh_token);
+
+  const headers = {
+    Authorization: `Bearer ${tokens.access_token}`,
+    "Content-Type": "application/json",
+  };
+  const base = `https://graph.microsoft.com/v1.0/me/messages/${ticket.source_message_id}`;
+
+  if (attachments.length === 0) {
+    const res = await fetch(`${base}/reply`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ comment: bodyText }),
+    });
+    if (!res.ok) return { error: await res.text() };
+    return {};
+  }
+
+  // Attachments require the multi-step draft flow: create the reply as a
+  // draft, attach files to it, then send — the plain /reply endpoint only
+  // takes a text comment.
+  const createRes = await fetch(`${base}/createReply`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ comment: bodyText }),
+  });
+  if (!createRes.ok) return { error: await createRes.text() };
+  const draft = await createRes.json();
+
+  for (const attachment of attachments) {
+    await fetch(
+      `https://graph.microsoft.com/v1.0/me/messages/${draft.id}/attachments`,
+      {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          "@odata.type": "#microsoft.graph.fileAttachment",
+          name: attachment.filename,
+          contentType: attachment.mimeType,
+          contentBytes: attachment.content.toString("base64"),
+        }),
+      },
+    );
+  }
+
+  const sendRes = await fetch(
+    `https://graph.microsoft.com/v1.0/me/messages/${draft.id}/send`,
+    { method: "POST", headers: { Authorization: `Bearer ${tokens.access_token}` } },
+  );
+  if (!sendRes.ok) return { error: await sendRes.text() };
+  return {};
+}
+
+async function sendImapReply(
+  adminClient: SupabaseClient,
+  company: ReplyCompany,
+  ticket: ReplyTicket,
+  bodyText: string,
+  attachments: ReplyAttachment[],
+): Promise<{ error?: string }> {
+  if (!company.mailbox_imap_config) {
+    return { error: "Mailbox is not connected." };
+  }
+
+  const { data: password } = await adminClient.rpc(
+    "get_company_mailbox_secret",
+    { p_company_id: company.id },
+  );
+  if (!password) return { error: "Mailbox is not connected." };
+
+  const config = company.mailbox_imap_config;
+  const transport = nodemailer.createTransport({
+    host: config.smtpHost,
+    port: config.smtpPort,
+    secure: config.smtpPort === 465,
+    auth: { user: config.username, pass: password },
+  });
+
+  const subject = ticket.subject.toLowerCase().startsWith("re:")
+    ? ticket.subject
+    : `Re: ${ticket.subject}`;
+
+  try {
+    await transport.sendMail({
+      from: config.username,
+      to: ticket.sender_email,
+      subject,
+      text: bodyText,
+      inReplyTo: ticket.source_message_id ?? undefined,
+      references: ticket.source_message_id ?? undefined,
+      attachments: attachments.map((a) => ({
+        filename: a.filename,
+        content: a.content,
+        contentType: a.mimeType,
+      })),
+    });
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : "SMTP send failed." };
+  }
+
+  return {};
+}
+
+export async function sendTicketReply(
+  adminClient: SupabaseClient,
+  company: ReplyCompany,
+  ticket: ReplyTicket,
+  bodyText: string,
+  attachments: ReplyAttachment[] = [],
+): Promise<{ error?: string }> {
+  if (company.mailbox_provider === "microsoft") {
+    return sendGraphReply(adminClient, company, ticket, bodyText, attachments);
+  }
+  if (company.mailbox_provider === "imap") {
+    return sendImapReply(adminClient, company, ticket, bodyText, attachments);
+  }
+  return { error: "No mailbox connected for this company." };
+}

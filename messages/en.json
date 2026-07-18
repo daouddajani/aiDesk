@@ -1,0 +1,343 @@
+{
+  "common": {
+    "signOut": "Sign out",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saveChanges": "Save changes",
+    "edit": "Edit",
+    "close": "Close",
+    "none": "None",
+    "unnamed": "Unnamed",
+    "notVerified": "Not verified"
+  },
+  "status": {
+    "new": "New",
+    "pending": "Pending",
+    "on_process": "On Process",
+    "closed": "Closed"
+  },
+  "notifications": {
+    "newTicket": "New ticket",
+    "from": "from",
+    "view": "View ticket"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "tickets": "Tickets",
+    "performance": "Performance",
+    "agents": "Agents",
+    "mailbox": "Mailbox",
+    "settings": "Company Settings",
+    "profile": "My Profile",
+    "adminTitle": "AiDesk Admin",
+    "companies": "Companies",
+    "roleCompanyAdmin": "Company Admin",
+    "roleCompanyAgent": "Agent",
+    "roleSuperAdmin": "Super Admin"
+  },
+  "login": {
+    "title": "Sign in",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot your password?",
+    "submit": "Sign in",
+    "errors": {
+      "required": "Email and password are required.",
+      "invalid": "Invalid email or password."
+    }
+  },
+  "forgotPassword": {
+    "title": "Reset your password",
+    "email": "Email",
+    "submit": "Send reset link",
+    "success": "If an account exists for that email, a reset link has been sent.",
+    "errors": {
+      "required": "Email is required."
+    }
+  },
+  "updatePassword": {
+    "title": "Set a new password",
+    "newPassword": "New password",
+    "submit": "Set password",
+    "errors": {
+      "tooShort": "Password must be at least 8 characters.",
+      "failed": "Could not update password. Try the link again."
+    }
+  },
+  "admin": {
+    "companies": "Companies",
+    "table": {
+      "name": "Name",
+      "timezone": "Timezone",
+      "helpdeskEmail": "Helpdesk email",
+      "companyAdmin": "Company Admin",
+      "created": "Created",
+      "actions": "Actions"
+    },
+    "noCompanies": "No companies yet.",
+    "createCompany": {
+      "title": "New company",
+      "name": "Company name",
+      "timezone": "Timezone",
+      "helpdeskEmail": "Helpdesk email (optional)",
+      "adminEmail": "Company Admin email",
+      "submit": "Create company",
+      "success": "Company created and invite sent.",
+      "errors": {
+        "nameRequired": "Company name is required.",
+        "adminEmailRequired": "A valid Company Admin email is required.",
+        "createFailed": "Could not create the company. Please try again.",
+        "inviteFailed": "Company created, but the invite email failed to send: {message}. You can retry inviting the admin from the dashboard."
+      }
+    },
+    "inviteAdminForm": {
+      "placeholder": "admin@company.com",
+      "submit": "Invite",
+      "success": "Invite sent",
+      "errors": {
+        "emailRequired": "A valid email is required.",
+        "inviteFailed": "Invite failed: {message}"
+      }
+    },
+    "resendInvite": {
+      "submit": "Resend invite",
+      "success": "Invite resent"
+    },
+    "editCompany": {
+      "title": "Edit company",
+      "name": "Company name",
+      "timezone": "Timezone",
+      "helpdeskEmail": "Helpdesk email (optional)",
+      "errors": {
+        "companyIdMissing": "Missing company.",
+        "nameRequired": "Company name is required.",
+        "helpdeskEmailInvalid": "Helpdesk email must be a valid email address.",
+        "updateFailed": "Could not update the company. Please try again."
+      }
+    }
+  },
+  "home": {
+    "greeting": "Welcome back, {name}",
+    "subtitle": "Here's what's happening with your tickets.",
+    "kpiTotal": "Total tickets",
+    "kpiNew": "New",
+    "kpiOnProcess": "In progress",
+    "kpiClosed": "Closed",
+    "recentTickets": "Recent tickets",
+    "viewAll": "View all"
+  },
+  "dashboard": {
+    "title": "Tickets",
+    "statusTabs": {
+      "all": "All"
+    },
+    "table": {
+      "subject": "Subject",
+      "requester": "Requester",
+      "status": "Status",
+      "assignedTo": "Assigned to",
+      "received": "Received"
+    },
+    "noTickets": "No tickets.",
+    "noTicketsWithStatus": "No tickets with status \"{status}\"."
+  },
+  "tickets": {
+    "from": "From {name} ({email})",
+    "assignedTo": "Assigned to:",
+    "unassigned": "Unassigned",
+    "back": "Back to tickets",
+    "attachments": "Attachments",
+    "solution": "Solution:",
+    "activity": "Activity",
+    "internalNoteTag": "Internal note",
+    "noActivity": "No activity yet.",
+    "aiSuggestedAgent": "AI suggested agent:",
+    "suggestedAnswers": {
+      "title": "Suggested past solutions"
+    },
+    "takeOwnership": {
+      "submit": "Take ownership",
+      "errors": {
+        "unauthorized": "Not authorized.",
+        "ticketMissing": "Missing ticket.",
+        "failed": "Could not take ownership. Please try again."
+      }
+    },
+    "comment": {
+      "placeholder": "Write a reply or internal note...",
+      "internalLabel": "Internal note (not emailed to requester)",
+      "submit": "Post",
+      "errors": {
+        "unauthorized": "Not authorized.",
+        "bodyRequired": "A comment body is required.",
+        "notFound": "Ticket not found.",
+        "saveFailed": "Could not add comment. Please try again.",
+        "sendFailed": "Comment saved, but the reply email failed to send: {message}"
+      }
+    },
+    "closeForm": {
+      "trigger": "Close ticket",
+      "title": "Close ticket",
+      "solutionLabel": "Solution",
+      "solutionPlaceholder": "Describe how this was resolved...",
+      "submit": "Close ticket",
+      "errors": {
+        "unauthorized": "Not authorized.",
+        "ticketMissing": "Missing ticket.",
+        "solutionRequired": "A solution is required to close the ticket.",
+        "failed": "Could not close the ticket. Please try again."
+      }
+    }
+  },
+  "performance": {
+    "myTitle": "My performance",
+    "teamTitle": "Team performance",
+    "totalAssigned": "Total assigned",
+    "open": "Open",
+    "closed": "Closed",
+    "dateFrom": "From",
+    "dateTo": "To",
+    "apply": "Apply",
+    "clearDates": "Clear dates",
+    "table": {
+      "agent": "Agent",
+      "totalAssigned": "Total assigned",
+      "open": "Open",
+      "closed": "Closed",
+      "subject": "Subject",
+      "status": "Status",
+      "assignedTo": "Assigned to",
+      "received": "Received",
+      "closedDate": "Closed"
+    },
+    "noTeamMembers": "No team members yet.",
+    "noTicketsAssigned": "No tickets assigned yet."
+  },
+  "agents": {
+    "title": "Agents",
+    "table": {
+      "name": "Name",
+      "email": "Email",
+      "role": "Role",
+      "skills": "Skills",
+      "actions": "Actions"
+    },
+    "roleAdmin": "Admin",
+    "roleAgent": "Agent",
+    "noAgents": "No agents yet.",
+    "inviteForm": {
+      "title": "Invite agent",
+      "emailLabel": "Agent email",
+      "submit": "Send invite",
+      "success": "Invite sent.",
+      "errors": {
+        "unauthorized": "Not authorized.",
+        "emailRequired": "A valid email is required.",
+        "inviteFailed": "Invite failed: {message}"
+      }
+    },
+    "resendInvite": {
+      "submit": "Resend invite",
+      "success": "Invite resent"
+    },
+    "editForm": {
+      "title": "Edit agent",
+      "fullNameLabel": "Full name",
+      "skillsLabel": "Skills (comma-separated)",
+      "skillsPlaceholder": "networking, email, hardware",
+      "errors": {
+        "unauthorized": "Not authorized.",
+        "agentMissing": "Missing agent.",
+        "updateFailed": "Could not update the agent. Please try again."
+      }
+    }
+  },
+  "mailbox": {
+    "title": "Mailbox connection",
+    "connected": "Mailbox connected.",
+    "connectedVia": "Connected via <strong>{provider}</strong>: <strong>{email}</strong>",
+    "providerMicrosoft": "Microsoft 365",
+    "providerImap": "IMAP / SMTP",
+    "providerUnknown": "unknown provider",
+    "notConnectedHint": "Connect your company's mailbox so incoming emails can become tickets.",
+    "connectMicrosoft": "Connect Microsoft 365 mailbox",
+    "or": "or",
+    "disconnect": {
+      "submit": "Disconnect mailbox",
+      "errors": {
+        "unauthorized": "Not authorized.",
+        "failed": "Could not disconnect the mailbox. Please try again."
+      }
+    },
+    "imapForm": {
+      "title": "Other provider (IMAP / SMTP)",
+      "imapHost": "IMAP host",
+      "imapPort": "IMAP port",
+      "smtpHost": "SMTP host",
+      "smtpPort": "SMTP port",
+      "username": "Username / email",
+      "password": "Password",
+      "submit": "Test and connect",
+      "errors": {
+        "unauthorized": "Not authorized.",
+        "allFieldsRequired": "All fields are required.",
+        "invalidPorts": "Ports must be valid numbers.",
+        "imapFailed": "Could not sign in to the IMAP server. Check the host, port, username, and password.",
+        "smtpFailed": "Could not sign in to the SMTP server. Check the host, port, username, and password.",
+        "saveFailed": "Could not save the mailbox connection. Please try again.",
+        "configSaveFailed": "Connected, but could not save the server settings. Please try again."
+      }
+    }
+  },
+  "settings": {
+    "title": "Company settings",
+    "name": "Company name",
+    "logoUrl": "Logo URL (optional)",
+    "timezone": "Timezone",
+    "defaultAgent": "Default fallback agent",
+    "defaultAgentHint": "New tickets are auto-assigned to this agent until someone takes ownership.",
+    "success": "Settings saved.",
+    "errors": {
+      "unauthorized": "Not authorized.",
+      "nameRequired": "Company name is required.",
+      "updateFailed": "Could not update company settings. Please try again."
+    },
+    "ai": {
+      "title": "AI features",
+      "description": "Bring your own API key to enable AI-powered classification, agent suggestions, and suggested answers for your tickets.",
+      "enabledLabel": "Enable AI features",
+      "providerLabel": "Provider",
+      "providerOpenai": "OpenAI",
+      "providerAnthropic": "Anthropic (Claude)",
+      "providerGemini": "Google (Gemini)",
+      "apiKeyLabel": "API key",
+      "apiKeyConfiguredPlaceholder": "•••••••• (leave blank to keep)",
+      "apiKeyConfiguredHint": "A key is already saved. Leave blank to keep it.",
+      "embeddingsKeyLabel": "OpenAI key (for suggested answers)",
+      "embeddingsKeyHint": "Optional. This provider doesn't support the embeddings used for suggested past solutions — add an OpenAI key here to enable that feature too.",
+      "embeddingsKeyConfiguredHint": "A key is already saved. Leave blank to keep it.",
+      "usageThisMonth": "Tokens used this month:",
+      "success": "AI settings saved.",
+      "errors": {
+        "unauthorized": "Not authorized.",
+        "invalidProvider": "Choose a valid provider.",
+        "keyRequired": "Add an API key to enable AI features.",
+        "keyRequiredOnProviderChange": "Add an API key for the new provider.",
+        "saveFailed": "Could not save AI settings. Please try again."
+      }
+    }
+  },
+  "profile": {
+    "title": "My Profile",
+    "fullName": "Full name",
+    "language": "Language",
+    "languageEnglish": "English",
+    "languageArabic": "Arabic",
+    "submit": "Save changes",
+    "success": "Profile updated.",
+    "errors": {
+      "unauthorized": "Not authorized.",
+      "updateFailed": "Could not update your profile. Please try again."
+    }
+  }
+}

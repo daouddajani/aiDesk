@@ -1,0 +1,16 @@
+export const ME_TIMEZONES = [
+  { value: "Asia/Kuwait", label: "Kuwait (GMT+3)" },
+  { value: "Asia/Baghdad", label: "Baghdad (GMT+3)" },
+  { value: "Asia/Riyadh", label: "Riyadh (GMT+3)" },
+  { value: "Asia/Bahrain", label: "Bahrain (GMT+3)" },
+  { value: "Asia/Qatar", label: "Qatar (GMT+3)" },
+  { value: "Asia/Dubai", label: "Dubai / Abu Dhabi (GMT+4)" },
+  { value: "Asia/Muscat", label: "Muscat (GMT+4)" },
+  { value: "Asia/Tehran", label: "Tehran (GMT+3:30)" },
+  { value: "Asia/Amman", label: "Amman (GMT+3)" },
+  { value: "Asia/Beirut", label: "Beirut (GMT+2)" },
+  { value: "Asia/Damascus", label: "Damascus (GMT+3)" },
+  { value: "Asia/Jerusalem", label: "Jerusalem (GMT+2)" },
+  { value: "Asia/Gaza", label: "Gaza / West Bank (GMT+2)" },
+  { value: "Africa/Cairo", label: "Cairo (GMT+2)" },
+] as const;

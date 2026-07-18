@@ -1,0 +1,63 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { SuggestedAnswer, UsageLogger } from "./types";
+
+const EMBEDDING_MODEL = "text-embedding-3-small";
+
+// Embeddings always run on OpenAI regardless of which provider a company
+// picks for classification — Anthropic has no embeddings API, and Gemini's
+// embedding model doesn't match the dimension the ticket_embeddings column
+// is built for. See CLAUDE.md for the decision.
+export class OpenAIEmbeddings {
+  constructor(
+    private apiKey: string,
+    private logUsage: UsageLogger,
+  ) {}
+
+  async embed(text: string): Promise<number[]> {
+    const res = await fetch("https://api.openai.com/v1/embeddings", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${this.apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: EMBEDDING_MODEL,
+        input: text.slice(0, 8000) || " ",
+      }),
+    });
+
+    if (!res.ok) {
+      throw new Error(`OpenAI embed failed: ${res.status} ${await res.text()}`);
+    }
+
+    const data = await res.json();
+    await this.logUsage("embed", data.usage?.total_tokens ?? 0);
+    return data.data[0].embedding as number[];
+  }
+
+  async suggestAnswer(
+    supabase: SupabaseClient,
+    companyId: string,
+    problemText: string,
+    excludeTicketId?: string,
+  ): Promise<SuggestedAnswer[]> {
+    const embedding = await this.embed(problemText);
+
+    const { data, error } = await supabase.rpc("match_ticket_embeddings", {
+      p_company_id: companyId,
+      p_query_embedding: embedding,
+      p_match_count: 3,
+      p_exclude_ticket_id: excludeTicketId ?? null,
+    });
+
+    if (error || !data) return [];
+
+    return (
+      data as { ticket_id: string; content: string; similarity: number }[]
+    ).map((row) => ({
+      ticketId: row.ticket_id,
+      content: row.content,
+      similarity: row.similarity,
+    }));
+  }
+}

@@ -1,0 +1,52 @@
+"use client";
+
+import { useActionState } from "react";
+import { useTranslations } from "next-intl";
+import { requestPasswordReset } from "./actions";
+import { SubmitButton } from "@/components/SubmitButton";
+
+export default function ForgotPasswordPage() {
+  const t = useTranslations("forgotPassword");
+  const [state, formAction] = useActionState(requestPasswordReset, undefined);
+
+  return (
+    <main className="flex flex-1 items-center justify-center bg-bg p-6">
+      <form
+        action={formAction}
+        className="w-full max-w-sm space-y-5 rounded-2xl border border-border bg-surface p-8 shadow-card"
+      >
+        <div className="space-y-1 text-center">
+          <p className="text-lg font-extrabold tracking-tight text-primary">
+            AiDesk
+          </p>
+          <h1 className="text-base font-semibold text-ink">{t("title")}</h1>
+        </div>
+
+        {state?.success ? (
+          <p className="text-sm text-ink-sub">{t("success")}</p>
+        ) : (
+          <>
+            <div className="space-y-1">
+              <label htmlFor="email" className="text-sm text-ink">
+                {t("email")}
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                required
+                className="w-full rounded-[10px] border border-border bg-surface-alt px-3.5 py-2.5 text-[13.5px] text-ink"
+              />
+            </div>
+
+            {state?.error && (
+              <p className="text-sm text-danger">{state.error}</p>
+            )}
+
+            <SubmitButton>{t("submit")}</SubmitButton>
+          </>
+        )}
+      </form>
+    </main>
+  );
+}

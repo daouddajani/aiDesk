@@ -1,0 +1,343 @@
+{
+  "common": {
+    "signOut": "تسجيل الخروج",
+    "cancel": "إلغاء",
+    "save": "حفظ",
+    "saveChanges": "حفظ التغييرات",
+    "edit": "تعديل",
+    "close": "إغلاق",
+    "none": "بلا",
+    "unnamed": "بدون اسم",
+    "notVerified": "غير مفعّل"
+  },
+  "status": {
+    "new": "جديدة",
+    "pending": "قيد الانتظار",
+    "on_process": "قيد المعالجة",
+    "closed": "مغلقة"
+  },
+  "notifications": {
+    "newTicket": "تذكرة جديدة",
+    "from": "من",
+    "view": "عرض التذكرة"
+  },
+  "nav": {
+    "dashboard": "لوحة التحكم",
+    "tickets": "التذاكر",
+    "performance": "الأداء",
+    "agents": "الموظفون",
+    "mailbox": "البريد الإلكتروني",
+    "settings": "إعدادات الشركة",
+    "profile": "ملفي الشخصي",
+    "adminTitle": "إدارة AiDesk",
+    "companies": "الشركات",
+    "roleCompanyAdmin": "مدير الشركة",
+    "roleCompanyAgent": "موظف",
+    "roleSuperAdmin": "مشرف عام"
+  },
+  "login": {
+    "title": "تسجيل الدخول",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "forgotPassword": "نسيت كلمة المرور؟",
+    "submit": "تسجيل الدخول",
+    "errors": {
+      "required": "البريد الإلكتروني وكلمة المرور مطلوبان.",
+      "invalid": "البريد الإلكتروني أو كلمة المرور غير صحيحة."
+    }
+  },
+  "forgotPassword": {
+    "title": "إعادة تعيين كلمة المرور",
+    "email": "البريد الإلكتروني",
+    "submit": "إرسال رابط إعادة التعيين",
+    "success": "إذا كان هناك حساب بهذا البريد الإلكتروني، فقد تم إرسال رابط إعادة التعيين.",
+    "errors": {
+      "required": "البريد الإلكتروني مطلوب."
+    }
+  },
+  "updatePassword": {
+    "title": "تعيين كلمة مرور جديدة",
+    "newPassword": "كلمة المرور الجديدة",
+    "submit": "تعيين كلمة المرور",
+    "errors": {
+      "tooShort": "يجب أن تتكون كلمة المرور من 8 أحرف على الأقل.",
+      "failed": "تعذّر تحديث كلمة المرور. حاول استخدام الرابط مرة أخرى."
+    }
+  },
+  "admin": {
+    "companies": "الشركات",
+    "table": {
+      "name": "الاسم",
+      "timezone": "المنطقة الزمنية",
+      "helpdeskEmail": "بريد الدعم الفني",
+      "companyAdmin": "مدير الشركة",
+      "created": "تاريخ الإنشاء",
+      "actions": "الإجراءات"
+    },
+    "noCompanies": "لا توجد شركات بعد.",
+    "createCompany": {
+      "title": "شركة جديدة",
+      "name": "اسم الشركة",
+      "timezone": "المنطقة الزمنية",
+      "helpdeskEmail": "بريد الدعم الفني (اختياري)",
+      "adminEmail": "بريد مدير الشركة",
+      "submit": "إنشاء الشركة",
+      "success": "تم إنشاء الشركة وإرسال الدعوة.",
+      "errors": {
+        "nameRequired": "اسم الشركة مطلوب.",
+        "adminEmailRequired": "بريد إلكتروني صالح لمدير الشركة مطلوب.",
+        "createFailed": "تعذّر إنشاء الشركة. حاول مرة أخرى.",
+        "inviteFailed": "تم إنشاء الشركة، لكن تعذّر إرسال بريد الدعوة: {message}. يمكنك إعادة دعوة المدير من لوحة التحكم."
+      }
+    },
+    "inviteAdminForm": {
+      "placeholder": "admin@company.com",
+      "submit": "دعوة",
+      "success": "تم إرسال الدعوة",
+      "errors": {
+        "emailRequired": "بريد إلكتروني صالح مطلوب.",
+        "inviteFailed": "فشلت الدعوة: {message}"
+      }
+    },
+    "resendInvite": {
+      "submit": "إعادة إرسال الدعوة",
+      "success": "تم إعادة إرسال الدعوة"
+    },
+    "editCompany": {
+      "title": "تعديل الشركة",
+      "name": "اسم الشركة",
+      "timezone": "المنطقة الزمنية",
+      "helpdeskEmail": "بريد الدعم الفني (اختياري)",
+      "errors": {
+        "companyIdMissing": "الشركة غير محددة.",
+        "nameRequired": "اسم الشركة مطلوب.",
+        "helpdeskEmailInvalid": "يجب أن يكون بريد الدعم الفني بريدًا إلكترونيًا صالحًا.",
+        "updateFailed": "تعذّر تحديث الشركة. حاول مرة أخرى."
+      }
+    }
+  },
+  "home": {
+    "greeting": "مرحبًا بعودتك، {name}",
+    "subtitle": "إليك آخر مستجدات تذاكرك.",
+    "kpiTotal": "إجمالي التذاكر",
+    "kpiNew": "جديدة",
+    "kpiOnProcess": "قيد المعالجة",
+    "kpiClosed": "مغلقة",
+    "recentTickets": "أحدث التذاكر",
+    "viewAll": "عرض الكل"
+  },
+  "dashboard": {
+    "title": "التذاكر",
+    "statusTabs": {
+      "all": "الكل"
+    },
+    "table": {
+      "subject": "الموضوع",
+      "requester": "مقدّم الطلب",
+      "status": "الحالة",
+      "assignedTo": "مسندة إلى",
+      "received": "تاريخ الاستلام"
+    },
+    "noTickets": "لا توجد تذاكر.",
+    "noTicketsWithStatus": "لا توجد تذاكر بحالة \"{status}\"."
+  },
+  "tickets": {
+    "from": "من {name} ({email})",
+    "assignedTo": "مسندة إلى:",
+    "unassigned": "غير مسندة",
+    "back": "العودة إلى التذاكر",
+    "attachments": "المرفقات",
+    "solution": "الحل:",
+    "activity": "النشاط",
+    "internalNoteTag": "ملاحظة داخلية",
+    "noActivity": "لا يوجد نشاط بعد.",
+    "aiSuggestedAgent": "الموظف المقترح بالذكاء الاصطناعي:",
+    "suggestedAnswers": {
+      "title": "حلول سابقة مقترحة"
+    },
+    "takeOwnership": {
+      "submit": "تولّي التذكرة",
+      "errors": {
+        "unauthorized": "غير مصرح لك.",
+        "ticketMissing": "التذكرة غير محددة.",
+        "failed": "تعذّر تولّي التذكرة. حاول مرة أخرى."
+      }
+    },
+    "comment": {
+      "placeholder": "اكتب ردًا أو ملاحظة داخلية...",
+      "internalLabel": "ملاحظة داخلية (لا تُرسل بالبريد إلى مقدّم الطلب)",
+      "submit": "نشر",
+      "errors": {
+        "unauthorized": "غير مصرح لك.",
+        "bodyRequired": "نص التعليق مطلوب.",
+        "notFound": "التذكرة غير موجودة.",
+        "saveFailed": "تعذّر إضافة التعليق. حاول مرة أخرى.",
+        "sendFailed": "تم حفظ التعليق، لكن تعذّر إرسال بريد الرد: {message}"
+      }
+    },
+    "closeForm": {
+      "trigger": "إغلاق التذكرة",
+      "title": "إغلاق التذكرة",
+      "solutionLabel": "الحل",
+      "solutionPlaceholder": "اشرح كيف تم حل هذه المشكلة...",
+      "submit": "إغلاق التذكرة",
+      "errors": {
+        "unauthorized": "غير مصرح لك.",
+        "ticketMissing": "التذكرة غير محددة.",
+        "solutionRequired": "الحل مطلوب لإغلاق التذكرة.",
+        "failed": "تعذّر إغلاق التذكرة. حاول مرة أخرى."
+      }
+    }
+  },
+  "performance": {
+    "myTitle": "أدائي",
+    "teamTitle": "أداء الفريق",
+    "totalAssigned": "إجمالي المسندة",
+    "open": "مفتوحة",
+    "closed": "مغلقة",
+    "dateFrom": "من",
+    "dateTo": "إلى",
+    "apply": "تطبيق",
+    "clearDates": "مسح التواريخ",
+    "table": {
+      "agent": "الموظف",
+      "totalAssigned": "إجمالي المسندة",
+      "open": "مفتوحة",
+      "closed": "مغلقة",
+      "subject": "الموضوع",
+      "status": "الحالة",
+      "assignedTo": "مسندة إلى",
+      "received": "تاريخ الاستلام",
+      "closedDate": "تاريخ الإغلاق"
+    },
+    "noTeamMembers": "لا يوجد أعضاء فريق بعد.",
+    "noTicketsAssigned": "لا توجد تذاكر مسندة بعد."
+  },
+  "agents": {
+    "title": "الموظفون",
+    "table": {
+      "name": "الاسم",
+      "email": "البريد الإلكتروني",
+      "role": "الدور",
+      "skills": "المهارات",
+      "actions": "الإجراءات"
+    },
+    "roleAdmin": "مدير",
+    "roleAgent": "موظف",
+    "noAgents": "لا يوجد موظفون بعد.",
+    "inviteForm": {
+      "title": "دعوة موظف",
+      "emailLabel": "بريد الموظف الإلكتروني",
+      "submit": "إرسال الدعوة",
+      "success": "تم إرسال الدعوة.",
+      "errors": {
+        "unauthorized": "غير مصرح لك.",
+        "emailRequired": "بريد إلكتروني صالح مطلوب.",
+        "inviteFailed": "فشلت الدعوة: {message}"
+      }
+    },
+    "resendInvite": {
+      "submit": "إعادة إرسال الدعوة",
+      "success": "تم إعادة إرسال الدعوة"
+    },
+    "editForm": {
+      "title": "تعديل الموظف",
+      "fullNameLabel": "الاسم الكامل",
+      "skillsLabel": "المهارات (مفصولة بفواصل)",
+      "skillsPlaceholder": "الشبكات، البريد الإلكتروني، الأجهزة",
+      "errors": {
+        "unauthorized": "غير مصرح لك.",
+        "agentMissing": "الموظف غير محدد.",
+        "updateFailed": "تعذّر تحديث بيانات الموظف. حاول مرة أخرى."
+      }
+    }
+  },
+  "mailbox": {
+    "title": "اتصال البريد الإلكتروني",
+    "connected": "تم توصيل البريد الإلكتروني.",
+    "connectedVia": "متصل عبر <strong>{provider}</strong>: <strong>{email}</strong>",
+    "providerMicrosoft": "Microsoft 365",
+    "providerImap": "IMAP / SMTP",
+    "providerUnknown": "مزوّد غير معروف",
+    "notConnectedHint": "قم بتوصيل بريد شركتك الإلكتروني حتى تتحول الرسائل الواردة إلى تذاكر.",
+    "connectMicrosoft": "توصيل بريد Microsoft 365",
+    "or": "أو",
+    "disconnect": {
+      "submit": "قطع اتصال البريد الإلكتروني",
+      "errors": {
+        "unauthorized": "غير مصرح لك.",
+        "failed": "تعذّر قطع اتصال البريد الإلكتروني. حاول مرة أخرى."
+      }
+    },
+    "imapForm": {
+      "title": "مزوّد آخر (IMAP / SMTP)",
+      "imapHost": "خادم IMAP",
+      "imapPort": "منفذ IMAP",
+      "smtpHost": "خادم SMTP",
+      "smtpPort": "منفذ SMTP",
+      "username": "اسم المستخدم / البريد الإلكتروني",
+      "password": "كلمة المرور",
+      "submit": "اختبار وتوصيل",
+      "errors": {
+        "unauthorized": "غير مصرح لك.",
+        "allFieldsRequired": "جميع الحقول مطلوبة.",
+        "invalidPorts": "يجب أن تكون المنافذ أرقامًا صحيحة.",
+        "imapFailed": "تعذّر تسجيل الدخول إلى خادم IMAP. تحقق من الخادم والمنفذ واسم المستخدم وكلمة المرور.",
+        "smtpFailed": "تعذّر تسجيل الدخول إلى خادم SMTP. تحقق من الخادم والمنفذ واسم المستخدم وكلمة المرور.",
+        "saveFailed": "تعذّر حفظ اتصال البريد الإلكتروني. حاول مرة أخرى.",
+        "configSaveFailed": "تم الاتصال، لكن تعذّر حفظ إعدادات الخادم. حاول مرة أخرى."
+      }
+    }
+  },
+  "settings": {
+    "title": "إعدادات الشركة",
+    "name": "اسم الشركة",
+    "logoUrl": "رابط الشعار (اختياري)",
+    "timezone": "المنطقة الزمنية",
+    "defaultAgent": "الموظف الاحتياطي الافتراضي",
+    "defaultAgentHint": "يتم إسناد التذاكر الجديدة تلقائيًا لهذا الموظف حتى يتولاها أحد.",
+    "success": "تم حفظ الإعدادات.",
+    "errors": {
+      "unauthorized": "غير مصرح لك.",
+      "nameRequired": "اسم الشركة مطلوب.",
+      "updateFailed": "تعذّر تحديث إعدادات الشركة. حاول مرة أخرى."
+    },
+    "ai": {
+      "title": "ميزات الذكاء الاصطناعي",
+      "description": "أضف مفتاح API الخاص بك لتفعيل تصنيف التذاكر واقتراح الموظف المناسب والحلول المقترحة بالذكاء الاصطناعي.",
+      "enabledLabel": "تفعيل ميزات الذكاء الاصطناعي",
+      "providerLabel": "المزوّد",
+      "providerOpenai": "OpenAI",
+      "providerAnthropic": "Anthropic (Claude)",
+      "providerGemini": "Google (Gemini)",
+      "apiKeyLabel": "مفتاح API",
+      "apiKeyConfiguredPlaceholder": "•••••••• (اتركه فارغًا للاحتفاظ به)",
+      "apiKeyConfiguredHint": "تم حفظ مفتاح بالفعل. اتركه فارغًا للاحتفاظ به.",
+      "embeddingsKeyLabel": "مفتاح OpenAI (للحلول المقترحة)",
+      "embeddingsKeyHint": "اختياري. لا يدعم هذا المزوّد التضمينات (embeddings) اللازمة لميزة الحلول السابقة المقترحة — أضف مفتاح OpenAI هنا لتفعيل هذه الميزة أيضًا.",
+      "embeddingsKeyConfiguredHint": "تم حفظ مفتاح بالفعل. اتركه فارغًا للاحتفاظ به.",
+      "usageThisMonth": "الرموز المستخدمة هذا الشهر:",
+      "success": "تم حفظ إعدادات الذكاء الاصطناعي.",
+      "errors": {
+        "unauthorized": "غير مصرح لك.",
+        "invalidProvider": "اختر مزوّدًا صالحًا.",
+        "keyRequired": "أضف مفتاح API لتفعيل ميزات الذكاء الاصطناعي.",
+        "keyRequiredOnProviderChange": "أضف مفتاح API للمزوّد الجديد.",
+        "saveFailed": "تعذّر حفظ إعدادات الذكاء الاصطناعي. حاول مرة أخرى."
+      }
+    }
+  },
+  "profile": {
+    "title": "ملفي الشخصي",
+    "fullName": "الاسم الكامل",
+    "language": "اللغة",
+    "languageEnglish": "الإنجليزية",
+    "languageArabic": "العربية",
+    "submit": "حفظ التغييرات",
+    "success": "تم تحديث الملف الشخصي.",
+    "errors": {
+      "unauthorized": "غير مصرح لك.",
+      "updateFailed": "تعذّر تحديث ملفك الشخصي. حاول مرة أخرى."
+    }
+  }
+}
