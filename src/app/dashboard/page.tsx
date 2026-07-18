@@ -108,7 +108,7 @@ export default async function DashboardHomePage() {
         <div className="overflow-x-auto">
           <table className="w-full min-w-[480px] text-start text-[13.5px]">
             <thead>
-              <tr className="border-b border-border">
+              <tr className="divide-x divide-border border-b border-border">
                 <th className="px-3 py-2.5 text-[11.5px] font-bold tracking-wide text-ink-sub uppercase">
                   {t("dashboard.table.subject")}
                 </th>
@@ -127,7 +127,7 @@ export default async function DashboardHomePage() {
               {(recentTickets ?? []).map((ticket) => (
                 <tr
                   key={ticket.id}
-                  className="border-b border-border last:border-0 hover:bg-surface-alt"
+                  className="divide-x divide-border border-b border-border last:border-0 hover:bg-surface-alt"
                 >
                   <td className="px-3 py-3">
                     <Link

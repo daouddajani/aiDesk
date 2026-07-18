@@ -47,7 +47,7 @@ export default async function AgentsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-start text-[13.5px]">
               <thead>
-                <tr className="border-b border-border">
+                <tr className="divide-x divide-border border-b border-border">
                   <th className="px-4 py-2.5 text-[11.5px] font-bold tracking-wide text-ink-sub uppercase">
                     {t("agents.table.name")}
                   </th>
@@ -72,7 +72,7 @@ export default async function AgentsPage() {
                   return (
                     <tr
                       key={member.id}
-                      className="border-b border-border last:border-0 hover:bg-surface-alt"
+                      className="divide-x divide-border border-b border-border last:border-0 hover:bg-surface-alt"
                     >
                       <td className="px-4 py-3 font-medium text-ink">
                         {member.full_name ?? "—"}

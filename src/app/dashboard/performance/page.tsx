@@ -325,7 +325,7 @@ export default async function PerformancePage({
         <div className="overflow-x-auto">
           <table className="w-full text-start text-[13.5px]">
             <thead>
-              <tr className="border-b border-border">
+              <tr className="divide-x divide-border border-b border-border">
                 <th className="px-4 py-2.5 text-[11.5px] font-bold tracking-wide text-ink-sub uppercase">
                   {t("performance.table.agent")}
                 </th>
@@ -350,7 +350,7 @@ export default async function PerformancePage({
                 return (
                   <tr
                     key={agent.id}
-                    className="border-b border-border last:border-0 hover:bg-surface-alt"
+                    className="divide-x divide-border border-b border-border last:border-0 hover:bg-surface-alt"
                   >
                     <td className="px-4 py-3 font-medium text-ink">
                       {agentNameById.get(agent.id) ?? t("common.unnamed")}
@@ -397,7 +397,7 @@ function TicketTable({
       <div className="overflow-x-auto">
         <table className="w-full text-start text-[13.5px]">
           <thead>
-            <tr className="border-b border-border">
+            <tr className="divide-x divide-border border-b border-border">
               <th className="px-4 py-2.5 text-[11.5px] font-bold tracking-wide text-ink-sub uppercase">
                 {t("performance.table.subject")}
               </th>
@@ -421,7 +421,7 @@ function TicketTable({
             {sorted.map((ticket) => (
               <tr
                 key={ticket.id}
-                className="border-b border-border last:border-0 hover:bg-surface-alt"
+                className="divide-x divide-border border-b border-border last:border-0 hover:bg-surface-alt"
               >
                 <td className="px-4 py-3">
                   <Link

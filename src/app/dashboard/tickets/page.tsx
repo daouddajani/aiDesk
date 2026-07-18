@@ -239,7 +239,7 @@ export default async function TicketsListPage({
         <div className="overflow-x-auto">
           <table className="w-full min-w-[560px] text-start text-[13.5px]">
             <thead>
-              <tr className="border-b border-border">
+              <tr className="divide-x divide-border border-b border-border">
                 <th className="px-4 py-2.5 text-[11.5px] font-bold tracking-wide text-ink-sub uppercase">
                   {t("dashboard.table.subject")}
                 </th>
