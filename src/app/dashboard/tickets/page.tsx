@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { buildAgentNameMap } from "@/lib/agentNames";
+import { formatDuration } from "@/lib/duration";
 
 const STATUS_VALUES = ["new", "pending", "on_process", "closed"] as const;
 
@@ -83,7 +84,7 @@ export default async function TicketsListPage({
   let query = supabase
     .from("tickets")
     .select(
-      "id, subject, sender_email, sender_name, status, assigned_agent_id, received_at",
+      "id, subject, sender_email, sender_name, status, assigned_agent_id, received_at, closed_at",
     )
     .eq("company_id", profile.company_id)
     .gte("received_at", `${from}T00:00:00`)
@@ -255,6 +256,9 @@ export default async function TicketsListPage({
                 <th className="px-4 py-2.5 text-[11.5px] font-bold tracking-wide text-ink-sub uppercase">
                   {t("dashboard.table.received")}
                 </th>
+                <th className="px-4 py-2.5 text-[11.5px] font-bold tracking-wide text-ink-sub uppercase">
+                  {t("dashboard.table.openDuration")}
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -289,11 +293,21 @@ export default async function TicketsListPage({
                   <td className="px-4 py-3.5 text-ink-sub">
                     {new Date(ticket.received_at).toLocaleString()}
                   </td>
+                  <td className="px-4 py-3.5 text-ink-sub">
+                    {formatDuration(
+                      ((ticket.closed_at
+                        ? new Date(ticket.closed_at)
+                        : new Date()
+                      ).getTime() -
+                        new Date(ticket.received_at).getTime()) /
+                        1000,
+                    )}
+                  </td>
                 </tr>
               ))}
               {tickets.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-ink-sub">
+                  <td colSpan={6} className="px-4 py-8 text-center text-ink-sub">
                     {params.status
                       ? t("dashboard.noTicketsWithStatus", {
                           status: t(`status.${params.status}`),

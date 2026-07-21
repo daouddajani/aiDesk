@@ -148,7 +148,8 @@
       "requester": "مقدّم الطلب",
       "status": "الحالة",
       "assignedTo": "مسندة إلى",
-      "received": "تاريخ الاستلام"
+      "received": "تاريخ الاستلام",
+      "openDuration": "مدة الفتح"
     },
     "noTickets": "لا توجد تذاكر.",
     "noTicketsWithStatus": "لا توجد تذاكر بحالة \"{status}\"."

@@ -148,7 +148,8 @@
       "requester": "Requester",
       "status": "Status",
       "assignedTo": "Assigned to",
-      "received": "Received"
+      "received": "Received",
+      "openDuration": "Open for"
     },
     "noTickets": "No tickets.",
     "noTicketsWithStatus": "No tickets with status \"{status}\"."
