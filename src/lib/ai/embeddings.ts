@@ -50,14 +50,33 @@ export class OpenAIEmbeddings {
       p_exclude_ticket_id: excludeTicketId ?? null,
     });
 
-    if (error || !data) return [];
+    if (error || !data || data.length === 0) return [];
 
-    return (
-      data as { ticket_id: string; content: string; similarity: number }[]
-    ).map((row) => ({
-      ticketId: row.ticket_id,
-      content: row.content,
-      similarity: row.similarity,
-    }));
+    // match_ticket_embeddings only returns the frozen text that was embedded
+    // at close time — fetch subject/solution_text fresh from tickets so the
+    // card shows just the problem and the solution, not that raw blob, and
+    // stays in sync with any later edits.
+    const matches = data as { ticket_id: string; similarity: number }[];
+    const { data: tickets } = await supabase
+      .from("tickets")
+      .select("id, subject, solution_text")
+      .in(
+        "id",
+        matches.map((m) => m.ticket_id),
+      );
+    const ticketById = new Map((tickets ?? []).map((t) => [t.id, t]));
+
+    return matches.flatMap((match) => {
+      const ticket = ticketById.get(match.ticket_id);
+      if (!ticket?.solution_text) return [];
+      return [
+        {
+          ticketId: match.ticket_id,
+          subject: ticket.subject,
+          solutionText: ticket.solution_text,
+          similarity: match.similarity,
+        },
+      ];
+    });
   }
 }

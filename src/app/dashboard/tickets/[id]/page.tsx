@@ -427,10 +427,14 @@ export default async function TicketDetailPage({
                 <Link
                   key={answer.ticketId}
                   href={`/dashboard/tickets/${answer.ticketId}`}
-                  className="block rounded-xl bg-surface-alt p-3 text-[12.5px] leading-relaxed text-ink hover:bg-border/40"
+                  className="block rounded-xl bg-surface-alt p-3 text-[12.5px] leading-relaxed hover:bg-border/40"
                 >
-                  <p className="line-clamp-3 whitespace-pre-wrap">
-                    {answer.content}
+                  <p className="font-semibold text-ink">{answer.subject}</p>
+                  <p className="mt-1 text-[11px] font-bold tracking-wide text-ink-sub uppercase">
+                    {t("tickets.suggestedAnswers.solutionLabel")}
+                  </p>
+                  <p className="line-clamp-2 whitespace-pre-wrap text-ink-sub">
+                    {answer.solutionText}
                   </p>
                 </Link>
               ))}

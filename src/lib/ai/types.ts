@@ -18,7 +18,8 @@ export type AgentSkills = {
 
 export type SuggestedAnswer = {
   ticketId: string;
-  content: string;
+  subject: string;
+  solutionText: string;
   similarity: number;
 };
 

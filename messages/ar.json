@@ -166,7 +166,8 @@
     "noActivity": "لا يوجد نشاط بعد.",
     "aiSuggestedAgent": "الموظف المقترح بالذكاء الاصطناعي:",
     "suggestedAnswers": {
-      "title": "حلول سابقة مقترحة"
+      "title": "حلول سابقة مقترحة",
+      "solutionLabel": "الحل"
     },
     "assignmentHistory": {
       "title": "سجل الإسناد",

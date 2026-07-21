@@ -166,7 +166,8 @@
     "noActivity": "No activity yet.",
     "aiSuggestedAgent": "AI suggested agent:",
     "suggestedAnswers": {
-      "title": "Suggested past solutions"
+      "title": "Suggested past solutions",
+      "solutionLabel": "Solution"
     },
     "assignmentHistory": {
       "title": "Assignment history",
