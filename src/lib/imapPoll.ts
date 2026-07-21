@@ -1,5 +1,6 @@
 import { ImapFlow } from "imapflow";
 import { simpleParser } from "mailparser";
+import { stripHtml } from "@/lib/htmlText";
 
 export type ParsedIncomingMessage = {
   uid: number;
@@ -64,7 +65,7 @@ export async function fetchNewImapMessages(
           fromEmail: parsed.from?.value?.[0]?.address ?? null,
           receivedAt: (parsed.date ?? new Date()).toISOString(),
           bodyText:
-            parsed.text ?? (parsed.html ? parsed.html.replace(/<[^>]+>/g, " ") : ""),
+            parsed.text ?? (parsed.html ? stripHtml(parsed.html) : ""),
           messageId: parsed.messageId ?? null,
           attachments: (parsed.attachments ?? []).map((a) => ({
             filename: a.filename ?? "attachment",

@@ -61,7 +61,7 @@ export class GeminiProvider implements AIProvider {
       "classify",
       data.usageMetadata?.totalTokenCount ?? 0,
     );
-    return parseClassifyJson(data.candidates[0].content.parts[0].text);
+    return parseClassifyJson(data.candidates[0].content.parts[0].text, body);
   }
 
   async suggestAgent(

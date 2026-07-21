@@ -35,7 +35,9 @@ export class AnthropicProvider implements AIProvider {
       },
       body: JSON.stringify({
         model: CHAT_MODEL,
-        max_tokens: 200,
+        // Large enough for the JSON envelope plus the full (truncated to
+        // 4000 chars) body echoed back in cleanBody.
+        max_tokens: 2000,
         temperature: 0,
         system: CLASSIFY_SYSTEM_PROMPT,
         messages: [
@@ -54,7 +56,7 @@ export class AnthropicProvider implements AIProvider {
     const totalTokens =
       (data.usage?.input_tokens ?? 0) + (data.usage?.output_tokens ?? 0);
     await this.logUsage("classify", totalTokens);
-    return parseClassifyJson(data.content[0].text);
+    return parseClassifyJson(data.content[0].text, body);
   }
 
   async suggestAgent(

@@ -52,7 +52,7 @@ export class OpenAIProvider implements AIProvider {
 
     const data = await res.json();
     await this.logUsage("classify", data.usage?.total_tokens ?? 0);
-    return parseClassifyJson(data.choices[0].message.content);
+    return parseClassifyJson(data.choices[0].message.content, body);
   }
 
   async suggestAgent(

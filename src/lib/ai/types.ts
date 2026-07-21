@@ -5,6 +5,10 @@ export type ClassifyResult = {
   // skills by suggestAgent() — not a fixed enum.
   category: string;
   isJunk: boolean;
+  // Body with any email signature block (sign-off name, title, contact
+  // info, disclaimers) stripped out; falls back to the original body when
+  // no signature was detected.
+  cleanBody: string;
 };
 
 export type AgentSkills = {

@@ -1,3 +1,5 @@
+import { stripHtml } from "@/lib/htmlText";
+
 const AUTHORITY = "https://login.microsoftonline.com";
 
 // offline_access is required to get a refresh_token back from the token
@@ -118,13 +120,6 @@ export type GraphMessage = {
   inferenceClassification: "focused" | "other" | null;
   hasAttachments: boolean;
 };
-
-function stripHtml(html: string) {
-  return html
-    .replace(/<[^>]+>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
 
 // Reads only the Inbox folder, so mail Microsoft's own spam filter has
 // already routed to Junk Email never reaches us. Paginated via

@@ -17,27 +17,40 @@ export const maxDuration = 300;
 // relies on the AI fallback, per app.md's junk-detection rule. A null
 // provider (AI disabled/unconfigured for this company) and any AI failure
 // are both non-fatal: the ticket still gets created, just without a
-// suggestion.
+// suggestion, and with the body stored as-is (no signature stripped).
 async function classifyForTicket(
   aiProvider: AIProvider | null,
   agents: AgentSkills[],
   subject: string,
   bodyText: string,
   checkJunk: boolean,
-): Promise<{ isJunk: boolean; suggestedAgentId: string | null }> {
-  if (!aiProvider) return { isJunk: false, suggestedAgentId: null };
+): Promise<{
+  isJunk: boolean;
+  suggestedAgentId: string | null;
+  cleanBody: string;
+}> {
+  if (!aiProvider)
+    return { isJunk: false, suggestedAgentId: null, cleanBody: bodyText };
   try {
     const classification = await aiProvider.classify(subject, bodyText);
     if (checkJunk && classification.isJunk) {
-      return { isJunk: true, suggestedAgentId: null };
+      return {
+        isJunk: true,
+        suggestedAgentId: null,
+        cleanBody: classification.cleanBody,
+      };
     }
     const suggestedAgentId = await aiProvider.suggestAgent(
       classification.category,
       agents,
     );
-    return { isJunk: false, suggestedAgentId };
+    return {
+      isJunk: false,
+      suggestedAgentId,
+      cleanBody: classification.cleanBody,
+    };
   } catch {
-    return { isJunk: false, suggestedAgentId: null };
+    return { isJunk: false, suggestedAgentId: null, cleanBody: bodyText };
   }
 }
 
@@ -117,11 +130,19 @@ async function pollMicrosoftCompany(
       ? await listMessageAttachments(tokens.access_token, message.id)
       : [];
 
+    const { suggestedAgentId, cleanBody } = await classifyForTicket(
+      aiProvider,
+      agents,
+      message.subject ?? "",
+      message.bodyText,
+      false,
+    );
+
     const email: IncomingEmail = {
       subject: message.subject,
       fromEmail: message.fromEmail,
       fromName: message.fromName,
-      bodyText: message.bodyText,
+      bodyText: cleanBody,
       receivedAt: message.receivedDateTime,
       conversationId: message.conversationId,
       sourceMessageId: message.id,
@@ -132,14 +153,6 @@ async function pollMicrosoftCompany(
         content: Buffer.from(a.contentBytes, "base64"),
       })),
     };
-
-    const { suggestedAgentId } = await classifyForTicket(
-      aiProvider,
-      agents,
-      message.subject ?? "",
-      message.bodyText,
-      false,
-    );
 
     const result = await createTicketFromEmail(
       adminClient,
@@ -196,7 +209,7 @@ async function pollImapCompany(
   // is disabled for this company, every message becomes a ticket, same as
   // before this feature existed.
   for (const message of messages) {
-    const { isJunk, suggestedAgentId } = await classifyForTicket(
+    const { isJunk, suggestedAgentId, cleanBody } = await classifyForTicket(
       aiProvider,
       agents,
       message.subject ?? "",
@@ -212,7 +225,7 @@ async function pollImapCompany(
       subject: message.subject,
       fromEmail: message.fromEmail,
       fromName: message.fromName,
-      bodyText: message.bodyText,
+      bodyText: cleanBody,
       receivedAt: message.receivedAt,
       conversationId: message.messageId,
       sourceMessageId: message.messageId ?? `imap-uid-${message.uid}`,
