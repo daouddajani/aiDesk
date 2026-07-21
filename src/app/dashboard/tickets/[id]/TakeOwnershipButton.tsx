@@ -4,7 +4,13 @@ import { useActionState } from "react";
 import { useTranslations } from "next-intl";
 import { takeOwnership } from "../actions";
 
-export function TakeOwnershipButton({ ticketId }: { ticketId: string }) {
+export function TakeOwnershipButton({
+  ticketId,
+  disabled,
+}: {
+  ticketId: string;
+  disabled: boolean;
+}) {
   const t = useTranslations("tickets.takeOwnership");
   const [state, formAction] = useActionState(takeOwnership, undefined);
 
@@ -13,7 +19,12 @@ export function TakeOwnershipButton({ ticketId }: { ticketId: string }) {
       <input type="hidden" name="ticketId" value={ticketId} />
       <button
         type="submit"
-        className="rounded-[10px] border border-border bg-surface px-4 py-2 text-[13.5px] font-bold text-ink transition-colors hover:bg-surface-alt"
+        disabled={disabled}
+        className={`rounded-[10px] border px-4 py-2 text-[13.5px] font-bold transition-colors ${
+          disabled
+            ? "cursor-not-allowed border-border bg-surface-alt text-ink-sub opacity-60"
+            : "border-success bg-success-soft text-success hover:opacity-90"
+        }`}
       >
         {t("submit")}
       </button>

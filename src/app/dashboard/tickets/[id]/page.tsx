@@ -257,7 +257,10 @@ export default async function TicketDetailPage({
             <div className="flex flex-wrap items-center gap-2">
               {ticket.status !== "closed" && (
                 <>
-                  <TakeOwnershipButton ticketId={ticket.id} />
+                  <TakeOwnershipButton
+                    ticketId={ticket.id}
+                    disabled={ticket.assigned_agent_id === user.id}
+                  />
                   <CloseTicketForm ticketId={ticket.id} />
                 </>
               )}
