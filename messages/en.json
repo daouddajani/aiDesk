@@ -64,6 +64,12 @@
       "failed": "Could not update password. Try the link again."
     }
   },
+  "authConfirm": {
+    "title": "Confirm to continue",
+    "description": "For your security, click below to continue.",
+    "submit": "Continue",
+    "invalid": "This link is invalid or has expired."
+  },
   "admin": {
     "companies": "Companies",
     "table": {
@@ -124,13 +130,7 @@
     "kpiOnProcess": "In progress",
     "kpiClosed": "Closed",
     "recentTickets": "Recent tickets",
-    "viewAll": "View all",
-    "yourPerformance": "Your performance",
-    "kpiOpenAssigned": "Open tickets",
-    "kpiClosedAssigned": "Closed tickets",
-    "kpiAvgResolution": "Avg. resolution time",
-    "agentPerformance": "Agent performance",
-    "viewFullPerformance": "View full performance"
+    "viewAll": "View all"
   },
   "dashboard": {
     "title": "Tickets",
@@ -252,6 +252,7 @@
     "totalAssigned": "Total assigned",
     "open": "Open",
     "closed": "Closed",
+    "avgResolution": "Avg. resolution time",
     "dateFrom": "From",
     "dateTo": "To",
     "apply": "Apply",
@@ -261,6 +262,7 @@
       "totalAssigned": "Total assigned",
       "open": "Open",
       "closed": "Closed",
+      "avgResolution": "Avg. resolution time",
       "subject": "Subject",
       "status": "Status",
       "assignedTo": "Assigned to",

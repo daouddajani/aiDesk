@@ -64,6 +64,12 @@
       "failed": "تعذّر تحديث كلمة المرور. حاول استخدام الرابط مرة أخرى."
     }
   },
+  "authConfirm": {
+    "title": "تأكيد للمتابعة",
+    "description": "لأمانك، اضغط أدناه للمتابعة.",
+    "submit": "متابعة",
+    "invalid": "هذا الرابط غير صالح أو انتهت صلاحيته."
+  },
   "admin": {
     "companies": "الشركات",
     "table": {
@@ -124,13 +130,7 @@
     "kpiOnProcess": "قيد المعالجة",
     "kpiClosed": "مغلقة",
     "recentTickets": "أحدث التذاكر",
-    "viewAll": "عرض الكل",
-    "yourPerformance": "أداؤك",
-    "kpiOpenAssigned": "تذاكر مفتوحة",
-    "kpiClosedAssigned": "تذاكر مغلقة",
-    "kpiAvgResolution": "متوسط وقت الحل",
-    "agentPerformance": "أداء الموظفين",
-    "viewFullPerformance": "عرض الأداء الكامل"
+    "viewAll": "عرض الكل"
   },
   "dashboard": {
     "title": "التذاكر",
@@ -252,6 +252,7 @@
     "totalAssigned": "إجمالي المسندة",
     "open": "مفتوحة",
     "closed": "مغلقة",
+    "avgResolution": "متوسط وقت الحل",
     "dateFrom": "من",
     "dateTo": "إلى",
     "apply": "تطبيق",
@@ -261,6 +262,7 @@
       "totalAssigned": "إجمالي المسندة",
       "open": "مفتوحة",
       "closed": "مغلقة",
+      "avgResolution": "متوسط وقت الحل",
       "subject": "الموضوع",
       "status": "الحالة",
       "assignedTo": "مسندة إلى",

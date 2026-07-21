@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { buildAgentNameMap } from "@/lib/agentNames";
+import { formatDuration } from "@/lib/duration";
 
 type Translator = Awaited<ReturnType<typeof getTranslations>>;
 
@@ -35,6 +36,21 @@ function withinRange(dateStr: string, from?: string, to?: string) {
   if (from && date < from) return false;
   if (to && date > to) return false;
   return true;
+}
+
+// Average of (closed_at - received_at) over closed tickets that have both
+// dates — null (rendered as "—") when there's nothing closed yet.
+function averageResolutionSeconds(tickets: TicketRow[]): number | null {
+  const seconds = tickets
+    .filter((t) => t.status === "closed" && t.closed_at)
+    .map(
+      (t) =>
+        (new Date(t.closed_at!).getTime() - new Date(t.received_at).getTime()) /
+        1000,
+    );
+  return seconds.length
+    ? seconds.reduce((a, b) => a + b, 0) / seconds.length
+    : null;
 }
 
 function buildHref(
@@ -117,6 +133,39 @@ const CLOSED_ICON = (
     />
   </svg>
 );
+const AVG_RESOLUTION_ICON = (
+  <svg viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5">
+    <path d="M8 2a1 1 0 0 0 0 2h.09A6.5 6.5 0 1 0 13 4.35V4h.5a1 1 0 1 0 0-2h-5.5Zm2 4.5A4.5 4.5 0 1 1 5.5 11 4.5 4.5 0 0 1 10 6.5Zm0 2a1 1 0 0 0-1 1v1.59l-.7.7a1 1 0 1 0 1.4 1.42l1-1a1 1 0 0 0 .3-.71V9.5a1 1 0 0 0-1-1Z" />
+  </svg>
+);
+
+function InfoCard({
+  label,
+  value,
+  theme,
+  icon,
+}: {
+  label: string;
+  value: React.ReactNode;
+  theme: keyof typeof STAT_CARD_THEMES;
+  icon: React.ReactNode;
+}) {
+  const colors = STAT_CARD_THEMES[theme];
+
+  return (
+    <div className="flex items-center gap-4 rounded-2xl border border-border bg-surface p-4">
+      <span
+        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${colors.icon}`}
+      >
+        {icon}
+      </span>
+      <span>
+        <span className="block text-xs text-ink-sub">{label}</span>
+        <span className="block text-2xl font-extrabold text-ink">{value}</span>
+      </span>
+    </div>
+  );
+}
 
 function DateRangeFilter({
   t,
@@ -225,6 +274,7 @@ export default async function PerformancePage({
       .filter(inDateRange);
     const closed = mine.filter((t) => t.status === "closed").length;
     const open = mine.length - closed;
+    const avgResolution = averageResolutionSeconds(mine);
 
     const activeFilter =
       params.status === "closed" ? "closed" : params.status === "open" ? "open" : "";
@@ -248,7 +298,7 @@ export default async function PerformancePage({
           to={params.to}
         />
 
-        <div className="grid grid-cols-1 gap-4 sm:max-w-xl sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:max-w-3xl lg:grid-cols-4">
           <StatCard
             label={t("performance.totalAssigned")}
             value={mine.length}
@@ -284,6 +334,12 @@ export default async function PerformancePage({
             theme="green"
             icon={CLOSED_ICON}
           />
+          <InfoCard
+            label={t("performance.avgResolution")}
+            value={avgResolution !== null ? formatDuration(avgResolution) : "—"}
+            theme="neutral"
+            icon={AVG_RESOLUTION_ICON}
+          />
         </div>
 
         <TicketTable
@@ -296,21 +352,12 @@ export default async function PerformancePage({
     );
   }
 
-  const statsByAgent = new Map<
-    string,
-    { total: number; open: number; closed: number }
-  >();
+  const ticketsByAgent = new Map<string, TicketRow[]>();
   for (const ticket of (tickets ?? []) as TicketRow[]) {
     if (!ticket.assigned_agent_id || !inDateRange(ticket)) continue;
-    const stats = statsByAgent.get(ticket.assigned_agent_id) ?? {
-      total: 0,
-      open: 0,
-      closed: 0,
-    };
-    stats.total += 1;
-    if (ticket.status === "closed") stats.closed += 1;
-    else stats.open += 1;
-    statsByAgent.set(ticket.assigned_agent_id, stats);
+    const list = ticketsByAgent.get(ticket.assigned_agent_id) ?? [];
+    list.push(ticket);
+    ticketsByAgent.set(ticket.assigned_agent_id, list);
   }
 
   return (
@@ -338,15 +385,19 @@ export default async function PerformancePage({
                 <th className="px-4 py-2.5 text-[11.5px] font-bold tracking-wide text-ink-sub uppercase">
                   {t("performance.table.closed")}
                 </th>
+                <th className="px-4 py-2.5 text-[11.5px] font-bold tracking-wide text-ink-sub uppercase">
+                  {t("performance.table.avgResolution")}
+                </th>
               </tr>
             </thead>
             <tbody>
               {(agents ?? []).map((agent) => {
-                const stats = statsByAgent.get(agent.id) ?? {
-                  total: 0,
-                  open: 0,
-                  closed: 0,
-                };
+                const agentTickets = ticketsByAgent.get(agent.id) ?? [];
+                const closed = agentTickets.filter(
+                  (t) => t.status === "closed",
+                ).length;
+                const open = agentTickets.length - closed;
+                const avgResolution = averageResolutionSeconds(agentTickets);
                 return (
                   <tr
                     key={agent.id}
@@ -355,15 +406,22 @@ export default async function PerformancePage({
                     <td className="px-4 py-3 font-medium text-ink">
                       {agentNameById.get(agent.id) ?? t("common.unnamed")}
                     </td>
-                    <td className="px-4 py-3 text-ink-sub">{stats.total}</td>
-                    <td className="px-4 py-3 text-ink-sub">{stats.open}</td>
-                    <td className="px-4 py-3 text-ink-sub">{stats.closed}</td>
+                    <td className="px-4 py-3 text-ink-sub">
+                      {agentTickets.length}
+                    </td>
+                    <td className="px-4 py-3 text-ink-sub">{open}</td>
+                    <td className="px-4 py-3 text-ink-sub">{closed}</td>
+                    <td className="px-4 py-3 text-ink-sub">
+                      {avgResolution !== null
+                        ? formatDuration(avgResolution)
+                        : "—"}
+                    </td>
                   </tr>
                 );
               })}
               {(agents ?? []).length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-4 py-8 text-center text-ink-sub">
+                  <td colSpan={5} className="px-4 py-8 text-center text-ink-sub">
                     {t("performance.noTeamMembers")}
                   </td>
                 </tr>
