@@ -6,6 +6,11 @@ import { LanguageToggleButton } from "@/components/LanguageToggleButton";
 import { MobileNav } from "./MobileNav";
 import { SidebarNav, type ShellNavItem } from "./SidebarNav";
 import { TicketNotifications } from "./TicketNotifications";
+import {
+  SidebarCollapseProvider,
+  CollapsibleSidebar,
+  SidebarToggleButton,
+} from "./SidebarCollapse";
 
 export type { ShellNavItem };
 
@@ -39,52 +44,55 @@ export async function AppShell({
   );
 
   return (
-    <div className="flex min-h-screen flex-col bg-bg md:flex-row">
-      {companyId && <TicketNotifications companyId={companyId} />}
-      <MobileNav brandLabel="AiDesk">
-        {brand}
-        <SidebarNav items={navItems} />
-      </MobileNav>
+    <SidebarCollapseProvider>
+      <div className="flex min-h-screen flex-col bg-bg md:flex-row">
+        {companyId && <TicketNotifications companyId={companyId} />}
+        <MobileNav brandLabel="AiDesk">
+          {brand}
+          <SidebarNav items={navItems} />
+        </MobileNav>
 
-      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-e border-border bg-surface md:flex">
-        {brand}
-        <SidebarNav items={navItems} />
-      </aside>
+        <CollapsibleSidebar>
+          {brand}
+          <SidebarNav items={navItems} />
+        </CollapsibleSidebar>
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-10 hidden items-center border-b border-border bg-surface px-7 py-3.5 md:flex">
-          <div className="ms-auto flex items-center gap-2.5">
-            <LanguageToggleButton />
-            <ThemeToggleButton isDark={isDark} />
-            <div className="ms-1 flex items-center gap-2.5 border-s border-border ps-3">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[9px] bg-primary text-xs font-bold text-white">
-                {user.initials}
-              </div>
-              <div>
-                <div className="text-[13px] font-bold text-ink">
-                  {user.name}
+        <div className="flex min-w-0 flex-1 flex-col">
+          <header className="sticky top-0 z-10 hidden items-center border-b border-border bg-surface px-7 py-3.5 md:flex">
+            <SidebarToggleButton />
+            <div className="ms-auto flex items-center gap-2.5">
+              <LanguageToggleButton />
+              <ThemeToggleButton isDark={isDark} />
+              <div className="ms-1 flex items-center gap-2.5 border-s border-border ps-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[9px] bg-primary text-xs font-bold text-white">
+                  {user.initials}
                 </div>
-                <div className="text-[11.5px] text-ink-sub">
-                  {user.roleLabel}
+                <div>
+                  <div className="text-[13px] font-bold text-ink">
+                    {user.name}
+                  </div>
+                  <div className="text-[11.5px] text-ink-sub">
+                    {user.roleLabel}
+                  </div>
                 </div>
               </div>
+              <form action={signOut}>
+                <button
+                  type="submit"
+                  className="text-xs font-semibold text-ink-sub hover:underline"
+                >
+                  {t("signOut")}
+                </button>
+              </form>
             </div>
-            <form action={signOut}>
-              <button
-                type="submit"
-                className="text-xs font-semibold text-ink-sub hover:underline"
-              >
-                {t("signOut")}
-              </button>
-            </form>
-          </div>
-        </header>
+          </header>
 
-        <main className="mx-auto w-full max-w-[1280px] flex-1 px-4 py-6 md:px-8 md:py-8">
-          {children}
-        </main>
+          <main className="mx-auto w-full max-w-[1280px] flex-1 px-4 py-6 md:px-8 md:py-8">
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+    </SidebarCollapseProvider>
   );
 }
 
