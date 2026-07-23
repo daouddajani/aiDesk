@@ -10,6 +10,10 @@ export type ParsedIncomingMessage = {
   receivedAt: string;
   bodyText: string;
   messageId: string | null;
+  // Reply-chain identifiers (In-Reply-To / References headers) — the only
+  // way to detect "this is a reply to an earlier message" over plain IMAP,
+  // since there's no server-assigned thread id like Graph's conversationId.
+  threadRefs: string[];
   attachments: {
     filename: string;
     mimeType: string;
@@ -67,6 +71,14 @@ export async function fetchNewImapMessages(
           bodyText:
             parsed.text ?? (parsed.html ? stripHtml(parsed.html) : ""),
           messageId: parsed.messageId ?? null,
+          threadRefs: [
+            parsed.inReplyTo,
+            ...(Array.isArray(parsed.references)
+              ? parsed.references
+              : parsed.references
+                ? [parsed.references]
+                : []),
+          ].filter((id): id is string => Boolean(id)),
           attachments: (parsed.attachments ?? []).map((a) => ({
             filename: a.filename ?? "attachment",
             mimeType: a.contentType ?? "application/octet-stream",

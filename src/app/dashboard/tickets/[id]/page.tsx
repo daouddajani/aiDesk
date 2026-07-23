@@ -173,7 +173,9 @@ export default async function TicketDetailPage({
   ] = await Promise.all([
     supabase
       .from("ticket_comments")
-      .select("id, author_id, body, is_internal, created_at")
+      .select(
+        "id, author_id, external_author_email, external_author_name, body, is_internal, created_at",
+      )
       .eq("ticket_id", id)
       .order("created_at", { ascending: true }),
     supabase
@@ -322,8 +324,11 @@ export default async function TicketDetailPage({
           </h3>
           <div className="space-y-4">
             {(comments ?? []).map((comment) => {
-              const authorName =
-                agentNameById.get(comment.author_id) ?? t("common.unnamed");
+              const authorName = comment.author_id
+                ? (agentNameById.get(comment.author_id) ?? t("common.unnamed"))
+                : (comment.external_author_name ??
+                  comment.external_author_email ??
+                  ticket.sender_email);
               return (
                 <div key={comment.id} className="flex gap-3">
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[9px] bg-ink-sub text-[11px] font-bold text-white">

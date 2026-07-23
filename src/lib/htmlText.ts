@@ -19,8 +19,20 @@ function decodeHtmlEntities(text: string): string {
     );
 }
 
+// Block-level tags become newlines before the rest are stripped — otherwise
+// every paragraph/div/line collapses into one flat line, which destroys the
+// structure quote-chain detection (stripQuotedReply) relies on to find
+// boundary lines like "On ... wrote:" or "From: ... Sent: ... To: ...".
 export function stripHtml(html: string): string {
-  return decodeHtmlEntities(html.replace(/<[^>]+>/g, " "))
-    .replace(/\s+/g, " ")
+  const withBreaks = html
+    .replace(/<(br|hr)\s*\/?>/gi, "\n")
+    .replace(/<\/(p|div|tr|li|h[1-6]|blockquote|table)>/gi, "\n")
+    .replace(/<[^>]+>/g, "");
+
+  return decodeHtmlEntities(withBreaks)
+    .split("\n")
+    .map((line) => line.replace(/[^\S\n]+/g, " ").trim())
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
     .trim();
 }

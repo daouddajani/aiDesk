@@ -6,8 +6,13 @@ import {
   listMessageAttachments,
 } from "@/lib/microsoftGraph";
 import { fetchNewImapMessages } from "@/lib/imapPoll";
-import { createTicketFromEmail, type IncomingEmail } from "@/lib/ticketIngestion";
+import {
+  ingestIncomingEmail,
+  type AgentEmailMap,
+  type IncomingEmail,
+} from "@/lib/ticketIngestion";
 import { getAIProviderForCompany, type AIProvider, type AgentSkills } from "@/lib/ai";
+import { stripQuotedReply } from "@/lib/emailQuote";
 
 export const maxDuration = 300;
 
@@ -17,7 +22,9 @@ export const maxDuration = 300;
 // relies on the AI fallback, per app.md's junk-detection rule. A null
 // provider (AI disabled/unconfigured for this company) and any AI failure
 // are both non-fatal: the ticket still gets created, just without a
-// suggestion, and with the body stored as-is (no signature stripped).
+// suggestion. The quoted-reply chain is always stripped first (deterministic,
+// no AI needed) — the AI's cleanBody only strips signature blocks on top of
+// that when a provider is configured.
 async function classifyForTicket(
   aiProvider: AIProvider | null,
   agents: AgentSkills[],
@@ -29,10 +36,12 @@ async function classifyForTicket(
   suggestedAgentId: string | null;
   cleanBody: string;
 }> {
+  const quoteStripped = stripQuotedReply(bodyText);
+
   if (!aiProvider)
-    return { isJunk: false, suggestedAgentId: null, cleanBody: bodyText };
+    return { isJunk: false, suggestedAgentId: null, cleanBody: quoteStripped };
   try {
-    const classification = await aiProvider.classify(subject, bodyText);
+    const classification = await aiProvider.classify(subject, quoteStripped);
     if (checkJunk && classification.isJunk) {
       return {
         isJunk: true,
@@ -50,7 +59,7 @@ async function classifyForTicket(
       cleanBody: classification.cleanBody,
     };
   } catch {
-    return { isJunk: false, suggestedAgentId: null, cleanBody: bodyText };
+    return { isJunk: false, suggestedAgentId: null, cleanBody: quoteStripped };
   }
 }
 
@@ -65,6 +74,28 @@ async function loadAgentSkills(
     .in("role", ["company_admin", "company_agent"]);
 
   return (data ?? []).map((p) => ({ id: p.id, skills: p.skills ?? [] }));
+}
+
+// Maps an agent's own mailbox address to their profile id, so a reply
+// polled from the company mailbox that was actually sent by one of the
+// company's own agents (not the requester) can be attributed correctly.
+async function loadAgentEmailMap(
+  adminClient: ReturnType<typeof createAdminClient>,
+  agents: AgentSkills[],
+): Promise<AgentEmailMap> {
+  const map: AgentEmailMap = new Map();
+  if (agents.length === 0) return map;
+
+  const agentIds = new Set(agents.map((a) => a.id));
+  const { data } = await adminClient.auth.admin.listUsers({ perPage: 1000 });
+
+  for (const user of data?.users ?? []) {
+    if (user.email && agentIds.has(user.id)) {
+      map.set(user.email.toLowerCase(), user.id);
+    }
+  }
+
+  return map;
 }
 
 type MailboxCompany = {
@@ -88,7 +119,8 @@ async function pollMicrosoftCompany(
     "get_company_mailbox_secret",
     { p_company_id: company.id },
   );
-  if (!refreshToken) return { created: 0, skippedJunk: 0, errors: [] };
+  if (!refreshToken)
+    return { created: 0, matchedReplies: 0, skippedJunk: 0, errors: [] };
 
   const tokens = await refreshAccessToken(refreshToken);
 
@@ -104,9 +136,11 @@ async function pollMicrosoftCompany(
   const sinceIso = company.mailbox_last_synced_at ?? new Date().toISOString();
   const messages = await listNewInboxMessages(tokens.access_token, sinceIso);
   const agents = await loadAgentSkills(adminClient, company.id);
+  const agentEmailMap = await loadAgentEmailMap(adminClient, agents);
   const aiProvider = await getAIProviderForCompany(adminClient, company.id);
 
   let created = 0;
+  let matchedReplies = 0;
   let skippedJunk = 0;
   const errors: string[] = [];
   let latestReceivedAt = company.mailbox_last_synced_at;
@@ -145,6 +179,7 @@ async function pollMicrosoftCompany(
       bodyText: cleanBody,
       receivedAt: message.receivedDateTime,
       conversationId: message.conversationId,
+      threadRefs: [],
       sourceMessageId: message.id,
       attachments: attachments.map((a) => ({
         filename: a.filename,
@@ -154,15 +189,18 @@ async function pollMicrosoftCompany(
       })),
     };
 
-    const result = await createTicketFromEmail(
+    const result = await ingestIncomingEmail(
       adminClient,
       company.id,
       company.default_agent_id,
       email,
       suggestedAgentId,
+      agentEmailMap,
     );
-    if ("ticketId" in result) created += 1;
-    else if ("error" in result) errors.push(`${message.id}: ${result.error}`);
+    if ("ticketId" in result) {
+      if (result.matched) matchedReplies += 1;
+      else created += 1;
+    } else if ("error" in result) errors.push(`${message.id}: ${result.error}`);
   }
 
   if (latestReceivedAt !== company.mailbox_last_synced_at) {
@@ -172,7 +210,7 @@ async function pollMicrosoftCompany(
       .eq("id", company.id);
   }
 
-  return { created, skippedJunk, errors };
+  return { created, matchedReplies, skippedJunk, errors };
 }
 
 async function pollImapCompany(
@@ -180,13 +218,14 @@ async function pollImapCompany(
   company: MailboxCompany,
 ) {
   if (!company.mailbox_imap_config)
-    return { created: 0, skippedJunk: 0, errors: [] };
+    return { created: 0, matchedReplies: 0, skippedJunk: 0, errors: [] };
 
   const { data: password } = await adminClient.rpc(
     "get_company_mailbox_secret",
     { p_company_id: company.id },
   );
-  if (!password) return { created: 0, skippedJunk: 0, errors: [] };
+  if (!password)
+    return { created: 0, matchedReplies: 0, skippedJunk: 0, errors: [] };
 
   const { messages, newUidNext } = await fetchNewImapMessages(
     {
@@ -198,9 +237,11 @@ async function pollImapCompany(
     company.mailbox_last_uid ?? 0,
   );
   const agents = await loadAgentSkills(adminClient, company.id);
+  const agentEmailMap = await loadAgentEmailMap(adminClient, agents);
   const aiProvider = await getAIProviderForCompany(adminClient, company.id);
 
   let created = 0;
+  let matchedReplies = 0;
   let skippedJunk = 0;
   const errors: string[] = [];
 
@@ -227,20 +268,24 @@ async function pollImapCompany(
       fromName: message.fromName,
       bodyText: cleanBody,
       receivedAt: message.receivedAt,
-      conversationId: message.messageId,
+      conversationId: null,
+      threadRefs: message.threadRefs,
       sourceMessageId: message.messageId ?? `imap-uid-${message.uid}`,
       attachments: message.attachments,
     };
 
-    const result = await createTicketFromEmail(
+    const result = await ingestIncomingEmail(
       adminClient,
       company.id,
       company.default_agent_id,
       email,
       suggestedAgentId,
+      agentEmailMap,
     );
-    if ("ticketId" in result) created += 1;
-    else if ("error" in result)
+    if ("ticketId" in result) {
+      if (result.matched) matchedReplies += 1;
+      else created += 1;
+    } else if ("error" in result)
       errors.push(`${message.messageId ?? message.uid}: ${result.error}`);
   }
 
@@ -251,7 +296,7 @@ async function pollImapCompany(
       .eq("id", company.id);
   }
 
-  return { created, skippedJunk, errors };
+  return { created, matchedReplies, skippedJunk, errors };
 }
 
 export async function GET(request: Request) {

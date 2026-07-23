@@ -13,7 +13,12 @@ export type IncomingEmail = {
   fromName: string | null;
   bodyText: string;
   receivedAt: string;
+  // Graph's server-assigned thread id (Microsoft path only).
   conversationId: string | null;
+  // IMAP path only: In-Reply-To / References header values, used to detect
+  // "this is a reply to an earlier message" since IMAP has no equivalent of
+  // Graph's conversationId.
+  threadRefs: string[];
   // Stable per-message identifier (Graph message id, or IMAP Message-ID /
   // UID fallback) — the sole dedup key. Cursor timestamps/UIDs advance the
   // polling window but aren't precise enough on their own: Graph's
@@ -24,8 +29,172 @@ export type IncomingEmail = {
   attachments: IncomingEmailAttachment[];
 };
 
+// email(lowercase) -> profile id, for agents of the company being polled.
+export type AgentEmailMap = Map<string, string>;
+
 function sanitizeFilename(name: string) {
   return name.replace(/[/\\]/g, "_").slice(0, 200) || "attachment";
+}
+
+async function persistAttachments(
+  adminClient: SupabaseClient,
+  ownerPathPrefix: string,
+  attachments: IncomingEmailAttachment[],
+  row: { ticket_id: string } | { comment_id: string },
+) {
+  for (const attachment of attachments) {
+    const path = `${ownerPathPrefix}/${sanitizeFilename(attachment.filename)}`;
+
+    const { error: uploadError } = await adminClient.storage
+      .from("attachments")
+      .upload(path, attachment.content, {
+        contentType: attachment.mimeType,
+        upsert: false,
+      });
+
+    // Storage bucket policies (mime type / 25MB size limit) reject
+    // disallowed attachments here; skip just that attachment, not the
+    // whole ticket/comment.
+    if (uploadError) continue;
+
+    await adminClient.from("attachments").insert({
+      ...row,
+      storage_path: path,
+      filename: attachment.filename,
+      mime_type: attachment.mimeType,
+      size: attachment.size,
+    });
+  }
+}
+
+// Looks for a ticket this reply belongs to: Graph conversationId first, then
+// IMAP In-Reply-To/References chain. Picks the earliest ticket in the
+// company if more than one somehow shares the same thread signal.
+async function findMatchingTicketId(
+  adminClient: SupabaseClient,
+  companyId: string,
+  email: IncomingEmail,
+): Promise<string | null> {
+  if (email.conversationId) {
+    const { data } = await adminClient
+      .from("tickets")
+      .select("id")
+      .eq("company_id", companyId)
+      .eq("graph_conversation_id", email.conversationId)
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    if (data) return data.id;
+  }
+
+  if (email.threadRefs.length > 0) {
+    const { data } = await adminClient
+      .from("tickets")
+      .select("id")
+      .eq("company_id", companyId)
+      .in("source_message_id", email.threadRefs)
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    if (data) return data.id;
+  }
+
+  return null;
+}
+
+// A matched agent replying from their own mailbox is both "taking
+// ownership" and "actively working" in one step — collapses assignTicket's
+// new→pending and addComment's pending→on_process transitions. Closed
+// tickets are left alone (same restriction as reassignment in the
+// dashboard); the reply still gets recorded as a comment by the caller.
+async function autoAssignFromAgentReply(
+  adminClient: SupabaseClient,
+  companyId: string,
+  ticketId: string,
+  agentId: string,
+) {
+  const { data: ticket } = await adminClient
+    .from("tickets")
+    .select("status, assigned_agent_id")
+    .eq("id", ticketId)
+    .single();
+
+  if (!ticket || ticket.status === "closed") return;
+
+  const nextStatus =
+    ticket.status === "new" || ticket.status === "pending"
+      ? "on_process"
+      : ticket.status;
+
+  if (ticket.assigned_agent_id !== agentId) {
+    await adminClient
+      .from("tickets")
+      .update({ assigned_agent_id: agentId, status: nextStatus })
+      .eq("id", ticketId);
+
+    await adminClient.from("ticket_assignment_log").insert({
+      ticket_id: ticketId,
+      company_id: companyId,
+      changed_by: agentId,
+      previous_agent_id: ticket.assigned_agent_id,
+      new_agent_id: agentId,
+    });
+  } else if (ticket.status !== nextStatus) {
+    await adminClient
+      .from("tickets")
+      .update({ status: nextStatus })
+      .eq("id", ticketId);
+  }
+}
+
+// Records an inbound reply as a ticket_comments row instead of a new
+// ticket. matchedAgentId set means the sender is a known agent replying
+// from their own mailbox (author_id = their profile, non-internal, and
+// triggers auto-assignment); null means an external sender (the requester,
+// or anyone else on the thread), recorded via external_author_email/name.
+async function attachReplyToTicket(
+  adminClient: SupabaseClient,
+  companyId: string,
+  ticketId: string,
+  email: IncomingEmail,
+  matchedAgentId: string | null,
+): Promise<{ commentId: string; duplicate?: false } | { duplicate: true } | { error: string }> {
+  const { data: commentRows, error: insertError } = await adminClient
+    .from("ticket_comments")
+    .upsert(
+      {
+        ticket_id: ticketId,
+        author_id: matchedAgentId,
+        external_author_email: matchedAgentId ? null : email.fromEmail,
+        external_author_name: matchedAgentId ? null : email.fromName,
+        body: email.bodyText || "(empty message)",
+        is_internal: false,
+        source_message_id: email.sourceMessageId,
+      },
+      { onConflict: "ticket_id,source_message_id", ignoreDuplicates: true },
+    )
+    .select("id");
+
+  if (insertError) {
+    return { error: insertError.message };
+  }
+  if (!commentRows || commentRows.length === 0) {
+    return { duplicate: true };
+  }
+  const comment = commentRows[0];
+
+  await persistAttachments(
+    adminClient,
+    `${companyId}/${comment.id}`,
+    email.attachments,
+    { comment_id: comment.id },
+  );
+
+  if (matchedAgentId) {
+    await autoAssignFromAgentReply(adminClient, companyId, ticketId, matchedAgentId);
+  }
+
+  return { commentId: comment.id };
 }
 
 // Uses the admin (service-role) client — mailbox polling runs unauthenticated
@@ -69,29 +238,58 @@ export async function createTicketFromEmail(
   }
   const ticket = ticketRows[0];
 
-  for (const attachment of email.attachments) {
-    const path = `${companyId}/${ticket.id}/${sanitizeFilename(attachment.filename)}`;
-
-    const { error: uploadError } = await adminClient.storage
-      .from("attachments")
-      .upload(path, attachment.content, {
-        contentType: attachment.mimeType,
-        upsert: false,
-      });
-
-    // Storage bucket policies (mime type / 25MB size limit) reject
-    // disallowed attachments here; skip just that attachment, not the
-    // whole ticket.
-    if (uploadError) continue;
-
-    await adminClient.from("attachments").insert({
-      ticket_id: ticket.id,
-      storage_path: path,
-      filename: attachment.filename,
-      mime_type: attachment.mimeType,
-      size: attachment.size,
-    });
-  }
+  await persistAttachments(
+    adminClient,
+    `${companyId}/${ticket.id}`,
+    email.attachments,
+    { ticket_id: ticket.id },
+  );
 
   return { ticketId: ticket.id };
+}
+
+// Single entry point mailbox polling should call: matches the message to an
+// existing ticket by thread (Graph conversationId or IMAP In-Reply-To/
+// References) and records it as an activity comment there; only falls back
+// to creating a new ticket when no matching ticket is found.
+export async function ingestIncomingEmail(
+  adminClient: SupabaseClient,
+  companyId: string,
+  defaultAgentId: string | null,
+  email: IncomingEmail,
+  aiSuggestedAgentId: string | null,
+  agentEmailMap: AgentEmailMap,
+): Promise<
+  | { ticketId: string; matched: true; duplicate?: false }
+  | { ticketId: string; matched: false; duplicate?: false }
+  | { duplicate: true }
+  | { error: string }
+> {
+  const matchedTicketId = await findMatchingTicketId(adminClient, companyId, email);
+
+  if (matchedTicketId) {
+    const matchedAgentId = email.fromEmail
+      ? (agentEmailMap.get(email.fromEmail.toLowerCase()) ?? null)
+      : null;
+
+    const result = await attachReplyToTicket(
+      adminClient,
+      companyId,
+      matchedTicketId,
+      email,
+      matchedAgentId,
+    );
+    if ("commentId" in result) return { ticketId: matchedTicketId, matched: true };
+    return result;
+  }
+
+  const created = await createTicketFromEmail(
+    adminClient,
+    companyId,
+    defaultAgentId,
+    email,
+    aiSuggestedAgentId,
+  );
+  if ("ticketId" in created) return { ...created, matched: false };
+  return created;
 }
