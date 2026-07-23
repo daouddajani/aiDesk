@@ -69,14 +69,17 @@ async function persistAttachments(
 
 // Looks for a ticket this reply belongs to: Graph conversationId first, then
 // IMAP In-Reply-To/References chain. Picks the earliest ticket in the
-// company if more than one somehow shares the same thread signal.
+// company if more than one somehow shares the same thread signal. A DB error
+// here must not be treated as "no match" — that would silently create a
+// duplicate ticket for what's actually a reply, so it's surfaced as an
+// error instead and the caller skips the message rather than guessing.
 async function findMatchingTicketId(
   adminClient: SupabaseClient,
   companyId: string,
   email: IncomingEmail,
-): Promise<string | null> {
+): Promise<{ ticketId: string | null } | { error: string }> {
   if (email.conversationId) {
-    const { data } = await adminClient
+    const { data, error } = await adminClient
       .from("tickets")
       .select("id")
       .eq("company_id", companyId)
@@ -84,11 +87,12 @@ async function findMatchingTicketId(
       .order("created_at", { ascending: true })
       .limit(1)
       .maybeSingle();
-    if (data) return data.id;
+    if (error) return { error: error.message };
+    if (data) return { ticketId: data.id };
   }
 
   if (email.threadRefs.length > 0) {
-    const { data } = await adminClient
+    const { data, error } = await adminClient
       .from("tickets")
       .select("id")
       .eq("company_id", companyId)
@@ -96,10 +100,11 @@ async function findMatchingTicketId(
       .order("created_at", { ascending: true })
       .limit(1)
       .maybeSingle();
-    if (data) return data.id;
+    if (error) return { error: error.message };
+    if (data) return { ticketId: data.id };
   }
 
-  return null;
+  return { ticketId: null };
 }
 
 // A matched agent replying from their own mailbox is both "taking
@@ -265,9 +270,11 @@ export async function ingestIncomingEmail(
   | { duplicate: true }
   | { error: string }
 > {
-  const matchedTicketId = await findMatchingTicketId(adminClient, companyId, email);
+  const match = await findMatchingTicketId(adminClient, companyId, email);
+  if ("error" in match) return match;
 
-  if (matchedTicketId) {
+  if (match.ticketId) {
+    const matchedTicketId = match.ticketId;
     const matchedAgentId = email.fromEmail
       ? (agentEmailMap.get(email.fromEmail.toLowerCase()) ?? null)
       : null;
