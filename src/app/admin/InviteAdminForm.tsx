@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { useTranslations } from "next-intl";
 import { inviteCompanyAdmin } from "./actions";
+import { SubmitButton } from "@/components/SubmitButton";
 
 export function InviteAdminForm({ companyId }: { companyId: string }) {
   const t = useTranslations("admin.inviteAdminForm");
@@ -22,12 +23,9 @@ export function InviteAdminForm({ companyId }: { companyId: string }) {
         required
         className="w-48 rounded-[10px] border border-border bg-surface-alt px-2.5 py-1.5 text-[13.5px] text-ink"
       />
-      <button
-        type="submit"
-        className="rounded-[10px] border border-border bg-surface px-2.5 py-1 text-sm font-semibold text-ink hover:bg-surface-alt"
-      >
+      <SubmitButton className="rounded-[10px] border border-border bg-surface px-2.5 py-1 text-sm font-semibold text-ink hover:bg-surface-alt disabled:opacity-50">
         {t("submit")}
-      </button>
+      </SubmitButton>
       {state?.error && (
         <span className="text-sm text-danger">{state.error}</span>
       )}

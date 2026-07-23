@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { useTranslations } from "next-intl";
 import { takeOwnership } from "../actions";
+import { SubmitButton } from "@/components/SubmitButton";
 
 export function TakeOwnershipButton({
   ticketId,
@@ -17,17 +18,16 @@ export function TakeOwnershipButton({
   return (
     <form action={formAction} className="flex items-center gap-2">
       <input type="hidden" name="ticketId" value={ticketId} />
-      <button
-        type="submit"
+      <SubmitButton
         disabled={disabled}
         className={`rounded-[10px] border px-4 py-2 text-[13.5px] font-bold transition-colors ${
           disabled
             ? "cursor-not-allowed border-border bg-surface-alt text-ink-sub opacity-60"
-            : "border-success bg-success-soft text-success hover:opacity-90"
+            : "border-success bg-success-soft text-success hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
         }`}
       >
         {t("submit")}
-      </button>
+      </SubmitButton>
       {state?.error && (
         <span className="text-sm text-danger">{state.error}</span>
       )}

@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { useTranslations } from "next-intl";
 import { reassignTicket } from "../actions";
+import { SubmitButton } from "@/components/SubmitButton";
 
 type AgentOption = {
   id: string;
@@ -38,12 +39,9 @@ export function ReassignTicketForm({
           </option>
         ))}
       </select>
-      <button
-        type="submit"
-        className="shrink-0 rounded-[10px] border border-border bg-surface px-3 py-1.5 text-xs font-bold text-ink transition-colors hover:bg-surface-alt"
-      >
+      <SubmitButton className="shrink-0 rounded-[10px] border border-border bg-surface px-3 py-1.5 text-xs font-bold text-ink transition-colors hover:bg-surface-alt disabled:opacity-50">
         {t("submit")}
-      </button>
+      </SubmitButton>
       {state?.error && (
         <span className="text-xs text-danger">{state.error}</span>
       )}

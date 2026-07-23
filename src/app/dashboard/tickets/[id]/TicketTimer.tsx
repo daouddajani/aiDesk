@@ -4,6 +4,7 @@ import { useActionState, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { startTimer, stopTimer } from "../actions";
 import { formatDuration } from "@/lib/duration";
+import { SubmitButton } from "@/components/SubmitButton";
 
 export function TicketTimer({
   ticketId,
@@ -51,16 +52,15 @@ export function TicketTimer({
       {(isRunningForMe || canStart) && (
         <form action={isRunningForMe ? stopAction : startAction}>
           <input type="hidden" name="ticketId" value={ticketId} />
-          <button
-            type="submit"
+          <SubmitButton
             className={`rounded-[10px] border px-3 py-1.5 text-[13px] font-bold transition-colors ${
               isRunningForMe
                 ? "border-danger bg-danger-soft text-danger hover:opacity-90"
                 : "border-border bg-surface text-ink hover:bg-surface-alt"
-            }`}
+            } disabled:opacity-50`}
           >
             {isRunningForMe ? t("stop") : t("start")}
-          </button>
+          </SubmitButton>
         </form>
       )}
       {error && <span className="text-xs text-danger">{error}</span>}
