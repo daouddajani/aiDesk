@@ -72,3 +72,8 @@ body {
   background: rgba(120, 130, 160, 0.35);
   border-radius: 8px;
 }
+
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}

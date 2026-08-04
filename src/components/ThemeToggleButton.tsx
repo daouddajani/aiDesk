@@ -8,6 +8,8 @@ export function ThemeToggleButton({ isDark }: { isDark: boolean }) {
       <button
         type="submit"
         title="Theme"
+        aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
+        aria-pressed={isDark}
         className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border bg-surface text-ink-sub"
       >
         {isDark ? (

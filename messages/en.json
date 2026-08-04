@@ -235,6 +235,7 @@
       }
     },
     "comment": {
+      "label": "Comment",
       "placeholder": "Write a reply or internal note...",
       "internalLabel": "Internal note (not emailed to requester)",
       "submit": "Post",

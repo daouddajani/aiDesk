@@ -23,7 +23,11 @@ export function CommentForm({ ticketId }: { ticketId: string }) {
       className="grid gap-3 rounded-xl border border-border bg-surface-alt p-4"
     >
       <input type="hidden" name="ticketId" value={ticketId} />
+      <label htmlFor="comment-body" className="sr-only">
+        {t("label")}
+      </label>
       <textarea
+        id="comment-body"
         name="body"
         required
         rows={4}
