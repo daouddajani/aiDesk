@@ -288,9 +288,9 @@ export default async function TicketDetailPage({
 
           {ticketAttachmentLinks.length > 0 && (
             <div className="mb-6 space-y-1.5">
-              <h3 className="text-[13px] font-bold text-ink-sub">
+              <h2 className="text-[13px] font-bold text-ink-sub">
                 {t("tickets.attachments")}
-              </h3>
+              </h2>
               <ul className="space-y-1 text-sm">
                 {ticketAttachmentLinks.map((a) => (
                   <li key={a.id}>
@@ -319,9 +319,9 @@ export default async function TicketDetailPage({
             </div>
           )}
 
-          <h3 className="mb-3.5 text-[13px] font-extrabold tracking-wide text-ink-sub uppercase">
+          <h2 className="mb-3.5 text-[13px] font-extrabold tracking-wide text-ink-sub uppercase">
             {t("tickets.activity")}
-          </h3>
+          </h2>
           <div className="space-y-4">
             {(comments ?? []).map((comment) => {
               const authorName = comment.author_id
@@ -427,9 +427,9 @@ export default async function TicketDetailPage({
 
         {suggestedAnswers.length > 0 && (
           <div className={`rounded-2xl border border-border bg-surface p-5 ${CARD_SHADOW}`}>
-            <h3 className="mb-3 text-[13px] font-extrabold tracking-wide text-ink-sub uppercase">
+            <h2 className="mb-3 text-[13px] font-extrabold tracking-wide text-ink-sub uppercase">
               {t("tickets.suggestedAnswers.title")}
-            </h3>
+            </h2>
             <div className="space-y-3">
               {suggestedAnswers.map((answer) => (
                 <Link
@@ -452,9 +452,9 @@ export default async function TicketDetailPage({
 
         {(assignmentLog ?? []).length > 0 && (
           <div className={`rounded-2xl border border-border bg-surface p-5 ${CARD_SHADOW}`}>
-            <h3 className="mb-3 text-[13px] font-extrabold tracking-wide text-ink-sub uppercase">
+            <h2 className="mb-3 text-[13px] font-extrabold tracking-wide text-ink-sub uppercase">
               {t("tickets.assignmentHistory.title")}
-            </h3>
+            </h2>
             <div className="space-y-3">
               {(assignmentLog ?? []).map((entry) => (
                 <div key={entry.id} className="text-[12.5px] leading-relaxed">
@@ -483,9 +483,9 @@ export default async function TicketDetailPage({
 
         {timeByAgent.length > 0 && (
           <div className={`rounded-2xl border border-border bg-surface p-5 ${CARD_SHADOW}`}>
-            <h3 className="mb-3 text-[13px] font-extrabold tracking-wide text-ink-sub uppercase">
+            <h2 className="mb-3 text-[13px] font-extrabold tracking-wide text-ink-sub uppercase">
               {t("tickets.timeDetails.title")}
-            </h3>
+            </h2>
             <div className="space-y-2">
               {timeByAgent.map((row) => (
                 <div

@@ -94,9 +94,9 @@ export default async function DashboardHomePage() {
 
       <div className="rounded-2xl border border-border bg-surface p-5 shadow-card">
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-[15.5px] font-extrabold text-ink">
+          <h2 className="text-[15.5px] font-extrabold text-ink">
             {t("home.recentTickets")}
-          </h3>
+          </h2>
           <Link
             href="/dashboard/tickets"
             className="text-[13px] font-bold text-primary hover:underline"
