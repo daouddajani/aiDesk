@@ -43,7 +43,8 @@
     "submit": "Sign in",
     "errors": {
       "required": "Email and password are required.",
-      "invalid": "Invalid email or password."
+      "invalid": "Invalid email or password.",
+      "rateLimited": "Too many attempts. Please wait a few minutes and try again."
     }
   },
   "forgotPassword": {
@@ -231,7 +232,9 @@
         "bodyRequired": "A comment body is required.",
         "notFound": "Ticket not found.",
         "saveFailed": "Could not add comment. Please try again.",
-        "sendFailed": "Comment saved, but the reply email failed to send: {message}"
+        "sendFailed": "Comment saved, but the reply email failed to send: {message}",
+        "rateLimited": "Too many comments in a short time. Please wait a bit and try again.",
+        "attachmentFailed": "Comment saved, but the attachment failed to upload: {message}"
       }
     },
     "closeForm": {

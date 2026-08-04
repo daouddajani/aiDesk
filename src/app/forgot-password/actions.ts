@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getOrigin } from "@/lib/url";
 import { resend, RESEND_FROM_EMAIL } from "@/lib/resend";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 export async function requestPasswordReset(
   _prevState: unknown,
@@ -16,13 +17,24 @@ export async function requestPasswordReset(
     return { error: t("required") };
   }
 
+  // 3 reset requests per hour per email. Rate-limited requests still report
+  // success below (same as the "no such account" case) so this can't be
+  // used to detect whether an address has an account.
+  const allowed = await checkRateLimit(
+    `forgot-password:${email.toLowerCase()}`,
+    3,
+    60 * 60,
+  );
+
   const origin = await getOrigin();
   const adminClient = createAdminClient();
 
-  const { data, error } = await adminClient.auth.admin.generateLink({
-    type: "recovery",
-    email,
-  });
+  const { data, error } = allowed
+    ? await adminClient.auth.admin.generateLink({
+        type: "recovery",
+        email,
+      })
+    : { data: null, error: new Error("rate limited") };
 
   // Only send if the account exists (generateLink errors otherwise) — but
   // always report success below, to avoid leaking which addresses have

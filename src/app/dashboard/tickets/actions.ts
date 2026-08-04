@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendTicketReply } from "@/lib/sendTicketReply";
 import { getAIProviderForCompany } from "@/lib/ai";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 async function requireCompanyMember() {
   const supabase = await createClient();
@@ -186,6 +187,13 @@ export async function addComment(_prevState: unknown, formData: FormData) {
     return { error: t("bodyRequired") };
   }
 
+  // 20 comments per 5 minutes per agent — generous for real use, blocks
+  // scripted spam/abuse of the (email-sending) reply path.
+  const allowed = await checkRateLimit(`comment:${ctx.userId}`, 20, 5 * 60);
+  if (!allowed) {
+    return { error: t("rateLimited") };
+  }
+
   const { data: ticket } = await ctx.supabase
     .from("tickets")
     .select("id, company_id, status, subject, sender_email, source_message_id")
@@ -212,6 +220,7 @@ export async function addComment(_prevState: unknown, formData: FormData) {
   let attachmentBuffer: Buffer | null = null;
   let attachmentMeta: { filename: string; mimeType: string; size: number } | null =
     null;
+  let attachmentError: string | null = null;
 
   if (attachmentFile instanceof File && attachmentFile.size > 0) {
     attachmentBuffer = Buffer.from(await attachmentFile.arrayBuffer());
@@ -226,14 +235,22 @@ export async function addComment(_prevState: unknown, formData: FormData) {
       .from("attachments")
       .upload(path, attachmentBuffer, { contentType: attachmentMeta.mimeType });
 
-    if (!uploadError) {
-      await ctx.supabase.from("attachments").insert({
-        comment_id: comment.id,
-        storage_path: path,
-        filename: attachmentMeta.filename,
-        mime_type: attachmentMeta.mimeType,
-        size: attachmentMeta.size,
-      });
+    if (uploadError) {
+      attachmentError = uploadError.message;
+    } else {
+      const { error: attachmentInsertError } = await ctx.supabase
+        .from("attachments")
+        .insert({
+          comment_id: comment.id,
+          storage_path: path,
+          filename: attachmentMeta.filename,
+          mime_type: attachmentMeta.mimeType,
+          size: attachmentMeta.size,
+        });
+
+      if (attachmentInsertError) {
+        attachmentError = attachmentInsertError.message;
+      }
     }
   }
 
@@ -285,6 +302,11 @@ export async function addComment(_prevState: unknown, formData: FormData) {
   }
 
   revalidatePath(`/dashboard/tickets/${ticketId}`);
+
+  if (attachmentError) {
+    return { error: t("attachmentFailed", { message: attachmentError }) };
+  }
+
   return { success: true };
 }
 
