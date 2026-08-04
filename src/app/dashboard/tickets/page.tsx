@@ -228,7 +228,10 @@ export default async function TicketsListPage({
         </button>
         {(params.from || params.to) && (
           <Link
-            href={hrefFor({})}
+            href={buildHref("/dashboard/tickets", {
+              status: params.status,
+              mine: params.mine,
+            })}
             className="text-sm font-semibold text-ink-sub hover:underline"
           >
             {t("dashboard.clearDates")}
