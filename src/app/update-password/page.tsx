@@ -1,45 +1,37 @@
-"use client";
+import Link from "next/link";
+import { getTranslations } from "next-intl/server";
+import { createClient } from "@/lib/supabase/server";
+import { UpdatePasswordForm } from "./UpdatePasswordForm";
 
-import { useActionState } from "react";
-import { useTranslations } from "next-intl";
-import { updatePassword } from "./actions";
-import { SubmitButton } from "@/components/SubmitButton";
+export default async function UpdatePasswordPage() {
+  const t = await getTranslations("updatePassword");
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-export default function UpdatePasswordPage() {
-  const t = useTranslations("updatePassword");
-  const [state, formAction] = useActionState(updatePassword, undefined);
-
-  return (
-    <main className="flex flex-1 items-center justify-center bg-bg p-6">
-      <form
-        action={formAction}
-        className="w-full max-w-sm space-y-5 rounded-2xl border border-border bg-surface p-8 shadow-card"
-      >
-        <div className="space-y-1 text-center">
+  if (!user) {
+    return (
+      <main className="flex flex-1 items-center justify-center bg-bg p-6">
+        <div className="w-full max-w-sm space-y-4 rounded-2xl border border-border bg-surface p-8 text-center shadow-card">
           <p className="text-lg font-extrabold tracking-tight text-primary">
             AiDesk
           </p>
-          <h1 className="text-base font-semibold text-ink">{t("title")}</h1>
+          <p className="text-sm text-danger">{t("expiredLink")}</p>
+          <Link
+            href="/forgot-password"
+            className="inline-block text-sm font-semibold text-primary hover:underline"
+          >
+            {t("requestNewLink")}
+          </Link>
         </div>
+      </main>
+    );
+  }
 
-        <div className="space-y-1">
-          <label htmlFor="password" className="text-sm text-ink">
-            {t("newPassword")}
-          </label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            required
-            minLength={8}
-            className="w-full rounded-[10px] border border-border bg-surface-alt px-3.5 py-2.5 text-[13.5px] text-ink"
-          />
-        </div>
-
-        {state?.error && <p className="text-sm text-danger">{state.error}</p>}
-
-        <SubmitButton>{t("submit")}</SubmitButton>
-      </form>
+  return (
+    <main className="flex flex-1 items-center justify-center bg-bg p-6">
+      <UpdatePasswordForm />
     </main>
   );
 }

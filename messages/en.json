@@ -71,6 +71,8 @@
     "title": "Set a new password",
     "newPassword": "New password",
     "submit": "Set password",
+    "expiredLink": "This link is invalid or has expired.",
+    "requestNewLink": "Request a new reset link",
     "errors": {
       "tooShort": "Password must be at least 8 characters.",
       "failed": "Could not update password. Try the link again."
