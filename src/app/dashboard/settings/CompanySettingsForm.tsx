@@ -11,6 +11,7 @@ type Company = {
   logo_url: string | null;
   timezone: string;
   default_agent_id: string | null;
+  blocked_sender_emails: string[] | null;
 };
 
 type AgentOption = {
@@ -98,6 +99,22 @@ export function CompanySettingsForm({
           ))}
         </select>
         <p className="text-xs font-semibold text-ink-sub">{t("defaultAgentHint")}</p>
+      </div>
+
+      <div className="space-y-1">
+        <label htmlFor="blockedSenderEmails" className="text-sm">
+          {t("blockedSenderEmails")}
+        </label>
+        <input
+          id="blockedSenderEmails"
+          name="blockedSenderEmails"
+          defaultValue={(company.blocked_sender_emails ?? []).join(", ")}
+          placeholder={t("blockedSenderEmailsPlaceholder")}
+          className="w-full rounded-[10px] border border-border bg-surface-alt px-3.5 py-2.5 text-[13.5px] text-ink"
+        />
+        <p className="text-xs font-semibold text-ink-sub">
+          {t("blockedSenderEmailsHint")}
+        </p>
       </div>
 
       {state?.error && <p className="text-sm text-danger">{state.error}</p>}

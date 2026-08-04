@@ -101,6 +101,7 @@ async function loadAgentEmailMap(
 type MailboxCompany = {
   id: string;
   default_agent_id: string | null;
+  blocked_sender_emails: string[] | null;
   mailbox_provider: "microsoft" | "imap";
   mailbox_last_synced_at: string | null;
   mailbox_last_uid: number | null;
@@ -120,7 +121,15 @@ async function pollMicrosoftCompany(
     { p_company_id: company.id },
   );
   if (!refreshToken)
-    return { created: 0, matchedReplies: 0, skippedJunk: 0, errors: [] };
+    return {
+      created: 0,
+      matchedReplies: 0,
+      skippedJunk: 0,
+      skippedBlocked: 0,
+      errors: [],
+    };
+
+  const blockedSenderEmails = new Set(company.blocked_sender_emails ?? []);
 
   const tokens = await refreshAccessToken(refreshToken);
 
@@ -142,6 +151,7 @@ async function pollMicrosoftCompany(
   let created = 0;
   let matchedReplies = 0;
   let skippedJunk = 0;
+  let skippedBlocked = 0;
   const errors: string[] = [];
   let latestReceivedAt = company.mailbox_last_synced_at;
 
@@ -151,6 +161,16 @@ async function pollMicrosoftCompany(
       message.receivedDateTime > latestReceivedAt
     ) {
       latestReceivedAt = message.receivedDateTime;
+    }
+
+    // Company-level ignore list, checked first so a blocked sender never
+    // costs an attachment fetch or an AI classify call.
+    if (
+      message.fromEmail &&
+      blockedSenderEmails.has(message.fromEmail.toLowerCase())
+    ) {
+      skippedBlocked += 1;
+      continue;
     }
 
     // Graph's own Focused/Other classification is the junk signal here —
@@ -210,7 +230,7 @@ async function pollMicrosoftCompany(
       .eq("id", company.id);
   }
 
-  return { created, matchedReplies, skippedJunk, errors };
+  return { created, matchedReplies, skippedJunk, skippedBlocked, errors };
 }
 
 async function pollImapCompany(
@@ -218,14 +238,28 @@ async function pollImapCompany(
   company: MailboxCompany,
 ) {
   if (!company.mailbox_imap_config)
-    return { created: 0, matchedReplies: 0, skippedJunk: 0, errors: [] };
+    return {
+      created: 0,
+      matchedReplies: 0,
+      skippedJunk: 0,
+      skippedBlocked: 0,
+      errors: [],
+    };
 
   const { data: password } = await adminClient.rpc(
     "get_company_mailbox_secret",
     { p_company_id: company.id },
   );
   if (!password)
-    return { created: 0, matchedReplies: 0, skippedJunk: 0, errors: [] };
+    return {
+      created: 0,
+      matchedReplies: 0,
+      skippedJunk: 0,
+      skippedBlocked: 0,
+      errors: [],
+    };
+
+  const blockedSenderEmails = new Set(company.blocked_sender_emails ?? []);
 
   const { messages, newUidNext } = await fetchNewImapMessages(
     {
@@ -243,6 +277,7 @@ async function pollImapCompany(
   let created = 0;
   let matchedReplies = 0;
   let skippedJunk = 0;
+  let skippedBlocked = 0;
   const errors: string[] = [];
 
   // No Graph-style classification signal exists over plain IMAP, so the AI
@@ -250,6 +285,16 @@ async function pollImapCompany(
   // is disabled for this company, every message becomes a ticket, same as
   // before this feature existed.
   for (const message of messages) {
+    // Company-level ignore list, checked first so a blocked sender never
+    // costs an AI classify call.
+    if (
+      message.fromEmail &&
+      blockedSenderEmails.has(message.fromEmail.toLowerCase())
+    ) {
+      skippedBlocked += 1;
+      continue;
+    }
+
     const { isJunk, suggestedAgentId, cleanBody } = await classifyForTicket(
       aiProvider,
       agents,
@@ -296,7 +341,7 @@ async function pollImapCompany(
       .eq("id", company.id);
   }
 
-  return { created, matchedReplies, skippedJunk, errors };
+  return { created, matchedReplies, skippedJunk, skippedBlocked, errors };
 }
 
 export async function GET(request: Request) {
@@ -309,7 +354,7 @@ export async function GET(request: Request) {
   const { data: companies, error } = await adminClient
     .from("companies")
     .select(
-      "id, default_agent_id, mailbox_provider, mailbox_last_synced_at, mailbox_last_uid, mailbox_imap_config",
+      "id, default_agent_id, blocked_sender_emails, mailbox_provider, mailbox_last_synced_at, mailbox_last_uid, mailbox_imap_config",
     )
     .not("mailbox_provider", "is", null);
 

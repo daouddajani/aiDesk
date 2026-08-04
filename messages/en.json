@@ -374,6 +374,9 @@
     "timezone": "Timezone",
     "defaultAgent": "Default fallback agent",
     "defaultAgentHint": "New tickets are auto-assigned to this agent until someone takes ownership.",
+    "blockedSenderEmails": "Blocked sender emails (comma-separated)",
+    "blockedSenderEmailsPlaceholder": "noreply@vendor.com, alerts@service.com",
+    "blockedSenderEmailsHint": "Mail from these addresses is ignored entirely — no ticket is created or updated.",
     "success": "Settings saved.",
     "errors": {
       "unauthorized": "Not authorized.",

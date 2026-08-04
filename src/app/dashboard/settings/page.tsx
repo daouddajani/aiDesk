@@ -36,7 +36,7 @@ export default async function CompanySettingsPage() {
       supabase
         .from("companies")
         .select(
-          "name, logo_url, timezone, default_agent_id, company_ai_config, ai_secret_id, ai_embeddings_secret_id",
+          "name, logo_url, timezone, default_agent_id, blocked_sender_emails, company_ai_config, ai_secret_id, ai_embeddings_secret_id",
         )
         .eq("id", profile.company_id)
         .single(),

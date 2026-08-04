@@ -374,6 +374,9 @@
     "timezone": "المنطقة الزمنية",
     "defaultAgent": "الموظف الاحتياطي الافتراضي",
     "defaultAgentHint": "يتم إسناد التذاكر الجديدة تلقائيًا لهذا الموظف حتى يتولاها أحد.",
+    "blockedSenderEmails": "البريد الإلكتروني المحظور (مفصول بفواصل)",
+    "blockedSenderEmailsPlaceholder": "noreply@vendor.com, alerts@service.com",
+    "blockedSenderEmailsHint": "يتم تجاهل الرسائل من هذه العناوين بالكامل — لا يتم إنشاء أو تحديث أي تذكرة.",
     "success": "تم حفظ الإعدادات.",
     "errors": {
       "unauthorized": "غير مصرح لك.",

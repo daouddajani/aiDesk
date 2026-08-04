@@ -35,6 +35,14 @@ export async function updateCompanySettings(
   const timezone = String(formData.get("timezone") ?? "").trim() || "UTC";
   const logoUrl = String(formData.get("logoUrl") ?? "").trim();
   const defaultAgentId = String(formData.get("defaultAgentId") ?? "").trim();
+  const blockedSenderEmails = Array.from(
+    new Set(
+      String(formData.get("blockedSenderEmails") ?? "")
+        .split(",")
+        .map((s) => s.trim().toLowerCase())
+        .filter(Boolean),
+    ),
+  );
 
   if (!name) {
     return { error: t("nameRequired") };
@@ -49,6 +57,7 @@ export async function updateCompanySettings(
       timezone,
       logo_url: logoUrl || null,
       default_agent_id: defaultAgentId || null,
+      blocked_sender_emails: blockedSenderEmails,
     })
     .eq("id", profile.company_id);
 
