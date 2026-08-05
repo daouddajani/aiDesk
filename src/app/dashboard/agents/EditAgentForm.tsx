@@ -9,6 +9,7 @@ type Profile = {
   id: string;
   full_name: string | null;
   skills: string[] | null;
+  disabled: boolean;
 };
 
 export function EditAgentForm({ profile }: { profile: Profile }) {
@@ -63,6 +64,22 @@ export function EditAgentForm({ profile }: { profile: Profile }) {
               className="w-full rounded-[10px] border border-border bg-surface-alt px-3.5 py-2.5 text-[13.5px] text-ink"
             />
           </div>
+
+          <div className="flex items-center gap-2">
+            <input
+              id={`disabled-${profile.id}`}
+              name="disabled"
+              type="checkbox"
+              defaultChecked={profile.disabled}
+              className="h-4 w-4 rounded border border-border"
+            />
+            <label htmlFor={`disabled-${profile.id}`} className="text-sm">
+              {t("agents.editForm.disabledLabel")}
+            </label>
+          </div>
+          <p className="text-xs text-ink-sub">
+            {t("agents.editForm.disabledHint")}
+          </p>
 
           {state?.error && (
             <p className="text-sm text-danger">{state.error}</p>

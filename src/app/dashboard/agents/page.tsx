@@ -29,7 +29,7 @@ export default async function AgentsPage() {
 
   const { data: teamProfiles } = await supabase
     .from("profiles")
-    .select("id, full_name, role, skills, created_at")
+    .select("id, full_name, role, skills, created_at, disabled")
     .eq("company_id", profile.company_id)
     .order("created_at", { ascending: true });
 
@@ -72,10 +72,17 @@ export default async function AgentsPage() {
                   return (
                     <tr
                       key={member.id}
-                      className="divide-x divide-border border-b border-border last:border-0 hover:bg-surface-alt"
+                      className={`divide-x divide-border border-b border-border last:border-0 hover:bg-surface-alt ${
+                        member.disabled ? "opacity-60" : ""
+                      }`}
                     >
                       <td className="px-4 py-3 font-medium text-ink">
                         {member.full_name ?? "—"}
+                        {member.disabled && (
+                          <span className="ms-2 rounded-full bg-danger-soft px-2 py-0.5 text-xs font-semibold whitespace-nowrap text-danger">
+                            {t("agents.disabledBadge")}
+                          </span>
+                        )}
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex flex-wrap items-center gap-2">

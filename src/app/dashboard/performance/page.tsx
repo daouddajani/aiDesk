@@ -259,7 +259,7 @@ export default async function PerformancePage({
       .eq("company_id", profile.company_id),
     supabase
       .from("profiles")
-      .select("id, full_name")
+      .select("id, full_name, disabled")
       .eq("company_id", profile.company_id),
   ]);
 

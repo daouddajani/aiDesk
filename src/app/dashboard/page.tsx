@@ -60,7 +60,7 @@ export default async function DashboardHomePage() {
         .limit(5),
       supabase
         .from("profiles")
-        .select("id, full_name")
+        .select("id, full_name, disabled")
         .eq("company_id", profile.company_id),
     ]);
 

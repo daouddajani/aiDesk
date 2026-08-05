@@ -71,7 +71,8 @@ async function loadAgentSkills(
     .from("profiles")
     .select("id, skills")
     .eq("company_id", companyId)
-    .in("role", ["company_admin", "company_agent"]);
+    .in("role", ["company_admin", "company_agent"])
+    .eq("disabled", false);
 
   return (data ?? []).map((p) => ({ id: p.id, skills: p.skills ?? [] }));
 }
@@ -147,6 +148,14 @@ async function pollMicrosoftCompany(
   const agents = await loadAgentSkills(adminClient, company.id);
   const agentEmailMap = await loadAgentEmailMap(adminClient, agents);
   const aiProvider = await getAIProviderForCompany(adminClient, company.id);
+  // company.default_agent_id may point at an agent who's since been
+  // disabled (loadAgentSkills already excludes disabled agents) — fall back
+  // to unassigned rather than assigning a disabled agent.
+  const effectiveDefaultAgentId = agents.some(
+    (a) => a.id === company.default_agent_id,
+  )
+    ? company.default_agent_id
+    : null;
 
   let created = 0;
   let matchedReplies = 0;
@@ -212,7 +221,7 @@ async function pollMicrosoftCompany(
     const result = await ingestIncomingEmail(
       adminClient,
       company.id,
-      company.default_agent_id,
+      effectiveDefaultAgentId,
       email,
       suggestedAgentId,
       agentEmailMap,
@@ -273,6 +282,14 @@ async function pollImapCompany(
   const agents = await loadAgentSkills(adminClient, company.id);
   const agentEmailMap = await loadAgentEmailMap(adminClient, agents);
   const aiProvider = await getAIProviderForCompany(adminClient, company.id);
+  // company.default_agent_id may point at an agent who's since been
+  // disabled (loadAgentSkills already excludes disabled agents) — fall back
+  // to unassigned rather than assigning a disabled agent.
+  const effectiveDefaultAgentId = agents.some(
+    (a) => a.id === company.default_agent_id,
+  )
+    ? company.default_agent_id
+    : null;
 
   let created = 0;
   let matchedReplies = 0;
@@ -322,7 +339,7 @@ async function pollImapCompany(
     const result = await ingestIncomingEmail(
       adminClient,
       company.id,
-      company.default_agent_id,
+      effectiveDefaultAgentId,
       email,
       suggestedAgentId,
       agentEmailMap,

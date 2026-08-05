@@ -18,15 +18,19 @@ async function requireCompanyAdmin() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role, company_id")
+    .select("role, company_id, disabled")
     .eq("id", user.id)
     .single();
 
-  if (profile?.role !== "company_admin" || !profile.company_id) {
+  if (
+    profile?.role !== "company_admin" ||
+    !profile.company_id ||
+    profile.disabled
+  ) {
     return null;
   }
 
-  return { supabase, companyId: profile.company_id };
+  return { supabase, userId: user.id, companyId: profile.company_id };
 }
 
 async function inviteAgentEmail(companyId: string, agentEmail: string) {
@@ -100,16 +104,25 @@ export async function updateAgent(_prevState: unknown, formData: FormData) {
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);
+  const disabled = formData.get("disabled") === "on";
 
   if (!profileId) {
     return { error: t("agentMissing") };
+  }
+
+  // An admin disabling their own row would lock them (and, if they're the
+  // only admin, the whole company) out — the profiles_protect_admin_columns
+  // trigger stops a disabled user from re-enabling themselves, but nothing
+  // stops them from getting into that state in the first place without this.
+  if (profileId === ctx.userId && disabled) {
+    return { error: t("cannotDisableSelf") };
   }
 
   // Scoping to the caller's own company is enforced by the profiles_update
   // RLS policy, not re-checked here.
   const { error } = await ctx.supabase
     .from("profiles")
-    .update({ full_name: fullName || null, skills })
+    .update({ full_name: fullName || null, skills, disabled })
     .eq("id", profileId);
 
   if (error) {

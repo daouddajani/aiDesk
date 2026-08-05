@@ -184,7 +184,7 @@ export default async function TicketDetailPage({
       .eq("ticket_id", id),
     supabase
       .from("profiles")
-      .select("id, full_name")
+      .select("id, full_name, disabled")
       .eq("company_id", profile.company_id),
     supabase
       .from("ticket_assignment_log")
@@ -404,10 +404,12 @@ export default async function TicketDetailPage({
               <ReassignTicketForm
                 ticketId={ticket.id}
                 currentAgentId={ticket.assigned_agent_id}
-                agentOptions={(agents ?? []).map((a) => ({
-                  id: a.id,
-                  name: agentNameById.get(a.id) ?? t("common.unnamed"),
-                }))}
+                agentOptions={(agents ?? [])
+                  .filter((a) => !a.disabled)
+                  .map((a) => ({
+                    id: a.id,
+                    name: agentNameById.get(a.id) ?? t("common.unnamed"),
+                  }))}
               />
             </div>
           )}

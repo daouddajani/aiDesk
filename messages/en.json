@@ -55,7 +55,8 @@
     "errors": {
       "required": "Email and password are required.",
       "invalid": "Invalid email or password.",
-      "rateLimited": "Too many attempts. Please wait a few minutes and try again."
+      "rateLimited": "Too many attempts. Please wait a few minutes and try again.",
+      "disabled": "Your account has been disabled. Contact your company admin."
     }
   },
   "forgotPassword": {
@@ -293,6 +294,7 @@
   },
   "agents": {
     "title": "Agents",
+    "disabledBadge": "Disabled",
     "table": {
       "name": "Name",
       "email": "Email",
@@ -323,10 +325,13 @@
       "fullNameLabel": "Full name",
       "skillsLabel": "Skills (comma-separated)",
       "skillsPlaceholder": "networking, email, hardware",
+      "disabledLabel": "Disabled",
+      "disabledHint": "A disabled agent can't log in, can't be assigned new tickets, and can't be reassigned a ticket by other agents.",
       "errors": {
         "unauthorized": "Not authorized.",
         "agentMissing": "Missing agent.",
-        "updateFailed": "Could not update the agent. Please try again."
+        "updateFailed": "Could not update the agent. Please try again.",
+        "cannotDisableSelf": "You can't disable your own account."
       }
     }
   },

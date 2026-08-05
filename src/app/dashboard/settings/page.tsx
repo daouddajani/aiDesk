@@ -42,7 +42,7 @@ export default async function CompanySettingsPage() {
         .single(),
       supabase
         .from("profiles")
-        .select("id, full_name")
+        .select("id, full_name, disabled")
         .eq("company_id", profile.company_id)
         .order("created_at", { ascending: true }),
       supabase
@@ -67,10 +67,12 @@ export default async function CompanySettingsPage() {
     <main className="grid gap-6 p-6 md:grid-cols-2">
       <CompanySettingsForm
         company={company}
-        agentOptions={(agentOptions ?? []).map((a) => ({
-          id: a.id,
-          name: agentNameById.get(a.id) ?? t("unnamed"),
-        }))}
+        agentOptions={(agentOptions ?? [])
+          .filter((a) => !a.disabled)
+          .map((a) => ({
+            id: a.id,
+            name: agentNameById.get(a.id) ?? t("unnamed"),
+          }))}
       />
       <AISettingsForm
         config={{

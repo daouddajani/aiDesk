@@ -4,7 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 // profiles have a null full_name — fall back to their email rather than a
 // bare "Unnamed", which reads like the ticket has no assignee at all.
 export async function buildAgentNameMap(
-  agents: { id: string; full_name: string | null }[],
+  agents: { id: string; full_name: string | null; disabled?: boolean }[],
 ): Promise<Map<string, string>> {
   const adminClient = createAdminClient();
   const { data: usersPage } = await adminClient.auth.admin.listUsers();
@@ -15,7 +15,7 @@ export async function buildAgentNameMap(
   return new Map(
     agents.map((a) => [
       a.id,
-      a.full_name ?? emailById.get(a.id) ?? "Unnamed",
+      `${a.full_name ?? emailById.get(a.id) ?? "Unnamed"}${a.disabled ? " (disabled)" : ""}`,
     ]),
   );
 }

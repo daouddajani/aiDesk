@@ -22,14 +22,18 @@ export default async function DashboardLayout({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role, company_id, full_name")
+    .select("role, company_id, full_name, disabled")
     .eq("id", user.id)
     .single();
 
   if (
     !profile?.company_id ||
-    (profile.role !== "company_admin" && profile.role !== "company_agent")
+    (profile.role !== "company_admin" && profile.role !== "company_agent") ||
+    profile.disabled
   ) {
+    // Catches an agent disabled mid-session: their cookie is still valid,
+    // so it must be revoked here rather than just redirecting past them.
+    await supabase.auth.signOut();
     redirect("/login");
   }
 

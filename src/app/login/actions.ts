@@ -39,9 +39,14 @@ export async function login(_prevState: unknown, formData: FormData) {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role, locale")
+    .select("role, locale, disabled")
     .eq("id", data.user.id)
     .single();
+
+  if (profile?.disabled) {
+    await supabase.auth.signOut();
+    return { error: t("disabled") };
+  }
 
   await setLocaleCookie((profile?.locale as Locale) ?? "en");
 

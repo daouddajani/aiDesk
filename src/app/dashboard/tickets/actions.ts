@@ -17,13 +17,14 @@ async function requireCompanyMember() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role, company_id")
+    .select("role, company_id, disabled")
     .eq("id", user.id)
     .single();
 
   if (
     (profile?.role !== "company_admin" && profile?.role !== "company_agent") ||
-    !profile.company_id
+    !profile.company_id ||
+    profile.disabled
   ) {
     return null;
   }
@@ -104,6 +105,7 @@ export async function reassignTicket(_prevState: unknown, formData: FormData) {
     .eq("id", agentId)
     .eq("company_id", ctx.companyId)
     .in("role", ["company_admin", "company_agent"])
+    .eq("disabled", false)
     .maybeSingle();
 
   if (!agent) return { error: t("invalidAgent") };
