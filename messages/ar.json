@@ -148,6 +148,12 @@
     "recentTickets": "أحدث التذاكر",
     "viewAll": "عرض الكل"
   },
+  "pagination": {
+    "showing": "عرض {from}-{to} من {total}",
+    "perPage": "لكل صفحة",
+    "prev": "السابق",
+    "next": "التالي"
+  },
   "dashboard": {
     "title": "التذاكر",
     "mineOnly": "تذاكري",

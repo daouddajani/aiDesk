@@ -148,6 +148,12 @@
     "recentTickets": "Recent tickets",
     "viewAll": "View all"
   },
+  "pagination": {
+    "showing": "Showing {from}-{to} of {total}",
+    "perPage": "Per page",
+    "prev": "Previous",
+    "next": "Next"
+  },
   "dashboard": {
     "title": "Tickets",
     "mineOnly": "My tickets",

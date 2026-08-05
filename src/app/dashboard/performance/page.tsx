@@ -4,6 +4,8 @@ import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { buildAgentNameMap } from "@/lib/agentNames";
 import { formatDuration } from "@/lib/duration";
+import { resolvePagination } from "@/lib/pagination";
+import { TicketPagination } from "@/components/TicketPagination";
 
 type Translator = Awaited<ReturnType<typeof getTranslations>>;
 
@@ -55,12 +57,20 @@ function averageResolutionSeconds(tickets: TicketRow[]): number | null {
 
 function buildHref(
   base: string,
-  params: { status?: string; from?: string; to?: string },
+  params: {
+    status?: string;
+    from?: string;
+    to?: string;
+    page?: string;
+    pageSize?: string;
+  },
 ) {
   const query = new URLSearchParams();
   if (params.status) query.set("status", params.status);
   if (params.from) query.set("from", params.from);
   if (params.to) query.set("to", params.to);
+  if (params.page) query.set("page", params.page);
+  if (params.pageSize) query.set("pageSize", params.pageSize);
   const qs = query.toString();
   return qs ? `${base}?${qs}` : base;
 }
@@ -226,7 +236,13 @@ function DateRangeFilter({
 export default async function PerformancePage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; from?: string; to?: string }>;
+  searchParams: Promise<{
+    status?: string;
+    from?: string;
+    to?: string;
+    page?: string;
+    pageSize?: string;
+  }>;
 }) {
   const params = await searchParams;
   const t = await getTranslations();
@@ -285,6 +301,15 @@ export default async function PerformancePage({
         : activeFilter === "open"
           ? mine.filter((t) => t.status !== "closed")
           : mine;
+
+    const {
+      page: ticketPage,
+      pageSize: ticketPageSize,
+      totalPages: ticketTotalPages,
+      start: ticketStart,
+      end: ticketEnd,
+    } = resolvePagination(filtered.length, params.page, params.pageSize);
+    const pageFiltered = filtered.slice(ticketStart, ticketEnd);
 
     return (
       <div className="space-y-6">
@@ -345,9 +370,38 @@ export default async function PerformancePage({
 
         <TicketTable
           t={t}
-          tickets={filtered}
+          tickets={pageFiltered}
           agentNameById={agentNameById}
           showAssignee={false}
+          pagination={
+            <TicketPagination
+              t={t}
+              page={ticketPage}
+              totalPages={ticketTotalPages}
+              pageSize={ticketPageSize}
+              from={ticketStart + 1}
+              to={ticketEnd}
+              total={filtered.length}
+              buildPageHref={(p) =>
+                buildHref("/dashboard/performance", {
+                  status: params.status,
+                  from: params.from,
+                  to: params.to,
+                  pageSize: params.pageSize,
+                  page: String(p),
+                })
+              }
+              buildPageSizeHref={(s) =>
+                buildHref("/dashboard/performance", {
+                  status: params.status,
+                  from: params.from,
+                  to: params.to,
+                  pageSize: String(s),
+                  page: "1",
+                })
+              }
+            />
+          }
         />
       </div>
     );
@@ -440,11 +494,13 @@ function TicketTable({
   tickets,
   agentNameById,
   showAssignee,
+  pagination,
 }: {
   t: Translator;
   tickets: TicketRow[];
   agentNameById: Map<string, string>;
   showAssignee: boolean;
+  pagination?: React.ReactNode;
 }) {
   const sorted = [...tickets].sort(
     (a, b) =>
@@ -527,6 +583,7 @@ function TicketTable({
           </tbody>
         </table>
       </div>
+      {pagination}
     </div>
   );
 }

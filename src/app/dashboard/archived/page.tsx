@@ -3,8 +3,23 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { buildAgentNameMap } from "@/lib/agentNames";
+import { resolvePagination } from "@/lib/pagination";
+import { TicketPagination } from "@/components/TicketPagination";
 
-export default async function ArchivedTicketsPage() {
+function buildHref(params: { page?: string; pageSize?: string }) {
+  const query = new URLSearchParams();
+  if (params.page) query.set("page", params.page);
+  if (params.pageSize) query.set("pageSize", params.pageSize);
+  const qs = query.toString();
+  return qs ? `/dashboard/archived?${qs}` : "/dashboard/archived";
+}
+
+export default async function ArchivedTicketsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string; pageSize?: string }>;
+}) {
+  const params = await searchParams;
   const t = await getTranslations();
   const supabase = await createClient();
   const {
@@ -42,6 +57,13 @@ export default async function ArchivedTicketsPage() {
 
   const agentNameById = await buildAgentNameMap(agents ?? []);
 
+  const { page, pageSize, totalPages, start, end } = resolvePagination(
+    (tickets ?? []).length,
+    params.page,
+    params.pageSize,
+  );
+  const pageTickets = (tickets ?? []).slice(start, end);
+
   return (
     <div className="space-y-5">
       <h1 className="text-[22px] font-extrabold tracking-tight text-ink md:text-[27px]">
@@ -68,7 +90,7 @@ export default async function ArchivedTicketsPage() {
               </tr>
             </thead>
             <tbody>
-              {(tickets ?? []).map((ticket) => (
+              {pageTickets.map((ticket) => (
                 <tr
                   key={ticket.id}
                   className="divide-x divide-border border-b border-border last:border-0 hover:bg-surface-alt"
@@ -96,7 +118,7 @@ export default async function ArchivedTicketsPage() {
                   </td>
                 </tr>
               ))}
-              {(tickets ?? []).length === 0 && (
+              {pageTickets.length === 0 && (
                 <tr>
                   <td colSpan={4} className="px-4 py-8 text-center text-ink-sub">
                     {t("archivedPage.noTickets")}
@@ -106,6 +128,17 @@ export default async function ArchivedTicketsPage() {
             </tbody>
           </table>
         </div>
+        <TicketPagination
+          t={t}
+          page={page}
+          totalPages={totalPages}
+          pageSize={pageSize}
+          from={start + 1}
+          to={end}
+          total={(tickets ?? []).length}
+          buildPageHref={(p) => buildHref({ page: String(p), pageSize: params.pageSize })}
+          buildPageSizeHref={(s) => buildHref({ pageSize: String(s), page: "1" })}
+        />
       </div>
     </div>
   );
