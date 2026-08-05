@@ -32,6 +32,30 @@ async function requireCompanyMember() {
   return { supabase, userId: user.id, companyId: profile.company_id };
 }
 
+async function requireCompanyAdmin() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role, company_id, disabled")
+    .eq("id", user.id)
+    .single();
+
+  if (
+    profile?.role !== "company_admin" ||
+    !profile.company_id ||
+    profile.disabled
+  ) {
+    return null;
+  }
+
+  return { supabase, userId: user.id, companyId: profile.company_id };
+}
+
 async function assignTicket(
   ctx: NonNullable<Awaited<ReturnType<typeof requireCompanyMember>>>,
   ticketId: string,
@@ -408,5 +432,62 @@ export async function reopenTicket(_prevState: unknown, formData: FormData) {
   });
 
   revalidatePath(`/dashboard/tickets/${ticketId}`);
+  return { success: true };
+}
+
+export async function archiveTicket(_prevState: unknown, formData: FormData) {
+  const t = await getTranslations("tickets.archiveForm.errors");
+  const ctx = await requireCompanyAdmin();
+  if (!ctx) return { error: t("unauthorized") };
+
+  const ticketId = String(formData.get("ticketId") ?? "");
+  if (!ticketId) return { error: t("ticketMissing") };
+
+  const { data: ticket } = await ctx.supabase
+    .from("tickets")
+    .select("status, archived_at")
+    .eq("id", ticketId)
+    .single();
+
+  if (!ticket) return { error: t("ticketMissing") };
+  if (ticket.archived_at) return { error: t("alreadyArchived") };
+
+  const now = new Date().toISOString();
+  const updates: {
+    archived_at: string;
+    status?: "closed";
+    solution_text?: string;
+    closed_at?: string;
+  } = { archived_at: now };
+
+  // A ticket already closed with its own solution keeps that solution —
+  // "Archived" only stands in when archiving is what force-closes it.
+  if (ticket.status !== "closed") {
+    updates.status = "closed";
+    updates.solution_text = "Archived";
+    updates.closed_at = now;
+  }
+
+  const { error } = await ctx.supabase
+    .from("tickets")
+    .update(updates)
+    .eq("id", ticketId);
+
+  if (error) return { error: t("failed") };
+
+  // Logged the same way reopenTicket logs its reason: an internal activity
+  // comment. author_id captures who archived it — the Activity feed already
+  // resolves that to a name, so the log text doesn't need to embed one.
+  const archiveLogTranslate = await getTranslations("tickets.archiveForm");
+  await ctx.supabase.from("ticket_comments").insert({
+    ticket_id: ticketId,
+    author_id: ctx.userId,
+    body: archiveLogTranslate("logEntry"),
+    is_internal: true,
+  });
+
+  revalidatePath(`/dashboard/tickets/${ticketId}`);
+  revalidatePath("/dashboard/tickets");
+  revalidatePath("/dashboard/archived");
   return { success: true };
 }

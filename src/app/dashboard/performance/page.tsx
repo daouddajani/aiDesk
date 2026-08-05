@@ -256,7 +256,8 @@ export default async function PerformancePage({
     supabase
       .from("tickets")
       .select("id, subject, status, assigned_agent_id, received_at, closed_at")
-      .eq("company_id", profile.company_id),
+      .eq("company_id", profile.company_id)
+      .is("archived_at", null),
     supabase
       .from("profiles")
       .select("id, full_name, disabled")

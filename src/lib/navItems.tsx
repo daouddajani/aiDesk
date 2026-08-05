@@ -7,6 +7,7 @@ import {
   AgentsIcon,
   MailboxIcon,
   SettingsIcon,
+  ArchiveIcon,
   ProfileIcon,
   CompaniesIcon,
 } from "@/components/shell/icons";
@@ -48,6 +49,11 @@ export function buildNavItems(
             href: "/dashboard/settings",
             label: t("nav.settings"),
             icon: <SettingsIcon />,
+          },
+          {
+            href: "/dashboard/archived",
+            label: t("nav.archived"),
+            icon: <ArchiveIcon />,
           },
         ]
       : []),

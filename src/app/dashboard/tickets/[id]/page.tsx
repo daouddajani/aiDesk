@@ -12,6 +12,7 @@ import { ReassignTicketForm } from "./ReassignTicketForm";
 import { CommentForm } from "./CommentForm";
 import { CloseTicketForm } from "./CloseTicketForm";
 import { ReopenTicketForm } from "./ReopenTicketForm";
+import { ArchiveTicketForm } from "./ArchiveTicketForm";
 import { TicketTimer } from "./TicketTimer";
 
 const CARD_SHADOW =
@@ -135,7 +136,7 @@ export default async function TicketDetailPage({
   const { data: ticket } = await supabase
     .from("tickets")
     .select(
-      "id, subject, sender_email, sender_name, description, status, assigned_agent_id, ai_suggested_agent_id, received_at, solution_text",
+      "id, subject, sender_email, sender_name, description, status, assigned_agent_id, ai_suggested_agent_id, received_at, solution_text, archived_at",
     )
     .eq("id", id)
     .single();
@@ -257,7 +258,7 @@ export default async function TicketDetailPage({
               </h1>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              {ticket.status !== "closed" && (
+              {!ticket.archived_at && ticket.status !== "closed" && (
                 <>
                   <TakeOwnershipButton
                     ticketId={ticket.id}
@@ -266,8 +267,11 @@ export default async function TicketDetailPage({
                   <CloseTicketForm ticketId={ticket.id} />
                 </>
               )}
-              {ticket.status === "closed" && (
+              {!ticket.archived_at && ticket.status === "closed" && (
                 <ReopenTicketForm ticketId={ticket.id} />
+              )}
+              {!ticket.archived_at && profile.role === "company_admin" && (
+                <ArchiveTicketForm ticketId={ticket.id} />
               )}
             </div>
           </div>
@@ -393,6 +397,11 @@ export default async function TicketDetailPage({
             >
               {t(`status.${ticket.status}`)}
             </span>
+            {ticket.archived_at && (
+              <span className="ms-2 inline-flex items-center rounded-full bg-danger-soft px-2.5 py-1 text-xs font-semibold text-danger">
+                {t("tickets.archivedBadge")}
+              </span>
+            )}
           </MetaRow>
           <MetaRow label={t("dashboard.table.assignedTo")}>
             {ticket.assigned_agent_id

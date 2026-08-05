@@ -39,6 +39,7 @@
     "agents": "الموظفون",
     "mailbox": "البريد الإلكتروني",
     "settings": "إعدادات الشركة",
+    "archived": "الأرشيف",
     "profile": "ملفي الشخصي",
     "adminTitle": "إدارة AiDesk",
     "companies": "الشركات",
@@ -174,6 +175,7 @@
     "assignedTo": "مسندة إلى:",
     "unassigned": "غير مسندة",
     "back": "العودة إلى التذاكر",
+    "archivedBadge": "مؤرشفة",
     "attachments": "المرفقات",
     "solution": "الحل:",
     "activity": "النشاط",
@@ -264,7 +266,30 @@
         "solutionRequired": "الحل مطلوب لإغلاق التذكرة.",
         "failed": "تعذّر إغلاق التذكرة. حاول مرة أخرى."
       }
+    },
+    "archiveForm": {
+      "trigger": "أرشفة",
+      "title": "أرشفة التذكرة",
+      "confirmText": "سيؤدي هذا إلى إغلاق التذكرة وإخفائها من قوائم التذاكر. لا يمكن التراجع عن هذا الإجراء.",
+      "submit": "أرشفة التذكرة",
+      "logEntry": "تمت أرشفة التذكرة.",
+      "errors": {
+        "unauthorized": "غير مصرح لك.",
+        "ticketMissing": "التذكرة غير محددة.",
+        "alreadyArchived": "هذه التذكرة مؤرشفة بالفعل.",
+        "failed": "تعذّر أرشفة التذكرة. حاول مرة أخرى."
+      }
     }
+  },
+  "archivedPage": {
+    "title": "التذاكر المؤرشفة",
+    "table": {
+      "subject": "الموضوع",
+      "requester": "مقدّم الطلب",
+      "assignedTo": "مسندة إلى",
+      "archivedAt": "تاريخ الأرشفة"
+    },
+    "noTickets": "لا توجد تذاكر مؤرشفة."
   },
   "performance": {
     "myTitle": "أدائي",

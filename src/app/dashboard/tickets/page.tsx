@@ -87,6 +87,7 @@ export default async function TicketsListPage({
       "id, subject, sender_email, sender_name, status, assigned_agent_id, received_at, closed_at",
     )
     .eq("company_id", profile.company_id)
+    .is("archived_at", null)
     .gte("received_at", `${from}T00:00:00`)
     .lte("received_at", `${to}T23:59:59.999`)
     .order("received_at", { ascending: false });

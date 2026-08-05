@@ -39,6 +39,7 @@
     "agents": "Agents",
     "mailbox": "Mailbox",
     "settings": "Company Settings",
+    "archived": "Archived",
     "profile": "My Profile",
     "adminTitle": "AiDesk Admin",
     "companies": "Companies",
@@ -174,6 +175,7 @@
     "assignedTo": "Assigned to:",
     "unassigned": "Unassigned",
     "back": "Back to tickets",
+    "archivedBadge": "Archived",
     "attachments": "Attachments",
     "solution": "Solution:",
     "activity": "Activity",
@@ -264,7 +266,30 @@
         "solutionRequired": "A solution is required to close the ticket.",
         "failed": "Could not close the ticket. Please try again."
       }
+    },
+    "archiveForm": {
+      "trigger": "Archive",
+      "title": "Archive ticket",
+      "confirmText": "This will close the ticket and hide it from ticket lists. This can't be undone.",
+      "submit": "Archive ticket",
+      "logEntry": "Ticket archived.",
+      "errors": {
+        "unauthorized": "Not authorized.",
+        "ticketMissing": "Missing ticket.",
+        "alreadyArchived": "This ticket is already archived.",
+        "failed": "Could not archive the ticket. Please try again."
+      }
     }
+  },
+  "archivedPage": {
+    "title": "Archived tickets",
+    "table": {
+      "subject": "Subject",
+      "requester": "Requester",
+      "assignedTo": "Assigned to",
+      "archivedAt": "Archived"
+    },
+    "noTickets": "No archived tickets."
   },
   "performance": {
     "myTitle": "My performance",

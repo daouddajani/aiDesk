@@ -49,13 +49,15 @@ export default async function DashboardHomePage() {
       supabase
         .from("tickets")
         .select("status")
-        .eq("company_id", profile.company_id),
+        .eq("company_id", profile.company_id)
+        .is("archived_at", null),
       supabase
         .from("tickets")
         .select(
           "id, subject, sender_email, sender_name, status, assigned_agent_id, received_at",
         )
         .eq("company_id", profile.company_id)
+        .is("archived_at", null)
         .order("received_at", { ascending: false })
         .limit(5),
       supabase
