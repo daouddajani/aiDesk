@@ -1,16 +1,18 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { PAGE_SIZES } from "@/lib/pagination";
 
+// `href` per option is precomputed server-side and passed in as plain data —
+// a function (e.g. a buildHref callback) can't cross the server/client
+// component boundary as a prop, only serializable values can.
 export function PageSizeSelect({
   pageSize,
   label,
-  buildHref,
+  options,
 }: {
   pageSize: number;
   label: string;
-  buildHref: (size: number) => string;
+  options: { size: number; href: string }[];
 }) {
   const router = useRouter();
 
@@ -19,12 +21,16 @@ export function PageSizeSelect({
       {label}
       <select
         value={pageSize}
-        onChange={(e) => router.push(buildHref(Number(e.target.value)))}
+        onChange={(e) => {
+          const size = Number(e.target.value);
+          const match = options.find((o) => o.size === size);
+          if (match) router.push(match.href);
+        }}
         className="rounded-[10px] border border-border bg-surface-alt px-2.5 py-1.5 text-sm text-ink"
       >
-        {PAGE_SIZES.map((size) => (
-          <option key={size} value={size}>
-            {size}
+        {options.map((o) => (
+          <option key={o.size} value={o.size}>
+            {o.size}
           </option>
         ))}
       </select>

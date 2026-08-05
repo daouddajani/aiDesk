@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { getTranslations } from "next-intl/server";
+import { PAGE_SIZES } from "@/lib/pagination";
 import { PageSizeSelect } from "./PageSizeSelect";
 
 type Translator = Awaited<ReturnType<typeof getTranslations>>;
@@ -49,7 +50,10 @@ export function TicketPagination({
         <PageSizeSelect
           pageSize={pageSize}
           label={t("pagination.perPage")}
-          buildHref={buildPageSizeHref}
+          options={PAGE_SIZES.map((size) => ({
+            size,
+            href: buildPageSizeHref(size),
+          }))}
         />
         {totalPages > 1 && (
           <nav className="flex items-center gap-1">
