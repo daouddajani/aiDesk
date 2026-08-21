@@ -7,6 +7,7 @@ import { buildAgentNameMap } from "@/lib/agentNames";
 import { getInitials } from "@/lib/initials";
 import { getAIProviderForCompany, type SuggestedAnswer } from "@/lib/ai";
 import { formatDuration } from "@/lib/duration";
+import { formatDateTime } from "@/lib/formatDate";
 import { TakeOwnershipButton } from "./TakeOwnershipButton";
 import { ReassignTicketForm } from "./ReassignTicketForm";
 import { CommentForm } from "./CommentForm";
@@ -353,7 +354,7 @@ export default async function TicketDetailPage({
                           : ""}
                       </span>
                       <span>
-                        {new Date(comment.created_at).toLocaleString()}
+                        {formatDateTime(comment.created_at)}
                       </span>
                     </div>
                     <p className="leading-relaxed whitespace-pre-wrap text-ink">
@@ -432,7 +433,7 @@ export default async function TicketDetailPage({
             {ticket.sender_name ?? ticket.sender_email}
           </MetaRow>
           <MetaRow label={t("dashboard.table.received")}>
-            {new Date(ticket.received_at).toLocaleString()}
+            {formatDateTime(ticket.received_at)}
           </MetaRow>
         </div>
 
@@ -484,7 +485,7 @@ export default async function TicketDetailPage({
                     })}
                   </p>
                   <p className="text-ink-sub">
-                    {new Date(entry.created_at).toLocaleString()}
+                    {formatDateTime(entry.created_at)}
                   </p>
                 </div>
               ))}

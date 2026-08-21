@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { buildAgentNameMap } from "@/lib/agentNames";
+import { formatDateTime } from "@/lib/formatDate";
 import { resolvePagination } from "@/lib/pagination";
 import { TicketPagination } from "@/components/TicketPagination";
 
@@ -113,7 +114,7 @@ export default async function ArchivedTicketsPage({
                   </td>
                   <td className="px-4 py-3.5 text-ink-sub">
                     {ticket.archived_at
-                      ? new Date(ticket.archived_at).toLocaleString()
+                      ? formatDateTime(ticket.archived_at)
                       : "—"}
                   </td>
                 </tr>

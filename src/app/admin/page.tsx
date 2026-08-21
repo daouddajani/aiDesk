@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { formatDate } from "@/lib/formatDate";
 import { CreateCompanyForm } from "./CreateCompanyForm";
 import { InviteAdminForm } from "./InviteAdminForm";
 import { ResendInviteButton } from "./ResendInviteButton";
@@ -101,7 +102,7 @@ export default async function AdminPage() {
                         )}
                       </td>
                       <td className="px-4 py-3 text-ink-sub">
-                        {new Date(company.created_at).toLocaleDateString()}
+                        {formatDate(company.created_at)}
                       </td>
                       <td className="px-4 py-3">
                         <EditCompanyForm company={company} />

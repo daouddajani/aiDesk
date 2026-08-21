@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { buildAgentNameMap } from "@/lib/agentNames";
 import { formatDuration } from "@/lib/duration";
+import { formatDateTime } from "@/lib/formatDate";
 import { resolvePagination } from "@/lib/pagination";
 import { TicketPagination } from "@/components/TicketPagination";
 
@@ -324,7 +325,7 @@ export default async function TicketsListPage({
                       : "—"}
                   </td>
                   <td className="px-4 py-3.5 text-ink-sub">
-                    {new Date(ticket.received_at).toLocaleString()}
+                    {formatDateTime(ticket.received_at)}
                   </td>
                   <td className="px-4 py-3.5 text-ink-sub">
                     {formatDuration(

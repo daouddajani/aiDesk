@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { buildAgentNameMap } from "@/lib/agentNames";
 import { formatDuration } from "@/lib/duration";
+import { formatDate } from "@/lib/formatDate";
 import { resolvePagination } from "@/lib/pagination";
 import { TicketPagination } from "@/components/TicketPagination";
 
@@ -561,12 +562,10 @@ function TicketTable({
                   </td>
                 )}
                 <td className="px-4 py-3 text-ink-sub">
-                  {new Date(ticket.received_at).toLocaleDateString()}
+                  {formatDate(ticket.received_at)}
                 </td>
                 <td className="px-4 py-3 text-ink-sub">
-                  {ticket.closed_at
-                    ? new Date(ticket.closed_at).toLocaleDateString()
-                    : "—"}
+                  {ticket.closed_at ? formatDate(ticket.closed_at) : "—"}
                 </td>
               </tr>
             ))}

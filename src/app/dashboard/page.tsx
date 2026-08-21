@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { buildAgentNameMap } from "@/lib/agentNames";
+import { formatDateTime } from "@/lib/formatDate";
 
 const STATUS_BADGE_CLASSES: Record<string, string> = {
   new: "bg-info-soft text-info",
@@ -152,7 +153,7 @@ export default async function DashboardHomePage() {
                       : "—"}
                   </td>
                   <td className="px-3 py-3 text-ink-sub">
-                    {new Date(ticket.received_at).toLocaleString()}
+                    {formatDateTime(ticket.received_at)}
                   </td>
                 </tr>
               ))}
