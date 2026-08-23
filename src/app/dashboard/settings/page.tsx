@@ -5,6 +5,11 @@ import { buildAgentNameMap } from "@/lib/agentNames";
 import { CompanySettingsForm } from "./CompanySettingsForm";
 import { AISettingsForm } from "./AISettingsForm";
 import type { AIProviderName, CompanyAIConfig } from "@/lib/ai";
+import { getCompanyTimezone } from "@/lib/companyTimezone";
+import {
+  localDateStringToUtcISO,
+  startOfMonthLocalDateString,
+} from "@/lib/timezone";
 
 export default async function CompanySettingsPage() {
   const t = await getTranslations("common");
@@ -27,9 +32,11 @@ export default async function CompanySettingsPage() {
     redirect("/dashboard");
   }
 
-  const startOfMonth = new Date();
-  startOfMonth.setUTCDate(1);
-  startOfMonth.setUTCHours(0, 0, 0, 0);
+  const timezone = await getCompanyTimezone(supabase, profile.company_id);
+  const startOfMonthUTC = localDateStringToUtcISO(
+    startOfMonthLocalDateString(timezone),
+    timezone,
+  );
 
   const [{ data: company }, { data: agentOptions }, { data: usageRows }] =
     await Promise.all([
@@ -49,7 +56,7 @@ export default async function CompanySettingsPage() {
         .from("ai_usage_log")
         .select("total_tokens")
         .eq("company_id", profile.company_id)
-        .gte("created_at", startOfMonth.toISOString()),
+        .gte("created_at", startOfMonthUTC),
     ]);
 
   if (!company) {

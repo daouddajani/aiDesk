@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { buildAgentNameMap } from "@/lib/agentNames";
 import { formatDateTime } from "@/lib/formatDate";
+import { getCompanyTimezone } from "@/lib/companyTimezone";
 
 const STATUS_BADGE_CLASSES: Record<string, string> = {
   new: "bg-info-soft text-info",
@@ -68,6 +69,7 @@ export default async function DashboardHomePage() {
     ]);
 
   const agentNameById = await buildAgentNameMap(agents ?? []);
+  const timezone = await getCompanyTimezone(supabase, profile.company_id);
 
   const counts = { total: 0, new: 0, on_process: 0, closed: 0 };
   for (const ticket of tickets ?? []) {
@@ -153,7 +155,7 @@ export default async function DashboardHomePage() {
                       : "—"}
                   </td>
                   <td className="px-3 py-3 text-ink-sub">
-                    {formatDateTime(ticket.received_at)}
+                    {formatDateTime(ticket.received_at, timezone)}
                   </td>
                 </tr>
               ))}

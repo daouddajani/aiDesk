@@ -102,7 +102,7 @@ export default async function AdminPage() {
                         )}
                       </td>
                       <td className="px-4 py-3 text-ink-sub">
-                        {formatDate(company.created_at)}
+                        {formatDate(company.created_at, company.timezone)}
                       </td>
                       <td className="px-4 py-3">
                         <EditCompanyForm company={company} />

@@ -5,6 +5,12 @@ import { createClient } from "@/lib/supabase/server";
 import { buildAgentNameMap } from "@/lib/agentNames";
 import { formatDuration } from "@/lib/duration";
 import { formatDateTime } from "@/lib/formatDate";
+import { getCompanyTimezone } from "@/lib/companyTimezone";
+import {
+  localDateStringToUtcISO,
+  startOfWeekLocalDateString,
+  todayLocalDateString,
+} from "@/lib/timezone";
 import { resolvePagination } from "@/lib/pagination";
 import { TicketPagination } from "@/components/TicketPagination";
 
@@ -16,18 +22,6 @@ const STATUS_BADGE_CLASSES: Record<string, string> = {
   on_process: "bg-primary-soft text-primary",
   closed: "bg-surface-alt text-ink-sub",
 };
-
-function startOfWeekISO(d = new Date()) {
-  const day = d.getUTCDay(); // 0 (Sun) - 6 (Sat)
-  const diffFromMonday = day === 0 ? 6 : day - 1;
-  const monday = new Date(d);
-  monday.setUTCDate(d.getUTCDate() - diffFromMonday);
-  return monday.toISOString().slice(0, 10);
-}
-
-function todayISO(d = new Date()) {
-  return d.toISOString().slice(0, 10);
-}
 
 function buildHref(
   base: string,
@@ -92,8 +86,9 @@ export default async function TicketsListPage({
   const defaultMine = profile.role === "company_agent";
   const showMineOnly = params.mine ? params.mine === "me" : defaultMine;
 
-  const from = params.from || startOfWeekISO();
-  const to = params.to || todayISO();
+  const timezone = await getCompanyTimezone(supabase, profile.company_id);
+  const from = params.from || startOfWeekLocalDateString(timezone);
+  const to = params.to || todayLocalDateString(timezone);
 
   let query = supabase
     .from("tickets")
@@ -102,8 +97,8 @@ export default async function TicketsListPage({
     )
     .eq("company_id", profile.company_id)
     .is("archived_at", null)
-    .gte("received_at", `${from}T00:00:00`)
-    .lte("received_at", `${to}T23:59:59.999`)
+    .gte("received_at", localDateStringToUtcISO(from, timezone))
+    .lte("received_at", localDateStringToUtcISO(to, timezone, 23, 59, 59, 999))
     .order("received_at", { ascending: false });
 
   if (showMineOnly) {
@@ -325,7 +320,7 @@ export default async function TicketsListPage({
                       : "—"}
                   </td>
                   <td className="px-4 py-3.5 text-ink-sub">
-                    {formatDateTime(ticket.received_at)}
+                    {formatDateTime(ticket.received_at, timezone)}
                   </td>
                   <td className="px-4 py-3.5 text-ink-sub">
                     {formatDuration(

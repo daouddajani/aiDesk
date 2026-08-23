@@ -5,6 +5,8 @@ import { createClient } from "@/lib/supabase/server";
 import { buildAgentNameMap } from "@/lib/agentNames";
 import { formatDuration } from "@/lib/duration";
 import { formatDate } from "@/lib/formatDate";
+import { getCompanyTimezone } from "@/lib/companyTimezone";
+import { toLocalDateString } from "@/lib/timezone";
 import { resolvePagination } from "@/lib/pagination";
 import { TicketPagination } from "@/components/TicketPagination";
 
@@ -34,8 +36,13 @@ function relevantDate(ticket: TicketRow) {
     : ticket.received_at;
 }
 
-function withinRange(dateStr: string, from?: string, to?: string) {
-  const date = dateStr.slice(0, 10);
+function withinRange(
+  dateStr: string,
+  timeZone: string,
+  from?: string,
+  to?: string,
+) {
+  const date = toLocalDateString(dateStr, timeZone);
   if (from && date < from) return false;
   if (to && date > to) return false;
   return true;
@@ -282,9 +289,10 @@ export default async function PerformancePage({
   ]);
 
   const agentNameById = await buildAgentNameMap(agents ?? []);
+  const timezone = await getCompanyTimezone(supabase, profile.company_id);
 
   const inDateRange = (t: TicketRow) =>
-    withinRange(relevantDate(t), params.from, params.to);
+    withinRange(relevantDate(t), timezone, params.from, params.to);
 
   if (profile.role === "company_agent") {
     const mine = (tickets ?? [])
@@ -373,6 +381,7 @@ export default async function PerformancePage({
           t={t}
           tickets={pageFiltered}
           agentNameById={agentNameById}
+          timezone={timezone}
           showAssignee={false}
           pagination={
             <TicketPagination
@@ -494,12 +503,14 @@ function TicketTable({
   t,
   tickets,
   agentNameById,
+  timezone,
   showAssignee,
   pagination,
 }: {
   t: Translator;
   tickets: TicketRow[];
   agentNameById: Map<string, string>;
+  timezone: string;
   showAssignee: boolean;
   pagination?: React.ReactNode;
 }) {
@@ -562,10 +573,12 @@ function TicketTable({
                   </td>
                 )}
                 <td className="px-4 py-3 text-ink-sub">
-                  {formatDate(ticket.received_at)}
+                  {formatDate(ticket.received_at, timezone)}
                 </td>
                 <td className="px-4 py-3 text-ink-sub">
-                  {ticket.closed_at ? formatDate(ticket.closed_at) : "—"}
+                  {ticket.closed_at
+                    ? formatDate(ticket.closed_at, timezone)
+                    : "—"}
                 </td>
               </tr>
             ))}

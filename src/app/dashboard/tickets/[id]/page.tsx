@@ -8,6 +8,7 @@ import { getInitials } from "@/lib/initials";
 import { getAIProviderForCompany, type SuggestedAnswer } from "@/lib/ai";
 import { formatDuration } from "@/lib/duration";
 import { formatDateTime } from "@/lib/formatDate";
+import { getCompanyTimezone } from "@/lib/companyTimezone";
 import { TakeOwnershipButton } from "./TakeOwnershipButton";
 import { ReassignTicketForm } from "./ReassignTicketForm";
 import { CommentForm } from "./CommentForm";
@@ -208,6 +209,7 @@ export default async function TicketDetailPage({
     : { data: [] as (Attachment & { comment_id: string })[] };
 
   const agentNameById = await buildAgentNameMap(agents ?? []);
+  const timezone = await getCompanyTimezone(supabase, profile.company_id);
 
   const myRunningEntry = (timeEntries ?? []).find(
     (entry) => entry.agent_id === user.id && !entry.ended_at,
@@ -354,7 +356,7 @@ export default async function TicketDetailPage({
                           : ""}
                       </span>
                       <span>
-                        {formatDateTime(comment.created_at)}
+                        {formatDateTime(comment.created_at, timezone)}
                       </span>
                     </div>
                     <p className="leading-relaxed whitespace-pre-wrap text-ink">
@@ -433,7 +435,7 @@ export default async function TicketDetailPage({
             {ticket.sender_name ?? ticket.sender_email}
           </MetaRow>
           <MetaRow label={t("dashboard.table.received")}>
-            {formatDateTime(ticket.received_at)}
+            {formatDateTime(ticket.received_at, timezone)}
           </MetaRow>
         </div>
 
@@ -485,7 +487,7 @@ export default async function TicketDetailPage({
                     })}
                   </p>
                   <p className="text-ink-sub">
-                    {formatDateTime(entry.created_at)}
+                    {formatDateTime(entry.created_at, timezone)}
                   </p>
                 </div>
               ))}
