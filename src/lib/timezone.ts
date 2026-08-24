@@ -87,3 +87,17 @@ export function startOfWeekLocalDateString(timeZone: string): string {
 export function startOfMonthLocalDateString(timeZone: string): string {
   return `${todayLocalDateString(timeZone).slice(0, 7)}-01`;
 }
+
+/** The calendar date `daysAgo` days before today, per `timeZone`'s calendar. */
+export function daysAgoLocalDateString(
+  timeZone: string,
+  daysAgo: number,
+): string {
+  const [year, month, day] = todayLocalDateString(timeZone)
+    .split("-")
+    .map(Number);
+  return toLocalDateString(
+    new Date(Date.UTC(year, month - 1, day - daysAgo)),
+    "UTC",
+  );
+}

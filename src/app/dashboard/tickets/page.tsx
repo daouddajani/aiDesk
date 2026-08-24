@@ -7,8 +7,8 @@ import { formatDuration } from "@/lib/duration";
 import { formatDateTime } from "@/lib/formatDate";
 import { getCompanyTimezone } from "@/lib/companyTimezone";
 import {
+  daysAgoLocalDateString,
   localDateStringToUtcISO,
-  startOfWeekLocalDateString,
   todayLocalDateString,
 } from "@/lib/timezone";
 import { resolvePagination } from "@/lib/pagination";
@@ -87,7 +87,7 @@ export default async function TicketsListPage({
   const showMineOnly = params.mine ? params.mine === "me" : defaultMine;
 
   const timezone = await getCompanyTimezone(supabase, profile.company_id);
-  const from = params.from || startOfWeekLocalDateString(timezone);
+  const from = params.from || daysAgoLocalDateString(timezone, 15);
   const to = params.to || todayLocalDateString(timezone);
 
   let query = supabase
