@@ -82,6 +82,15 @@ async function persistAttachments(
 // here must not be treated as "no match" — that would silently create a
 // duplicate ticket for what's actually a reply, so it's surfaced as an
 // error instead and the caller skips the message rather than guessing.
+//
+// A ticket whose own source_message_id equals this email's is excluded from
+// matching: that means this is the very message that created the ticket,
+// re-fetched on a later poll (Graph's receivedDateTime can lose sub-second
+// precision through Postgres, letting the same message pass the "gt cursor"
+// filter again — see IncomingEmail.sourceMessageId). Matching it here would
+// record it as a reply to itself, duplicating the original body as a fake
+// activity entry. Falling through instead lets createTicketFromEmail's own
+// (company_id, source_message_id) dedup correctly recognize it as a no-op.
 async function findMatchingTicketId(
   adminClient: SupabaseClient,
   companyId: string,
@@ -90,27 +99,31 @@ async function findMatchingTicketId(
   if (email.conversationId) {
     const { data, error } = await adminClient
       .from("tickets")
-      .select("id")
+      .select("id, source_message_id")
       .eq("company_id", companyId)
       .eq("graph_conversation_id", email.conversationId)
       .order("created_at", { ascending: true })
       .limit(1)
       .maybeSingle();
     if (error) return { error: error.message };
-    if (data) return { ticketId: data.id };
+    if (data && data.source_message_id !== email.sourceMessageId) {
+      return { ticketId: data.id };
+    }
   }
 
   if (email.threadRefs.length > 0) {
     const { data, error } = await adminClient
       .from("tickets")
-      .select("id")
+      .select("id, source_message_id")
       .eq("company_id", companyId)
       .in("source_message_id", email.threadRefs)
       .order("created_at", { ascending: true })
       .limit(1)
       .maybeSingle();
     if (error) return { error: error.message };
-    if (data) return { ticketId: data.id };
+    if (data && data.source_message_id !== email.sourceMessageId) {
+      return { ticketId: data.id };
+    }
   }
 
   return { ticketId: null };
