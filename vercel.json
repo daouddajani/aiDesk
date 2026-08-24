@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/poll-mailboxes",
       "schedule": "*/2 * * * *"
+    },
+    {
+      "path": "/api/cron/dispatch-reminders",
+      "schedule": "* * * * *"
     }
   ]
 }

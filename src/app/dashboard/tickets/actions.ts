@@ -7,6 +7,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { sendTicketReply } from "@/lib/sendTicketReply";
 import { getAIProviderForCompany } from "@/lib/ai";
 import { checkRateLimit } from "@/lib/rateLimit";
+import { getCompanyTimezone } from "@/lib/companyTimezone";
+import { localDateStringToUtcISO } from "@/lib/timezone";
 
 async function requireCompanyMember() {
   const supabase = await createClient();
@@ -432,6 +434,60 @@ export async function reopenTicket(_prevState: unknown, formData: FormData) {
   });
 
   revalidatePath(`/dashboard/tickets/${ticketId}`);
+  return { success: true };
+}
+
+export async function addReminder(_prevState: unknown, formData: FormData) {
+  const t = await getTranslations("tickets.addReminder.errors");
+  const ctx = await requireCompanyMember();
+  if (!ctx) return { error: t("unauthorized") };
+
+  const ticketId = String(formData.get("ticketId") ?? "");
+  const date = String(formData.get("date") ?? "").trim();
+  const time = String(formData.get("time") ?? "").trim();
+  const comment = String(formData.get("comment") ?? "").trim();
+
+  if (!ticketId) return { error: t("ticketMissing") };
+  if (!date || !time) return { error: t("dateRequired") };
+  if (!comment) return { error: t("commentRequired") };
+
+  const dateMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date);
+  const timeMatch = /^(\d{2}):(\d{2})$/.exec(time);
+  if (!dateMatch || !timeMatch) return { error: t("invalidDateTime") };
+
+  const { data: ticket } = await ctx.supabase
+    .from("tickets")
+    .select("id, company_id, status, archived_at")
+    .eq("id", ticketId)
+    .eq("company_id", ctx.companyId)
+    .single();
+
+  if (!ticket) return { error: t("notFound") };
+  if (ticket.archived_at || ticket.status === "closed") {
+    return { error: t("closed") };
+  }
+
+  const timezone = await getCompanyTimezone(ctx.supabase, ctx.companyId);
+  const hour = Number(timeMatch[1]);
+  const minute = Number(timeMatch[2]);
+  const remindAtIso = localDateStringToUtcISO(date, timezone, hour, minute, 0, 0);
+
+  if (new Date(remindAtIso).getTime() <= Date.now()) {
+    return { error: t("mustBeFuture") };
+  }
+
+  const { error } = await ctx.supabase.from("reminders").insert({
+    company_id: ctx.companyId,
+    ticket_id: ticketId,
+    agent_id: ctx.userId,
+    remind_at: remindAtIso,
+    comment,
+  });
+
+  if (error) return { error: t("failed") };
+
+  revalidatePath(`/dashboard/tickets/${ticketId}`);
+  revalidatePath("/dashboard/reminders");
   return { success: true };
 }
 

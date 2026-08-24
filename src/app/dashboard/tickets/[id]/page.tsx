@@ -15,6 +15,7 @@ import { CommentForm } from "./CommentForm";
 import { CloseTicketForm } from "./CloseTicketForm";
 import { ReopenTicketForm } from "./ReopenTicketForm";
 import { ArchiveTicketForm } from "./ArchiveTicketForm";
+import { AddReminderForm } from "./AddReminderForm";
 import { TicketTimer } from "./TicketTimer";
 
 const CARD_SHADOW =
@@ -268,6 +269,7 @@ export default async function TicketDetailPage({
                     disabled={ticket.assigned_agent_id === user.id}
                   />
                   <CloseTicketForm ticketId={ticket.id} />
+                  <AddReminderForm ticketId={ticket.id} />
                 </>
               )}
               {!ticket.archived_at && ticket.status === "closed" && (

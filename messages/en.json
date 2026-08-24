@@ -45,7 +45,8 @@
     "companies": "Companies",
     "roleCompanyAdmin": "Company Admin",
     "roleCompanyAgent": "Agent",
-    "roleSuperAdmin": "Super Admin"
+    "roleSuperAdmin": "Super Admin",
+    "reminders": "Reminders"
   },
   "login": {
     "title": "Sign in",
@@ -285,6 +286,26 @@
         "alreadyArchived": "This ticket is already archived.",
         "failed": "Could not archive the ticket. Please try again."
       }
+    },
+    "addReminder": {
+      "trigger": "Add reminder",
+      "title": "Add reminder",
+      "dateLabel": "Date",
+      "timeLabel": "Time",
+      "commentLabel": "Note",
+      "commentPlaceholder": "What do you want to be reminded about?",
+      "submit": "Add reminder",
+      "errors": {
+        "unauthorized": "Not authorized.",
+        "ticketMissing": "Missing ticket.",
+        "dateRequired": "A date and time are required.",
+        "commentRequired": "A note is required.",
+        "invalidDateTime": "Enter a valid date and time.",
+        "mustBeFuture": "The reminder must be set for a future date and time.",
+        "notFound": "Ticket not found.",
+        "closed": "This ticket is closed.",
+        "failed": "Could not add the reminder. Please try again."
+      }
     }
   },
   "archivedPage": {
@@ -455,6 +476,24 @@
     "errors": {
       "unauthorized": "Not authorized.",
       "updateFailed": "Could not update your profile. Please try again."
+    }
+  },
+  "reminders": {
+    "title": "My Reminders",
+    "table": {
+      "ticket": "Ticket",
+      "dueAt": "Due",
+      "comment": "Note",
+      "actions": "Actions"
+    },
+    "empty": "You have no upcoming reminders.",
+    "delete": {
+      "submit": "Delete",
+      "errors": {
+        "unauthorized": "Not authorized.",
+        "reminderMissing": "Missing reminder.",
+        "failed": "Could not delete the reminder. Please try again."
+      }
     }
   }
 }

@@ -45,7 +45,8 @@
     "companies": "الشركات",
     "roleCompanyAdmin": "مدير الشركة",
     "roleCompanyAgent": "موظف",
-    "roleSuperAdmin": "مشرف عام"
+    "roleSuperAdmin": "مشرف عام",
+    "reminders": "التذكيرات"
   },
   "login": {
     "title": "تسجيل الدخول",
@@ -285,6 +286,26 @@
         "alreadyArchived": "هذه التذكرة مؤرشفة بالفعل.",
         "failed": "تعذّر أرشفة التذكرة. حاول مرة أخرى."
       }
+    },
+    "addReminder": {
+      "trigger": "إضافة تذكير",
+      "title": "إضافة تذكير",
+      "dateLabel": "التاريخ",
+      "timeLabel": "الوقت",
+      "commentLabel": "ملاحظة",
+      "commentPlaceholder": "بماذا تريد أن يتم تذكيرك؟",
+      "submit": "إضافة تذكير",
+      "errors": {
+        "unauthorized": "غير مصرح لك.",
+        "ticketMissing": "التذكرة غير محددة.",
+        "dateRequired": "التاريخ والوقت مطلوبان.",
+        "commentRequired": "الملاحظة مطلوبة.",
+        "invalidDateTime": "أدخل تاريخًا ووقتًا صالحين.",
+        "mustBeFuture": "يجب أن يكون التذكير في وقت مستقبلي.",
+        "notFound": "التذكرة غير موجودة.",
+        "closed": "هذه التذكرة مغلقة.",
+        "failed": "تعذّر إضافة التذكير. حاول مرة أخرى."
+      }
     }
   },
   "archivedPage": {
@@ -455,6 +476,24 @@
     "errors": {
       "unauthorized": "غير مصرح لك.",
       "updateFailed": "تعذّر تحديث ملفك الشخصي. حاول مرة أخرى."
+    }
+  },
+  "reminders": {
+    "title": "تذكيراتي",
+    "table": {
+      "ticket": "التذكرة",
+      "dueAt": "الموعد",
+      "comment": "الملاحظة",
+      "actions": "إجراءات"
+    },
+    "empty": "لا توجد تذكيرات قادمة.",
+    "delete": {
+      "submit": "حذف",
+      "errors": {
+        "unauthorized": "غير مصرح لك.",
+        "reminderMissing": "التذكير غير موجود.",
+        "failed": "تعذّر حذف التذكير. حاول مرة أخرى."
+      }
     }
   }
 }

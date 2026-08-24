@@ -4,6 +4,7 @@ import {
   DashboardIcon,
   TicketsIcon,
   PerformanceIcon,
+  RemindersIcon,
   AgentsIcon,
   MailboxIcon,
   SettingsIcon,
@@ -32,6 +33,11 @@ export function buildNavItems(
       href: "/dashboard/performance",
       label: t("nav.performance"),
       icon: <PerformanceIcon />,
+    },
+    {
+      href: "/dashboard/reminders",
+      label: t("nav.reminders"),
+      icon: <RemindersIcon />,
     },
     ...(role === "company_admin"
       ? [
