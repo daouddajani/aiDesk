@@ -5,6 +5,13 @@ export type IncomingEmailAttachment = {
   mimeType: string;
   size: number;
   content: Buffer;
+  // Content-ID and inline flag for images embedded in the email body
+  // (<img src="cid:...">) rather than attached as a regular file. The body
+  // is stored as plain text so the cid: reference itself is dropped, but
+  // preserving these lets the attachment still show up (tagged) instead of
+  // silently disappearing.
+  contentId: string | null;
+  isInline: boolean;
 };
 
 export type IncomingEmail = {
@@ -63,6 +70,8 @@ async function persistAttachments(
       filename: attachment.filename,
       mime_type: attachment.mimeType,
       size: attachment.size,
+      content_id: attachment.contentId,
+      is_inline: attachment.isInline,
     });
   }
 }

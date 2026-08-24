@@ -177,6 +177,8 @@ export type GraphAttachment = {
   mimeType: string;
   size: number;
   contentBytes: string; // base64
+  contentId: string | null;
+  isInline: boolean;
 };
 
 export async function listMessageAttachments(
@@ -199,6 +201,8 @@ export async function listMessageAttachments(
     contentType?: string;
     size?: number;
     contentBytes?: string;
+    contentId?: string;
+    isInline?: boolean;
   };
 
   return (data.value ?? [])
@@ -212,5 +216,7 @@ export async function listMessageAttachments(
       mimeType: a.contentType ?? "application/octet-stream",
       size: a.size ?? 0,
       contentBytes: a.contentBytes as string,
+      contentId: a.contentId ?? null,
+      isInline: a.isInline === true,
     }));
 }

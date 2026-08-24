@@ -19,6 +19,8 @@ export type ParsedIncomingMessage = {
     mimeType: string;
     size: number;
     content: Buffer;
+    contentId: string | null;
+    isInline: boolean;
   }[];
 };
 
@@ -84,6 +86,8 @@ export async function fetchNewImapMessages(
             mimeType: a.contentType ?? "application/octet-stream",
             size: a.size ?? a.content.length,
             content: a.content,
+            contentId: a.contentId ?? null,
+            isInline: a.related === true || a.contentDisposition === "inline",
           })),
         });
       }

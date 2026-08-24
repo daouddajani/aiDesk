@@ -215,6 +215,8 @@ async function pollMicrosoftCompany(
         mimeType: a.mimeType,
         size: a.size,
         content: Buffer.from(a.contentBytes, "base64"),
+        contentId: a.contentId,
+        isInline: a.isInline,
       })),
     };
 
