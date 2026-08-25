@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import crypto from "node:crypto";
 
 export type IncomingEmailAttachment = {
   filename: string;
@@ -45,11 +46,36 @@ function sanitizeFilename(name: string) {
 
 async function persistAttachments(
   adminClient: SupabaseClient,
+  companyId: string,
   ownerPathPrefix: string,
   attachments: IncomingEmailAttachment[],
   row: { ticket_id: string } | { comment_id: string },
 ) {
   for (const attachment of attachments) {
+    let contentHash: string | null = null;
+
+    if (attachment.isInline) {
+      contentHash = crypto
+        .createHash("sha256")
+        .update(attachment.content)
+        .digest("hex");
+
+      // A recurring inline image (e.g. a signature/logo baked into every
+      // outgoing email from this company's mailbox) already on file for
+      // this company — skip it here, but keep processing the rest of this
+      // message's attachments normally. First occurrence of any inline
+      // image, logo included, still gets attached once.
+      const { data: existing } = await adminClient
+        .from("attachments")
+        .select("id")
+        .eq("company_id", companyId)
+        .eq("content_hash", contentHash)
+        .limit(1)
+        .maybeSingle();
+
+      if (existing) continue;
+    }
+
     const path = `${ownerPathPrefix}/${sanitizeFilename(attachment.filename)}`;
 
     const { error: uploadError } = await adminClient.storage
@@ -66,12 +92,14 @@ async function persistAttachments(
 
     await adminClient.from("attachments").insert({
       ...row,
+      company_id: companyId,
       storage_path: path,
       filename: attachment.filename,
       mime_type: attachment.mimeType,
       size: attachment.size,
       content_id: attachment.contentId,
       is_inline: attachment.isInline,
+      content_hash: contentHash,
     });
   }
 }
@@ -212,6 +240,7 @@ async function attachReplyToTicket(
 
   await persistAttachments(
     adminClient,
+    companyId,
     `${companyId}/${comment.id}`,
     email.attachments,
     { comment_id: comment.id },
@@ -267,6 +296,7 @@ export async function createTicketFromEmail(
 
   await persistAttachments(
     adminClient,
+    companyId,
     `${companyId}/${ticket.id}`,
     email.attachments,
     { ticket_id: ticket.id },

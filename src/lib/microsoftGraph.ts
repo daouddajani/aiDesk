@@ -1,4 +1,8 @@
 import { stripHtml } from "@/lib/htmlText";
+import {
+  extractInlineImages,
+  type ExtractedInlineImage,
+} from "@/lib/extractInlineImages";
 
 const AUTHORITY = "https://login.microsoftonline.com";
 
@@ -119,6 +123,7 @@ export type GraphMessage = {
   conversationId: string | null;
   inferenceClassification: "focused" | "other" | null;
   hasAttachments: boolean;
+  inlineImages: ExtractedInlineImage[];
 };
 
 // Reads only the Inbox folder, so mail Microsoft's own spam filter has
@@ -149,19 +154,20 @@ export async function listNewInboxMessages(
     const data = await response.json();
 
     for (const m of data.value ?? []) {
+      const isHtml = m.body?.contentType === "html";
       messages.push({
         id: m.id,
         subject: m.subject ?? null,
         fromName: m.from?.emailAddress?.name ?? null,
         fromEmail: m.from?.emailAddress?.address ?? null,
         receivedDateTime: m.receivedDateTime,
-        bodyText:
-          m.body?.contentType === "html"
-            ? stripHtml(m.body.content ?? "")
-            : (m.body?.content ?? ""),
+        bodyText: isHtml
+          ? stripHtml(m.body.content ?? "")
+          : (m.body?.content ?? ""),
         conversationId: m.conversationId ?? null,
         inferenceClassification: m.inferenceClassification ?? null,
         hasAttachments: Boolean(m.hasAttachments),
+        inlineImages: isHtml ? extractInlineImages(m.body.content ?? "") : [],
       });
     }
 

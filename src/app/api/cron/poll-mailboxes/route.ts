@@ -210,14 +210,24 @@ async function pollMicrosoftCompany(
       conversationId: message.conversationId,
       threadRefs: [],
       sourceMessageId: message.id,
-      attachments: attachments.map((a) => ({
-        filename: a.filename,
-        mimeType: a.mimeType,
-        size: a.size,
-        content: Buffer.from(a.contentBytes, "base64"),
-        contentId: a.contentId,
-        isInline: a.isInline,
-      })),
+      attachments: [
+        ...attachments.map((a) => ({
+          filename: a.filename,
+          mimeType: a.mimeType,
+          size: a.size,
+          content: Buffer.from(a.contentBytes, "base64"),
+          contentId: a.contentId,
+          isInline: a.isInline,
+        })),
+        ...message.inlineImages.map((img) => ({
+          filename: img.filename,
+          mimeType: img.mimeType,
+          size: img.content.length,
+          content: img.content,
+          contentId: null,
+          isInline: true,
+        })),
+      ],
     };
 
     const result = await ingestIncomingEmail(

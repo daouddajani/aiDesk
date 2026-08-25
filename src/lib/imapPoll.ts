@@ -1,6 +1,7 @@
 import { ImapFlow } from "imapflow";
 import { simpleParser } from "mailparser";
 import { stripHtml } from "@/lib/htmlText";
+import { extractInlineImages } from "@/lib/extractInlineImages";
 
 export type ParsedIncomingMessage = {
   uid: number;
@@ -64,6 +65,7 @@ export async function fetchNewImapMessages(
         if (msg.uid <= sinceUid || !msg.source) continue;
 
         const parsed = await simpleParser(msg.source);
+        const inlineImages = parsed.html ? extractInlineImages(parsed.html) : [];
         messages.push({
           uid: msg.uid,
           subject: parsed.subject ?? null,
@@ -81,14 +83,24 @@ export async function fetchNewImapMessages(
                 ? [parsed.references]
                 : []),
           ].filter((id): id is string => Boolean(id)),
-          attachments: (parsed.attachments ?? []).map((a) => ({
-            filename: a.filename ?? "attachment",
-            mimeType: a.contentType ?? "application/octet-stream",
-            size: a.size ?? a.content.length,
-            content: a.content,
-            contentId: a.contentId ?? null,
-            isInline: a.related === true || a.contentDisposition === "inline",
-          })),
+          attachments: [
+            ...(parsed.attachments ?? []).map((a) => ({
+              filename: a.filename ?? "attachment",
+              mimeType: a.contentType ?? "application/octet-stream",
+              size: a.size ?? a.content.length,
+              content: a.content,
+              contentId: a.contentId ?? null,
+              isInline: a.related === true || a.contentDisposition === "inline",
+            })),
+            ...inlineImages.map((img) => ({
+              filename: img.filename,
+              mimeType: img.mimeType,
+              size: img.content.length,
+              content: img.content,
+              contentId: null,
+              isInline: true,
+            })),
+          ],
         });
       }
     }
