@@ -244,10 +244,19 @@ async function pollMicrosoftCompany(
     } else if ("error" in result) errors.push(`${message.id}: ${result.error}`);
   }
 
-  if (latestReceivedAt !== company.mailbox_last_synced_at) {
+  // When no messages matched (most commonly: a never-yet-synced mailbox,
+  // where sinceIso is freshly computed as "now" on every poll),
+  // latestReceivedAt stays null forever and this cursor would never advance
+  // past company.mailbox_last_synced_at — permanently re-querying from a
+  // moving "now" and silently dropping any mail that arrives between polls.
+  // Falling back to sinceIso locks in the boundary this poll actually
+  // covered, so the next poll starts from a fixed point instead of racing
+  // "now" forward.
+  const nextSyncCursor = latestReceivedAt ?? sinceIso;
+  if (nextSyncCursor !== company.mailbox_last_synced_at) {
     await adminClient
       .from("companies")
-      .update({ mailbox_last_synced_at: latestReceivedAt })
+      .update({ mailbox_last_synced_at: nextSyncCursor })
       .eq("id", company.id);
   }
 
