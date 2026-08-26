@@ -160,6 +160,7 @@
   },
   "dashboard": {
     "title": "Tickets",
+    "refresh": "Refresh",
     "mineOnly": "My tickets",
     "allTickets": "All tickets",
     "search": "Search",

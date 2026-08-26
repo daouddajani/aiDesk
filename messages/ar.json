@@ -160,6 +160,7 @@
   },
   "dashboard": {
     "title": "التذاكر",
+    "refresh": "تحديث",
     "mineOnly": "تذاكري",
     "allTickets": "كل التذاكر",
     "search": "بحث",

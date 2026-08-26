@@ -13,6 +13,7 @@ import {
 } from "@/lib/timezone";
 import { resolvePagination } from "@/lib/pagination";
 import { TicketPagination } from "@/components/TicketPagination";
+import { TicketsRefreshButton } from "@/components/TicketsRefreshButton";
 
 const STATUS_VALUES = ["new", "pending", "on_process", "closed"] as const;
 
@@ -179,10 +180,11 @@ export default async function TicketsListPage({
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
+        <div className="flex items-center gap-3">
           <h1 className="text-[22px] font-extrabold tracking-tight text-ink md:text-[27px]">
             {t("dashboard.title")}
           </h1>
+          <TicketsRefreshButton label={t("dashboard.refresh")} />
         </div>
 
         <div className="flex items-center gap-1 rounded-[10px] border border-border bg-surface p-1">
