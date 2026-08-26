@@ -3,6 +3,12 @@ import type { SuggestedAnswer, UsageLogger } from "./types";
 
 const EMBEDDING_MODEL = "text-embedding-3-small";
 
+// Below this cosine similarity, a "past solution" isn't actually related to
+// the current ticket — just the least-dissimilar thing in a small corpus.
+// Calibrated against real production data: unrelated tickets commonly score
+// ~0.37-0.42, genuine topic matches ~0.5-0.67.
+const MIN_SIMILARITY = 0.5;
+
 // Embeddings always run on OpenAI regardless of which provider a company
 // picks for classification — Anthropic has no embeddings API, and Gemini's
 // embedding model doesn't match the dimension the ticket_embeddings column
@@ -46,7 +52,7 @@ export class OpenAIEmbeddings {
     const { data, error } = await supabase.rpc("match_ticket_embeddings", {
       p_company_id: companyId,
       p_query_embedding: embedding,
-      p_match_count: 3,
+      p_match_count: 10,
       p_exclude_ticket_id: excludeTicketId ?? null,
     });
 
@@ -56,7 +62,11 @@ export class OpenAIEmbeddings {
     // at close time — fetch subject/solution_text fresh from tickets so the
     // card shows just the problem and the solution, not that raw blob, and
     // stays in sync with any later edits.
-    const matches = data as { ticket_id: string; similarity: number }[];
+    const matches = (data as { ticket_id: string; similarity: number }[])
+      .filter((m) => m.similarity >= MIN_SIMILARITY)
+      .slice(0, 3);
+    if (matches.length === 0) return [];
+
     const { data: tickets } = await supabase
       .from("tickets")
       .select("id, subject, solution_text")

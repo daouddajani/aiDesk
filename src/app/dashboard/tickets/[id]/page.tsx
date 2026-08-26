@@ -197,7 +197,7 @@ export default async function TicketDetailPage({
         suggestedAnswers = await aiProvider.suggestAnswer(
           supabase,
           profile.company_id,
-          ticket.description,
+          `${ticket.subject}\n\n${ticket.description}`,
           ticket.id,
         );
       }
