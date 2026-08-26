@@ -6,6 +6,7 @@ import { LanguageToggleButton } from "@/components/LanguageToggleButton";
 import { MobileNav } from "./MobileNav";
 import { SidebarNav, type ShellNavItem } from "./SidebarNav";
 import { TicketNotifications } from "./TicketNotifications";
+import { TicketUpdateNotifications } from "./TicketUpdateNotifications";
 import {
   SidebarCollapseProvider,
   CollapsibleSidebar,
@@ -21,7 +22,7 @@ export async function AppShell({
   children,
 }: {
   navItems: ShellNavItem[];
-  user: { name: string; roleLabel: string; initials: string };
+  user: { id: string; name: string; roleLabel: string; initials: string };
   // Only company_admin/company_agent (the /dashboard shell) have one —
   // super_admin (/admin) and the shared /profile page don't pass it, and
   // ticket notifications simply don't render for them.
@@ -47,6 +48,7 @@ export async function AppShell({
     <SidebarCollapseProvider>
       <div className="flex min-h-screen flex-col bg-bg md:flex-row">
         {companyId && <TicketNotifications companyId={companyId} />}
+        {companyId && <TicketUpdateNotifications userId={user.id} />}
         <MobileNav brandLabel="AiDesk">
           {brand}
           <SidebarNav items={navItems} />

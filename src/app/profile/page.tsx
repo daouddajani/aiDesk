@@ -33,6 +33,7 @@ export default async function ProfilePage() {
     <AppShell
       navItems={buildNavItems(profile.role, t)}
       user={{
+        id: user.id,
         name: displayName,
         roleLabel: roleLabel(profile.role, t),
         initials: getInitials(displayName),

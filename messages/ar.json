@@ -29,6 +29,8 @@
   },
   "notifications": {
     "newTicket": "تذكرة جديدة",
+    "newInternalComment": "تعليق داخلي جديد",
+    "newReply": "رد جديد",
     "from": "من",
     "view": "عرض التذكرة"
   },
@@ -46,7 +48,8 @@
     "roleCompanyAdmin": "مدير الشركة",
     "roleCompanyAgent": "موظف",
     "roleSuperAdmin": "مشرف عام",
-    "reminders": "التذكيرات"
+    "reminders": "التذكيرات",
+    "notifications": "الإشعارات"
   },
   "login": {
     "title": "تسجيل الدخول",
@@ -494,6 +497,31 @@
         "reminderMissing": "التذكير غير موجود.",
         "failed": "تعذّر حذف التذكير. حاول مرة أخرى."
       }
+    }
+  },
+  "notificationsPage": {
+    "title": "الإشعارات",
+    "table": {
+      "ticket": "التذكرة",
+      "type": "النوع",
+      "from": "من",
+      "preview": "المعاينة",
+      "when": "الوقت",
+      "actions": "إجراءات"
+    },
+    "internalBadge": "ملاحظة داخلية",
+    "replyBadge": "رد",
+    "empty": "لا توجد إشعارات حتى الآن.",
+    "markRead": {
+      "submit": "تحديد كمقروء"
+    },
+    "markAllRead": {
+      "submit": "تحديد الكل كمقروء"
+    },
+    "errors": {
+      "unauthorized": "غير مصرح لك.",
+      "notificationMissing": "الإشعار غير موجود.",
+      "failed": "تعذّر تحديث الإشعارات. حاول مرة أخرى."
     }
   }
 }

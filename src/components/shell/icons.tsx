@@ -69,6 +69,14 @@ export const RemindersIcon = () => (
   </svg>
 );
 
+export const NotificationsIcon = () => (
+  <svg {...common}>
+    <path d="M18 8a6 6 0 0 0-12 0c0 5-2 6-2 7h16s-2-1-2-7"></path>
+    <path d="M13.73 18a2 2 0 0 1-3.46 0"></path>
+    <circle cx="18" cy="6" r="3" fill="currentColor" stroke="none"></circle>
+  </svg>
+);
+
 export const ProfileIcon = () => (
   <svg {...common}>
     <circle cx="12" cy="8" r="4"></circle>

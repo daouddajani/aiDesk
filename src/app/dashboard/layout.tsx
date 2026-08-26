@@ -39,10 +39,20 @@ export default async function DashboardLayout({
 
   const displayName = profile.full_name ?? user.email ?? "?";
 
+  const { count: unreadNotifications } = await supabase
+    .from("ticket_notifications")
+    .select("id", { count: "exact", head: true })
+    .eq("agent_id", user.id)
+    .eq("company_id", profile.company_id)
+    .is("read_at", null);
+
   return (
     <AppShell
-      navItems={buildNavItems(profile.role, t)}
+      navItems={buildNavItems(profile.role, t, {
+        unreadNotifications: unreadNotifications ?? 0,
+      })}
       user={{
+        id: user.id,
         name: displayName,
         roleLabel: roleLabel(profile.role, t),
         initials: getInitials(displayName),

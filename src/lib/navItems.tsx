@@ -5,6 +5,7 @@ import {
   TicketsIcon,
   PerformanceIcon,
   RemindersIcon,
+  NotificationsIcon,
   AgentsIcon,
   MailboxIcon,
   SettingsIcon,
@@ -18,6 +19,7 @@ type Translator = Awaited<ReturnType<typeof getTranslations>>;
 export function buildNavItems(
   role: "super_admin" | "company_admin" | "company_agent",
   t: Translator,
+  options?: { unreadNotifications?: number },
 ): ShellNavItem[] {
   if (role === "super_admin") {
     return [
@@ -29,6 +31,12 @@ export function buildNavItems(
   return [
     { href: "/dashboard", label: t("nav.dashboard"), icon: <DashboardIcon /> },
     { href: "/dashboard/tickets", label: t("nav.tickets"), icon: <TicketsIcon /> },
+    {
+      href: "/dashboard/notifications",
+      label: t("nav.notifications"),
+      icon: <NotificationsIcon />,
+      badge: options?.unreadNotifications || undefined,
+    },
     {
       href: "/dashboard/performance",
       label: t("nav.performance"),

@@ -29,6 +29,8 @@
   },
   "notifications": {
     "newTicket": "New ticket",
+    "newInternalComment": "New internal comment",
+    "newReply": "New reply",
     "from": "from",
     "view": "View ticket"
   },
@@ -46,7 +48,8 @@
     "roleCompanyAdmin": "Company Admin",
     "roleCompanyAgent": "Agent",
     "roleSuperAdmin": "Super Admin",
-    "reminders": "Reminders"
+    "reminders": "Reminders",
+    "notifications": "Notifications"
   },
   "login": {
     "title": "Sign in",
@@ -494,6 +497,31 @@
         "reminderMissing": "Missing reminder.",
         "failed": "Could not delete the reminder. Please try again."
       }
+    }
+  },
+  "notificationsPage": {
+    "title": "Notifications",
+    "table": {
+      "ticket": "Ticket",
+      "type": "Type",
+      "from": "From",
+      "preview": "Preview",
+      "when": "When",
+      "actions": "Actions"
+    },
+    "internalBadge": "Internal note",
+    "replyBadge": "Reply",
+    "empty": "You have no notifications yet.",
+    "markRead": {
+      "submit": "Mark as read"
+    },
+    "markAllRead": {
+      "submit": "Mark all as read"
+    },
+    "errors": {
+      "unauthorized": "Not authorized.",
+      "notificationMissing": "Missing notification.",
+      "failed": "Could not update notifications. Please try again."
     }
   }
 }

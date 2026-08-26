@@ -36,6 +36,7 @@ export default async function AdminLayout({
     <AppShell
       navItems={buildNavItems("super_admin", t)}
       user={{
+        id: user.id,
         name: displayName,
         roleLabel: roleLabel("super_admin", t),
         initials: getInitials(displayName),
