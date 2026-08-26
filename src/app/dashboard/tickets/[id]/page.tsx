@@ -46,6 +46,44 @@ async function signedUrlFor(
   return data?.signedUrl ?? null;
 }
 
+function AttachmentPreview({
+  filename,
+  url,
+  mimeType,
+}: {
+  filename: string;
+  url: string | null;
+  mimeType: string;
+}) {
+  if (!url) {
+    return <>{filename}</>;
+  }
+
+  if (mimeType.startsWith("image/")) {
+    return (
+      <a href={url} target="_blank" rel="noopener noreferrer">
+        <img
+          src={url}
+          alt={filename}
+          loading="lazy"
+          className="max-h-48 rounded-lg border border-border object-contain"
+        />
+      </a>
+    );
+  }
+
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="font-medium text-primary hover:underline"
+    >
+      {filename}
+    </a>
+  );
+}
+
 function MetaRow({
   label,
   children,
@@ -232,12 +270,12 @@ export default async function TicketDetailPage({
 
   const commentAttachmentsByCommentId = new Map<
     string,
-    { filename: string; url: string | null }[]
+    { filename: string; url: string | null; mimeType: string }[]
   >();
   for (const a of commentAttachments ?? []) {
     const url = await signedUrlFor(supabase, a.storage_path);
     const list = commentAttachmentsByCommentId.get(a.comment_id) ?? [];
-    list.push({ filename: a.filename, url });
+    list.push({ filename: a.filename, url, mimeType: a.mime_type });
     commentAttachmentsByCommentId.set(a.comment_id, list);
   }
 
@@ -303,18 +341,11 @@ export default async function TicketDetailPage({
               <ul className="space-y-1 text-sm">
                 {ticketAttachmentLinks.map((a) => (
                   <li key={a.id}>
-                    {a.url ? (
-                      <a
-                        href={a.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="font-medium text-primary hover:underline"
-                      >
-                        {a.filename}
-                      </a>
-                    ) : (
-                      a.filename
-                    )}
+                    <AttachmentPreview
+                      filename={a.filename}
+                      url={a.url}
+                      mimeType={a.mime_type}
+                    />
                   </li>
                 ))}
               </ul>
@@ -370,18 +401,11 @@ export default async function TicketDetailPage({
                       .get(comment.id)
                       ?.map((a) => (
                         <div key={a.filename} className="mt-2 text-xs">
-                          {a.url ? (
-                            <a
-                              href={a.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="font-medium text-primary hover:underline"
-                            >
-                              {a.filename}
-                            </a>
-                          ) : (
-                            a.filename
-                          )}
+                          <AttachmentPreview
+                            filename={a.filename}
+                            url={a.url}
+                            mimeType={a.mimeType}
+                          />
                         </div>
                       ))}
                   </div>
