@@ -306,6 +306,8 @@ export default async function TicketDetailPage({
                     {a.url ? (
                       <a
                         href={a.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="font-medium text-primary hover:underline"
                       >
                         {a.filename}
@@ -371,6 +373,8 @@ export default async function TicketDetailPage({
                           {a.url ? (
                             <a
                               href={a.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
                               className="font-medium text-primary hover:underline"
                             >
                               {a.filename}
