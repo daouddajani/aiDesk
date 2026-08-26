@@ -30,6 +30,7 @@ function buildHref(
     mine?: string;
     from?: string;
     to?: string;
+    q?: string;
     page?: string;
     pageSize?: string;
   },
@@ -39,10 +40,18 @@ function buildHref(
   if (params.mine) query.set("mine", params.mine);
   if (params.from) query.set("from", params.from);
   if (params.to) query.set("to", params.to);
+  if (params.q) query.set("q", params.q);
   if (params.page) query.set("page", params.page);
   if (params.pageSize) query.set("pageSize", params.pageSize);
   const qs = query.toString();
   return qs ? `${base}?${qs}` : base;
+}
+
+// PostgREST's .or() filter syntax treats commas/parentheses as structural, so
+// any value containing them must be double-quoted, with backslashes and
+// double quotes within it escaped.
+function escapeOrValue(value: string) {
+  return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 }
 
 export default async function TicketsListPage({
@@ -53,6 +62,7 @@ export default async function TicketsListPage({
     mine?: string;
     from?: string;
     to?: string;
+    q?: string;
     page?: string;
     pageSize?: string;
   }>;
@@ -105,6 +115,14 @@ export default async function TicketsListPage({
     query = query.eq("assigned_agent_id", user.id);
   }
 
+  const searchTerm = params.q?.trim();
+  if (searchTerm) {
+    const escaped = escapeOrValue(searchTerm);
+    query = query.or(
+      `subject.ilike."%${escaped}%",sender_name.ilike."%${escaped}%",sender_email.ilike."%${escaped}%"`,
+    );
+  }
+
   const [{ data: allTickets }, { data: agents }] = await Promise.all([
     query,
     supabase
@@ -153,6 +171,7 @@ export default async function TicketsListPage({
       mine: params.mine,
       from: params.from,
       to: params.to,
+      q: params.q,
       pageSize: params.pageSize,
       ...overrides,
     });
@@ -223,6 +242,19 @@ export default async function TicketsListPage({
           <input type="hidden" name="pageSize" value={params.pageSize} />
         )}
         <div className="space-y-1">
+          <label htmlFor="q" className="text-xs font-semibold text-ink-sub">
+            {t("dashboard.search")}
+          </label>
+          <input
+            id="q"
+            name="q"
+            type="text"
+            defaultValue={params.q}
+            placeholder={t("dashboard.searchPlaceholder")}
+            className="w-56 rounded-[10px] border border-border bg-surface px-2.5 py-1.5 text-sm text-ink"
+          />
+        </div>
+        <div className="space-y-1">
           <label htmlFor="from" className="text-xs font-semibold text-ink-sub">
             {t("dashboard.dateFrom")}
           </label>
@@ -257,10 +289,24 @@ export default async function TicketsListPage({
             href={buildHref("/dashboard/tickets", {
               status: params.status,
               mine: params.mine,
+              q: params.q,
             })}
             className="text-sm font-semibold text-ink-sub hover:underline"
           >
             {t("dashboard.clearDates")}
+          </Link>
+        )}
+        {params.q && (
+          <Link
+            href={buildHref("/dashboard/tickets", {
+              status: params.status,
+              mine: params.mine,
+              from: params.from,
+              to: params.to,
+            })}
+            className="text-sm font-semibold text-ink-sub hover:underline"
+          >
+            {t("dashboard.clearSearch")}
           </Link>
         )}
       </form>
