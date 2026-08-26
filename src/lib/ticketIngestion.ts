@@ -261,6 +261,7 @@ export async function createTicketFromEmail(
   defaultAgentId: string | null,
   email: IncomingEmail,
   aiSuggestedAgentId: string | null = null,
+  category: string | null = null,
 ): Promise<{ ticketId: string; duplicate?: false } | { duplicate: true } | { error: string }> {
   if (!email.fromEmail) {
     return { error: "Message has no sender address, skipped." };
@@ -279,6 +280,7 @@ export async function createTicketFromEmail(
         status: "new",
         assigned_agent_id: defaultAgentId,
         ai_suggested_agent_id: aiSuggestedAgentId,
+        category,
         graph_conversation_id: email.conversationId,
         source_message_id: email.sourceMessageId,
       },
@@ -316,6 +318,7 @@ export async function ingestIncomingEmail(
   email: IncomingEmail,
   aiSuggestedAgentId: string | null,
   agentEmailMap: AgentEmailMap,
+  category: string | null = null,
 ): Promise<
   | { ticketId: string; matched: true; duplicate?: false }
   | { ticketId: string; matched: false; duplicate?: false }
@@ -348,6 +351,7 @@ export async function ingestIncomingEmail(
     defaultAgentId,
     email,
     aiSuggestedAgentId,
+    category,
   );
   if ("ticketId" in created) return { ...created, matched: false };
   return created;

@@ -38,6 +38,7 @@
     "dashboard": "Dashboard",
     "tickets": "Tickets",
     "performance": "Performance",
+    "reports": "Reports",
     "agents": "Agents",
     "mailbox": "Mailbox",
     "settings": "Company Settings",
@@ -350,6 +351,21 @@
     },
     "noTeamMembers": "No team members yet.",
     "noTicketsAssigned": "No tickets assigned yet."
+  },
+  "reports": {
+    "title": "Reports",
+    "perDayTitle": "Tickets opened per day",
+    "topRequestersTitle": "Top requesters",
+    "topRequestersTable": {
+      "requester": "Requester",
+      "email": "Email",
+      "tickets": "Tickets"
+    },
+    "categoryTitle": "Most common issues",
+    "statusTitle": "Tickets by status",
+    "dayOfWeekTitle": "Tickets by day of week",
+    "uncategorized": "Uncategorized",
+    "noData": "No data for this date range yet."
   },
   "agents": {
     "title": "Agents",

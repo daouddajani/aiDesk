@@ -6,6 +6,7 @@ import {
   PerformanceIcon,
   RemindersIcon,
   NotificationsIcon,
+  ReportsIcon,
   AgentsIcon,
   MailboxIcon,
   SettingsIcon,
@@ -49,6 +50,11 @@ export function buildNavItems(
     },
     ...(role === "company_admin"
       ? [
+          {
+            href: "/dashboard/reports",
+            label: t("nav.reports"),
+            icon: <ReportsIcon />,
+          },
           {
             href: "/dashboard/agents",
             label: t("nav.agents"),

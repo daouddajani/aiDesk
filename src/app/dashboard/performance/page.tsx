@@ -9,6 +9,7 @@ import { getCompanyTimezone } from "@/lib/companyTimezone";
 import { toLocalDateString } from "@/lib/timezone";
 import { resolvePagination } from "@/lib/pagination";
 import { TicketPagination } from "@/components/TicketPagination";
+import { DateRangeFilter, buildHref } from "@/components/DateRangeFilter";
 
 type Translator = Awaited<ReturnType<typeof getTranslations>>;
 
@@ -61,26 +62,6 @@ function averageResolutionSeconds(tickets: TicketRow[]): number | null {
   return seconds.length
     ? seconds.reduce((a, b) => a + b, 0) / seconds.length
     : null;
-}
-
-function buildHref(
-  base: string,
-  params: {
-    status?: string;
-    from?: string;
-    to?: string;
-    page?: string;
-    pageSize?: string;
-  },
-) {
-  const query = new URLSearchParams();
-  if (params.status) query.set("status", params.status);
-  if (params.from) query.set("from", params.from);
-  if (params.to) query.set("to", params.to);
-  if (params.page) query.set("page", params.page);
-  if (params.pageSize) query.set("pageSize", params.pageSize);
-  const qs = query.toString();
-  return qs ? `${base}?${qs}` : base;
 }
 
 const STAT_CARD_THEMES = {
@@ -185,62 +166,6 @@ function InfoCard({
   );
 }
 
-function DateRangeFilter({
-  t,
-  status,
-  from,
-  to,
-}: {
-  t: Translator;
-  status?: string;
-  from?: string;
-  to?: string;
-}) {
-  return (
-    <form className="flex flex-wrap items-end gap-3 text-sm">
-      {status && <input type="hidden" name="status" value={status} />}
-      <div className="space-y-1">
-        <label htmlFor="from" className="text-xs font-semibold text-ink-sub">
-          {t("performance.dateFrom")}
-        </label>
-        <input
-          id="from"
-          name="from"
-          type="date"
-          defaultValue={from}
-          className="rounded-[10px] border border-border bg-surface px-2.5 py-1.5 text-sm text-ink"
-        />
-      </div>
-      <div className="space-y-1">
-        <label htmlFor="to" className="text-xs font-semibold text-ink-sub">
-          {t("performance.dateTo")}
-        </label>
-        <input
-          id="to"
-          name="to"
-          type="date"
-          defaultValue={to}
-          className="rounded-[10px] border border-border bg-surface px-2.5 py-1.5 text-sm text-ink"
-        />
-      </div>
-      <button
-        type="submit"
-        className="rounded-[10px] border border-border bg-surface px-4 py-2 text-sm font-bold text-ink hover:bg-surface-alt"
-      >
-        {t("performance.apply")}
-      </button>
-      {(from || to) && (
-        <Link
-          href={buildHref("/dashboard/performance", { status })}
-          className="text-sm font-semibold text-ink-sub hover:underline"
-        >
-          {t("performance.clearDates")}
-        </Link>
-      )}
-    </form>
-  );
-}
-
 export default async function PerformancePage({
   searchParams,
 }: {
@@ -328,6 +253,7 @@ export default async function PerformancePage({
 
         <DateRangeFilter
           t={t}
+          basePath="/dashboard/performance"
           status={params.status}
           from={params.from}
           to={params.to}
@@ -431,7 +357,12 @@ export default async function PerformancePage({
         {t("performance.teamTitle")}
       </h1>
 
-      <DateRangeFilter t={t} from={params.from} to={params.to} />
+      <DateRangeFilter
+        t={t}
+        basePath="/dashboard/performance"
+        from={params.from}
+        to={params.to}
+      />
 
       <div className="rounded-2xl border border-border bg-surface shadow-card">
         <div className="overflow-x-auto">

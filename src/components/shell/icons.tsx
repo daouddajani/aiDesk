@@ -31,6 +31,14 @@ export const PerformanceIcon = () => (
   </svg>
 );
 
+export const ReportsIcon = () => (
+  <svg {...common}>
+    <rect x="3" y="12" width="4" height="8"></rect>
+    <rect x="10" y="7" width="4" height="13"></rect>
+    <rect x="17" y="3" width="4" height="17"></rect>
+  </svg>
+);
+
 export const AgentsIcon = () => (
   <svg {...common}>
     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>

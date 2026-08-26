@@ -35,11 +35,17 @@ async function classifyForTicket(
   isJunk: boolean;
   suggestedAgentId: string | null;
   cleanBody: string;
+  category: string | null;
 }> {
   const quoteStripped = stripQuotedReply(bodyText);
 
   if (!aiProvider)
-    return { isJunk: false, suggestedAgentId: null, cleanBody: quoteStripped };
+    return {
+      isJunk: false,
+      suggestedAgentId: null,
+      cleanBody: quoteStripped,
+      category: null,
+    };
   try {
     const classification = await aiProvider.classify(subject, quoteStripped);
     if (checkJunk && classification.isJunk) {
@@ -47,6 +53,7 @@ async function classifyForTicket(
         isJunk: true,
         suggestedAgentId: null,
         cleanBody: classification.cleanBody,
+        category: null,
       };
     }
     const suggestedAgentId = await aiProvider.suggestAgent(
@@ -57,9 +64,15 @@ async function classifyForTicket(
       isJunk: false,
       suggestedAgentId,
       cleanBody: classification.cleanBody,
+      category: classification.category,
     };
   } catch {
-    return { isJunk: false, suggestedAgentId: null, cleanBody: quoteStripped };
+    return {
+      isJunk: false,
+      suggestedAgentId: null,
+      cleanBody: quoteStripped,
+      category: null,
+    };
   }
 }
 
@@ -193,7 +206,7 @@ async function pollMicrosoftCompany(
       ? await listMessageAttachments(tokens.access_token, message.id)
       : [];
 
-    const { suggestedAgentId, cleanBody } = await classifyForTicket(
+    const { suggestedAgentId, cleanBody, category } = await classifyForTicket(
       aiProvider,
       agents,
       message.subject ?? "",
@@ -237,6 +250,7 @@ async function pollMicrosoftCompany(
       email,
       suggestedAgentId,
       agentEmailMap,
+      category,
     );
     if ("ticketId" in result) {
       if (result.matched) matchedReplies += 1;
@@ -333,7 +347,7 @@ async function pollImapCompany(
       continue;
     }
 
-    const { isJunk, suggestedAgentId, cleanBody } = await classifyForTicket(
+    const { isJunk, suggestedAgentId, cleanBody, category } = await classifyForTicket(
       aiProvider,
       agents,
       message.subject ?? "",
@@ -364,6 +378,7 @@ async function pollImapCompany(
       email,
       suggestedAgentId,
       agentEmailMap,
+      category,
     );
     if ("ticketId" in result) {
       if (result.matched) matchedReplies += 1;

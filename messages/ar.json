@@ -38,6 +38,7 @@
     "dashboard": "لوحة التحكم",
     "tickets": "التذاكر",
     "performance": "الأداء",
+    "reports": "التقارير",
     "agents": "الموظفون",
     "mailbox": "البريد الإلكتروني",
     "settings": "إعدادات الشركة",
@@ -350,6 +351,21 @@
     },
     "noTeamMembers": "لا يوجد أعضاء فريق بعد.",
     "noTicketsAssigned": "لا توجد تذاكر مسندة بعد."
+  },
+  "reports": {
+    "title": "التقارير",
+    "perDayTitle": "التذاكر المفتوحة يوميًا",
+    "topRequestersTitle": "الأكثر إرسالًا للتذاكر",
+    "topRequestersTable": {
+      "requester": "المرسل",
+      "email": "البريد الإلكتروني",
+      "tickets": "عدد التذاكر"
+    },
+    "categoryTitle": "أكثر المشكلات شيوعًا",
+    "statusTitle": "التذاكر حسب الحالة",
+    "dayOfWeekTitle": "التذاكر حسب يوم الأسبوع",
+    "uncategorized": "غير مصنف",
+    "noData": "لا توجد بيانات لهذا النطاق الزمني بعد."
   },
   "agents": {
     "title": "الموظفون",
