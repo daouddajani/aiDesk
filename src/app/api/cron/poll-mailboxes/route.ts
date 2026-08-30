@@ -124,11 +124,14 @@ type MailboxCompany = {
     imapPort: number;
     username: string;
   } | null;
+  new_ticket_notification_enabled: boolean;
+  new_ticket_notification_email: string | null;
 };
 
 async function pollMicrosoftCompany(
   adminClient: ReturnType<typeof createAdminClient>,
   company: MailboxCompany,
+  origin: string,
 ) {
   const { data: refreshToken } = await adminClient.rpc(
     "get_company_mailbox_secret",
@@ -251,6 +254,13 @@ async function pollMicrosoftCompany(
       suggestedAgentId,
       agentEmailMap,
       category,
+      {
+        origin,
+        notification: {
+          enabled: company.new_ticket_notification_enabled,
+          email: company.new_ticket_notification_email,
+        },
+      },
     );
     if ("ticketId" in result) {
       if (result.matched) matchedReplies += 1;
@@ -280,6 +290,7 @@ async function pollMicrosoftCompany(
 async function pollImapCompany(
   adminClient: ReturnType<typeof createAdminClient>,
   company: MailboxCompany,
+  origin: string,
 ) {
   if (!company.mailbox_imap_config)
     return {
@@ -379,6 +390,13 @@ async function pollImapCompany(
       suggestedAgentId,
       agentEmailMap,
       category,
+      {
+        origin,
+        notification: {
+          enabled: company.new_ticket_notification_enabled,
+          email: company.new_ticket_notification_email,
+        },
+      },
     );
     if ("ticketId" in result) {
       if (result.matched) matchedReplies += 1;
@@ -407,7 +425,7 @@ export async function GET(request: Request) {
   const { data: companies, error } = await adminClient
     .from("companies")
     .select(
-      "id, default_agent_id, blocked_sender_emails, mailbox_provider, mailbox_last_synced_at, mailbox_last_uid, mailbox_imap_config",
+      "id, default_agent_id, blocked_sender_emails, mailbox_provider, mailbox_last_synced_at, mailbox_last_uid, mailbox_imap_config, new_ticket_notification_enabled, new_ticket_notification_email",
     )
     .not("mailbox_provider", "is", null);
 
@@ -415,14 +433,15 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
+  const origin = new URL(request.url).origin;
   const results = [];
 
   for (const company of (companies ?? []) as MailboxCompany[]) {
     try {
       const summary =
         company.mailbox_provider === "microsoft"
-          ? await pollMicrosoftCompany(adminClient, company)
-          : await pollImapCompany(adminClient, company);
+          ? await pollMicrosoftCompany(adminClient, company, origin)
+          : await pollImapCompany(adminClient, company, origin);
       results.push({ companyId: company.id, ...summary });
     } catch (err) {
       results.push({

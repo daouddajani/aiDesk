@@ -466,11 +466,16 @@
     "blockedSenderEmails": "Blocked sender emails (comma-separated)",
     "blockedSenderEmailsPlaceholder": "noreply@vendor.com, alerts@service.com",
     "blockedSenderEmailsHint": "Mail from these addresses is ignored entirely — no ticket is created or updated.",
+    "newTicketNotificationEnabledLabel": "Email me when a new ticket is opened",
+    "newTicketNotificationEmailPlaceholder": "notifications@yourcompany.com",
+    "newTicketNotificationEmailHint": "Sent for every newly opened ticket, containing the ticket title, who opened it, and a link to view it.",
     "success": "Settings saved.",
     "errors": {
       "unauthorized": "Not authorized.",
       "nameRequired": "Company name is required.",
-      "updateFailed": "Could not update company settings. Please try again."
+      "updateFailed": "Could not update company settings. Please try again.",
+      "invalidNotificationEmail": "Enter a valid notification email address.",
+      "notificationEmailRequired": "Add a notification email to enable this."
     },
     "ai": {
       "title": "AI features",

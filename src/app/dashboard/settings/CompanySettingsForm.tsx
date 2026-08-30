@@ -12,6 +12,8 @@ type Company = {
   timezone: string;
   default_agent_id: string | null;
   blocked_sender_emails: string[] | null;
+  new_ticket_notification_enabled: boolean;
+  new_ticket_notification_email: string | null;
 };
 
 type AgentOption = {
@@ -114,6 +116,29 @@ export function CompanySettingsForm({
         />
         <p className="text-xs font-semibold text-ink-sub">
           {t("blockedSenderEmailsHint")}
+        </p>
+      </div>
+
+      <div className="space-y-2">
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            name="newTicketNotificationEnabled"
+            defaultChecked={company.new_ticket_notification_enabled}
+            className="h-4 w-4 rounded border-border"
+          />
+          {t("newTicketNotificationEnabledLabel")}
+        </label>
+        <input
+          id="newTicketNotificationEmail"
+          name="newTicketNotificationEmail"
+          type="email"
+          defaultValue={company.new_ticket_notification_email ?? ""}
+          placeholder={t("newTicketNotificationEmailPlaceholder")}
+          className="w-full rounded-[10px] border border-border bg-surface-alt px-3.5 py-2.5 text-[13.5px] text-ink"
+        />
+        <p className="text-xs font-semibold text-ink-sub">
+          {t("newTicketNotificationEmailHint")}
         </p>
       </div>
 

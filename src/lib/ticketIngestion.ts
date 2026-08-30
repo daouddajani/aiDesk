@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import crypto from "node:crypto";
+import { resend, RESEND_FROM_EMAIL } from "@/lib/resend";
 
 export type IncomingEmailAttachment = {
   filename: string;
@@ -40,8 +41,40 @@ export type IncomingEmail = {
 // email(lowercase) -> profile id, for agents of the company being polled.
 export type AgentEmailMap = Map<string, string>;
 
+// Threaded through ingestIncomingEmail -> createTicketFromEmail so a new
+// ticket can email the company's configured notification address. Bundled
+// as one object (rather than more positional params) since both fields are
+// required and can't follow the existing optional params.
+export type NewTicketNotificationOpts = {
+  origin: string;
+  notification: { enabled: boolean; email: string | null };
+};
+
 function sanitizeFilename(name: string) {
   return name.replace(/[/\\]/g, "_").slice(0, 200) || "attachment";
+}
+
+async function sendNewTicketNotification(
+  origin: string,
+  notificationEmail: string,
+  ticket: { id: string; subject: string; senderName: string | null; senderEmail: string },
+) {
+  const ticketUrl = `${origin}/dashboard/tickets/${ticket.id}`;
+  const openedBy = ticket.senderName
+    ? `${ticket.senderName} (${ticket.senderEmail})`
+    : ticket.senderEmail;
+
+  const { error } = await resend.emails.send({
+    from: RESEND_FROM_EMAIL,
+    to: notificationEmail,
+    subject: `New ticket: ${ticket.subject}`,
+    html: `<p>A new ticket has been opened: <strong>${ticket.subject}</strong></p><p>Opened by: ${openedBy}</p><p><a href="${ticketUrl}">View ticket</a></p>`,
+  });
+
+  // Non-fatal: ticket creation has already succeeded by the time this runs.
+  if (error) {
+    console.error(`new-ticket notification failed for ${ticket.id}: ${error.message}`);
+  }
 }
 
 async function persistAttachments(
@@ -262,6 +295,7 @@ export async function createTicketFromEmail(
   email: IncomingEmail,
   aiSuggestedAgentId: string | null = null,
   category: string | null = null,
+  opts: NewTicketNotificationOpts,
 ): Promise<{ ticketId: string; duplicate?: false } | { duplicate: true } | { error: string }> {
   if (!email.fromEmail) {
     return { error: "Message has no sender address, skipped." };
@@ -304,6 +338,15 @@ export async function createTicketFromEmail(
     { ticket_id: ticket.id },
   );
 
+  if (opts.notification.enabled && opts.notification.email) {
+    await sendNewTicketNotification(opts.origin, opts.notification.email, {
+      id: ticket.id,
+      subject: email.subject || "(no subject)",
+      senderName: email.fromName,
+      senderEmail: email.fromEmail,
+    });
+  }
+
   return { ticketId: ticket.id };
 }
 
@@ -319,6 +362,7 @@ export async function ingestIncomingEmail(
   aiSuggestedAgentId: string | null,
   agentEmailMap: AgentEmailMap,
   category: string | null = null,
+  opts: NewTicketNotificationOpts,
 ): Promise<
   | { ticketId: string; matched: true; duplicate?: false }
   | { ticketId: string; matched: false; duplicate?: false }
@@ -352,6 +396,7 @@ export async function ingestIncomingEmail(
     email,
     aiSuggestedAgentId,
     category,
+    opts,
   );
   if ("ticketId" in created) return { ...created, matched: false };
   return created;

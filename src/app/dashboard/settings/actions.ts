@@ -7,6 +7,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import type { AIProviderName, CompanyAIConfig } from "@/lib/ai";
 
 const AI_PROVIDERS: AIProviderName[] = ["openai", "anthropic", "gemini"];
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function updateCompanySettings(
   _prevState: unknown,
@@ -44,8 +45,21 @@ export async function updateCompanySettings(
     ),
   );
 
+  const newTicketNotificationEnabled =
+    formData.get("newTicketNotificationEnabled") === "on";
+  const newTicketNotificationEmail = String(
+    formData.get("newTicketNotificationEmail") ?? "",
+  ).trim();
+
   if (!name) {
     return { error: t("nameRequired") };
+  }
+
+  if (newTicketNotificationEmail && !EMAIL_RE.test(newTicketNotificationEmail)) {
+    return { error: t("invalidNotificationEmail") };
+  }
+  if (newTicketNotificationEnabled && !newTicketNotificationEmail) {
+    return { error: t("notificationEmailRequired") };
   }
 
   // Scoping to the caller's own company is enforced by the companies_update
@@ -58,6 +72,8 @@ export async function updateCompanySettings(
       logo_url: logoUrl || null,
       default_agent_id: defaultAgentId || null,
       blocked_sender_emails: blockedSenderEmails,
+      new_ticket_notification_enabled: newTicketNotificationEnabled,
+      new_ticket_notification_email: newTicketNotificationEmail || null,
     })
     .eq("id", profile.company_id);
 
