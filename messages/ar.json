@@ -150,6 +150,7 @@
     "kpiTotal": "إجمالي التذاكر",
     "kpiOpen": "مفتوحة",
     "kpiNew": "جديدة",
+    "kpiPending": "قيد الانتظار",
     "kpiOnProcess": "قيد المعالجة",
     "kpiClosed": "مغلقة",
     "recentTickets": "أحدث التذاكر",

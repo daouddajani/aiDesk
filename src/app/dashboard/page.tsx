@@ -73,10 +73,11 @@ export default async function DashboardHomePage() {
   const agentNameById = await buildAgentNameMap(agents ?? []);
   const timezone = await getCompanyTimezone(supabase, profile.company_id);
 
-  const counts = { total: 0, open: 0, new: 0, on_process: 0, closed: 0 };
+  const counts = { total: 0, open: 0, new: 0, pending: 0, on_process: 0, closed: 0 };
   for (const ticket of tickets ?? []) {
     counts.total += 1;
     if (ticket.status === "new") counts.new += 1;
+    if (ticket.status === "pending") counts.pending += 1;
     if (ticket.status === "on_process") counts.on_process += 1;
     if (ticket.status === "closed") counts.closed += 1;
     else counts.open += 1;
@@ -93,10 +94,11 @@ export default async function DashboardHomePage() {
         <p className="mt-1 text-sm text-ink-sub">{t("home.subtitle")}</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
         <KpiCard label={t("home.kpiTotal")} value={counts.total} />
         <KpiCard label={t("home.kpiOpen")} value={counts.open} />
         <KpiCard label={t("home.kpiNew")} value={counts.new} />
+        <KpiCard label={t("home.kpiPending")} value={counts.pending} />
         <KpiCard label={t("home.kpiOnProcess")} value={counts.on_process} />
         <KpiCard label={t("home.kpiClosed")} value={counts.closed} />
       </div>

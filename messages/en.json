@@ -150,6 +150,7 @@
     "kpiTotal": "Total tickets",
     "kpiOpen": "Open",
     "kpiNew": "New",
+    "kpiPending": "Pending",
     "kpiOnProcess": "In progress",
     "kpiClosed": "Closed",
     "recentTickets": "Recent tickets",
