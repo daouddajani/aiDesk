@@ -148,6 +148,7 @@
     "greeting": "مرحبًا بعودتك، {name}",
     "subtitle": "إليك آخر مستجدات تذاكرك.",
     "kpiTotal": "إجمالي التذاكر",
+    "kpiOpen": "مفتوحة",
     "kpiNew": "جديدة",
     "kpiOnProcess": "قيد المعالجة",
     "kpiClosed": "مغلقة",

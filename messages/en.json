@@ -148,6 +148,7 @@
     "greeting": "Welcome back, {name}",
     "subtitle": "Here's what's happening with your tickets.",
     "kpiTotal": "Total tickets",
+    "kpiOpen": "Open",
     "kpiNew": "New",
     "kpiOnProcess": "In progress",
     "kpiClosed": "Closed",
