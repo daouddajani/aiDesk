@@ -146,7 +146,7 @@ export async function updateAgent(_prevState: unknown, formData: FormData) {
     .eq("id", profileId);
 
   if (error) {
-    return { error: t("updateFailed") };
+    return { error: t("updateFailedDetail", { message: error.message }) };
   }
 
   revalidatePath("/dashboard/agents");

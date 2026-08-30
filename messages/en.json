@@ -410,6 +410,7 @@
         "unauthorized": "Not authorized.",
         "agentMissing": "Missing agent.",
         "updateFailed": "Could not update the agent. Please try again.",
+        "updateFailedDetail": "Could not update the agent: {message}",
         "cannotDisableSelf": "You can't disable your own account."
       }
     }

@@ -410,6 +410,7 @@
         "unauthorized": "غير مصرح لك.",
         "agentMissing": "الموظف غير محدد.",
         "updateFailed": "تعذّر تحديث بيانات الموظف. حاول مرة أخرى.",
+        "updateFailedDetail": "تعذّر تحديث بيانات الموظف: {message}",
         "cannotDisableSelf": "لا يمكنك تعطيل حسابك الخاص."
       }
     }
