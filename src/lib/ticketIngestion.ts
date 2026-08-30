@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import crypto from "node:crypto";
-import { resend, RESEND_FROM_EMAIL } from "@/lib/resend";
+import { sendCompanyMail } from "@/lib/sendTicketReply";
 
 export type IncomingEmailAttachment = {
   filename: string;
@@ -42,12 +42,16 @@ export type IncomingEmail = {
 export type AgentEmailMap = Map<string, string>;
 
 // Threaded through ingestIncomingEmail -> createTicketFromEmail so a new
-// ticket can email the company's configured notification address. Bundled
-// as one object (rather than more positional params) since both fields are
-// required and can't follow the existing optional params.
+// ticket can email the company's configured notification address, sent from
+// the company's own connected mailbox (not a shared Resend account) and
+// linking to the company's own helpdesk URL (not the polling cron's host).
+// Bundled as one object (rather than more positional params) since these
+// fields are required and can't follow the existing optional params.
 export type NewTicketNotificationOpts = {
-  origin: string;
+  helpdeskUrl: string | null;
   notification: { enabled: boolean; email: string | null };
+  mailboxProvider: "microsoft" | "imap" | null;
+  mailboxImapConfig: { smtpHost: string; smtpPort: number; username: string } | null;
 };
 
 function sanitizeFilename(name: string) {
@@ -55,25 +59,32 @@ function sanitizeFilename(name: string) {
 }
 
 async function sendNewTicketNotification(
-  origin: string,
+  adminClient: SupabaseClient,
+  mailboxCompany: {
+    id: string;
+    mailbox_provider: "microsoft" | "imap" | null;
+    mailbox_imap_config: { smtpHost: string; smtpPort: number; username: string } | null;
+  },
   notificationEmail: string,
+  helpdeskUrl: string,
   ticket: { id: string; subject: string; senderName: string | null; senderEmail: string },
 ) {
-  const ticketUrl = `${origin}/dashboard/tickets/${ticket.id}`;
+  const ticketUrl = `${helpdeskUrl}/dashboard/tickets/${ticket.id}`;
   const openedBy = ticket.senderName
     ? `${ticket.senderName} (${ticket.senderEmail})`
     : ticket.senderEmail;
 
-  const { error } = await resend.emails.send({
-    from: RESEND_FROM_EMAIL,
-    to: notificationEmail,
-    subject: `New ticket: ${ticket.subject}`,
-    html: `<p>A new ticket has been opened: <strong>${ticket.subject}</strong></p><p>Opened by: ${openedBy}</p><p><a href="${ticketUrl}">View ticket</a></p>`,
-  });
+  const { error } = await sendCompanyMail(
+    adminClient,
+    mailboxCompany,
+    notificationEmail,
+    `New ticket: ${ticket.subject}`,
+    `<p>A new ticket has been opened: <strong>${ticket.subject}</strong></p><p>Opened by: ${openedBy}</p><p><a href="${ticketUrl}">View ticket</a></p>`,
+  );
 
   // Non-fatal: ticket creation has already succeeded by the time this runs.
   if (error) {
-    console.error(`new-ticket notification failed for ${ticket.id}: ${error.message}`);
+    console.error(`new-ticket notification failed for ${ticket.id}: ${error}`);
   }
 }
 
@@ -338,13 +349,23 @@ export async function createTicketFromEmail(
     { ticket_id: ticket.id },
   );
 
-  if (opts.notification.enabled && opts.notification.email) {
-    await sendNewTicketNotification(opts.origin, opts.notification.email, {
-      id: ticket.id,
-      subject: email.subject || "(no subject)",
-      senderName: email.fromName,
-      senderEmail: email.fromEmail,
-    });
+  if (opts.notification.enabled && opts.notification.email && opts.helpdeskUrl) {
+    await sendNewTicketNotification(
+      adminClient,
+      {
+        id: companyId,
+        mailbox_provider: opts.mailboxProvider,
+        mailbox_imap_config: opts.mailboxImapConfig,
+      },
+      opts.notification.email,
+      opts.helpdeskUrl,
+      {
+        id: ticket.id,
+        subject: email.subject || "(no subject)",
+        senderName: email.fromName,
+        senderEmail: email.fromEmail,
+      },
+    );
   }
 
   return { ticketId: ticket.id };

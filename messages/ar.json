@@ -466,16 +466,20 @@
     "blockedSenderEmails": "البريد الإلكتروني المحظور (مفصول بفواصل)",
     "blockedSenderEmailsPlaceholder": "noreply@vendor.com, alerts@service.com",
     "blockedSenderEmailsHint": "يتم تجاهل الرسائل من هذه العناوين بالكامل — لا يتم إنشاء أو تحديث أي تذكرة.",
+    "helpdeskUrl": "رابط مركز الدعم",
+    "helpdeskUrlPlaceholder": "helpme.yourcompany.com",
+    "helpdeskUrlHint": "يُستخدم لإنشاء روابط التذاكر المُرسلة في رسائل الإشعارات.",
     "newTicketNotificationEnabledLabel": "إرسال بريد إلكتروني عند فتح تذكرة جديدة",
     "newTicketNotificationEmailPlaceholder": "notifications@yourcompany.com",
-    "newTicketNotificationEmailHint": "يُرسل عند فتح كل تذكرة جديدة، ويتضمن عنوان التذكرة ومن قام بفتحها ورابطًا لعرضها.",
+    "newTicketNotificationEmailHint": "يُرسل من بريدك الإلكتروني المتصل عند فتح كل تذكرة جديدة، ويتضمن عنوان التذكرة ومن قام بفتحها ورابطًا لعرضها.",
     "success": "تم حفظ الإعدادات.",
     "errors": {
       "unauthorized": "غير مصرح لك.",
       "nameRequired": "اسم الشركة مطلوب.",
       "updateFailed": "تعذّر تحديث إعدادات الشركة. حاول مرة أخرى.",
       "invalidNotificationEmail": "أدخل بريدًا إلكترونيًا صالحًا للإشعارات.",
-      "notificationEmailRequired": "أضف بريدًا إلكترونيًا للإشعارات لتفعيل هذه الميزة."
+      "notificationEmailRequired": "أضف بريدًا إلكترونيًا للإشعارات لتفعيل هذه الميزة.",
+      "helpdeskUrlRequired": "أضف رابط مركز الدعم لتفعيل هذه الميزة."
     },
     "ai": {
       "title": "ميزات الذكاء الاصطناعي",

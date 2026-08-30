@@ -158,6 +158,100 @@ async function sendImapReply(
   return {};
 }
 
+async function sendGraphMail(
+  adminClient: SupabaseClient,
+  companyId: string,
+  to: string,
+  subject: string,
+  html: string,
+): Promise<{ error?: string }> {
+  const { data: refreshToken } = await adminClient.rpc(
+    "get_company_mailbox_secret",
+    { p_company_id: companyId },
+  );
+  if (!refreshToken) return { error: "Mailbox is not connected." };
+
+  const tokens = await refreshAccessToken(refreshToken);
+  await persistRotatedRefreshToken(adminClient, companyId, tokens.refresh_token);
+
+  const res = await fetch("https://graph.microsoft.com/v1.0/me/sendMail", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${tokens.access_token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      message: {
+        subject,
+        body: { contentType: "HTML", content: html },
+        toRecipients: [{ emailAddress: { address: to } }],
+      },
+    }),
+  });
+  if (!res.ok) return { error: await res.text() };
+  return {};
+}
+
+async function sendImapMail(
+  adminClient: SupabaseClient,
+  company: {
+    id: string;
+    mailbox_imap_config: { smtpHost: string; smtpPort: number; username: string } | null;
+  },
+  to: string,
+  subject: string,
+  html: string,
+): Promise<{ error?: string }> {
+  if (!company.mailbox_imap_config) {
+    return { error: "Mailbox is not connected." };
+  }
+
+  const { data: password } = await adminClient.rpc(
+    "get_company_mailbox_secret",
+    { p_company_id: company.id },
+  );
+  if (!password) return { error: "Mailbox is not connected." };
+
+  const config = company.mailbox_imap_config;
+  const transport = nodemailer.createTransport({
+    host: config.smtpHost,
+    port: config.smtpPort,
+    secure: config.smtpPort === 465,
+    auth: { user: config.username, pass: password },
+  });
+
+  try {
+    await transport.sendMail({ from: config.username, to, subject, html });
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : "SMTP send failed." };
+  }
+
+  return {};
+}
+
+// Fresh (non-reply) mail through the company's own connected mailbox — used
+// for notifications that aren't replying to any particular inbound message,
+// unlike sendTicketReply below.
+export async function sendCompanyMail(
+  adminClient: SupabaseClient,
+  company: {
+    id: string;
+    mailbox_provider: "microsoft" | "imap" | null;
+    mailbox_imap_config: { smtpHost: string; smtpPort: number; username: string } | null;
+  },
+  to: string,
+  subject: string,
+  html: string,
+): Promise<{ error?: string }> {
+  if (company.mailbox_provider === "microsoft") {
+    return sendGraphMail(adminClient, company.id, to, subject, html);
+  }
+  if (company.mailbox_provider === "imap") {
+    return sendImapMail(adminClient, company, to, subject, html);
+  }
+  return { error: "No mailbox connected for this company." };
+}
+
 export async function sendTicketReply(
   adminClient: SupabaseClient,
   company: ReplyCompany,

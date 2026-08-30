@@ -14,6 +14,7 @@ type Company = {
   blocked_sender_emails: string[] | null;
   new_ticket_notification_enabled: boolean;
   new_ticket_notification_email: string | null;
+  helpdesk_url: string | null;
 };
 
 type AgentOption = {
@@ -117,6 +118,20 @@ export function CompanySettingsForm({
         <p className="text-xs font-semibold text-ink-sub">
           {t("blockedSenderEmailsHint")}
         </p>
+      </div>
+
+      <div className="space-y-1">
+        <label htmlFor="helpdeskUrl" className="text-sm">
+          {t("helpdeskUrl")}
+        </label>
+        <input
+          id="helpdeskUrl"
+          name="helpdeskUrl"
+          defaultValue={company.helpdesk_url ?? ""}
+          placeholder={t("helpdeskUrlPlaceholder")}
+          className="w-full rounded-[10px] border border-border bg-surface-alt px-3.5 py-2.5 text-[13.5px] text-ink"
+        />
+        <p className="text-xs font-semibold text-ink-sub">{t("helpdeskUrlHint")}</p>
       </div>
 
       <div className="space-y-2">

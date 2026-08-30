@@ -9,6 +9,12 @@ import type { AIProviderName, CompanyAIConfig } from "@/lib/ai";
 const AI_PROVIDERS: AIProviderName[] = ["openai", "anthropic", "gemini"];
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+function normalizeHelpdeskUrl(raw: string) {
+  const trimmed = raw.trim().replace(/\/+$/, "");
+  if (!trimmed) return "";
+  return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+}
+
 export async function updateCompanySettings(
   _prevState: unknown,
   formData: FormData,
@@ -50,6 +56,9 @@ export async function updateCompanySettings(
   const newTicketNotificationEmail = String(
     formData.get("newTicketNotificationEmail") ?? "",
   ).trim();
+  const helpdeskUrl = normalizeHelpdeskUrl(
+    String(formData.get("helpdeskUrl") ?? ""),
+  );
 
   if (!name) {
     return { error: t("nameRequired") };
@@ -60,6 +69,9 @@ export async function updateCompanySettings(
   }
   if (newTicketNotificationEnabled && !newTicketNotificationEmail) {
     return { error: t("notificationEmailRequired") };
+  }
+  if (newTicketNotificationEnabled && !helpdeskUrl) {
+    return { error: t("helpdeskUrlRequired") };
   }
 
   // Scoping to the caller's own company is enforced by the companies_update
@@ -74,6 +86,7 @@ export async function updateCompanySettings(
       blocked_sender_emails: blockedSenderEmails,
       new_ticket_notification_enabled: newTicketNotificationEnabled,
       new_ticket_notification_email: newTicketNotificationEmail || null,
+      helpdesk_url: helpdeskUrl || null,
     })
     .eq("id", profile.company_id);
 
