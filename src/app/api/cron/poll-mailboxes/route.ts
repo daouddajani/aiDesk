@@ -84,7 +84,7 @@ async function loadAgentSkills(
     .from("profiles")
     .select("id, skills")
     .eq("company_id", companyId)
-    .in("role", ["company_admin", "company_agent"])
+    .in("role", ["company_admin", "company_agent", "supervisor"])
     .eq("disabled", false);
 
   return (data ?? []).map((p) => ({ id: p.id, skills: p.skills ?? [] }));

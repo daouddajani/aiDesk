@@ -86,15 +86,19 @@ export default async function TicketsListPage({
     .single();
 
   if (
-    (profile?.role !== "company_admin" && profile?.role !== "company_agent") ||
+    (profile?.role !== "company_admin" &&
+      profile?.role !== "company_agent" &&
+      profile?.role !== "supervisor") ||
     !profile.company_id
   ) {
     redirect("/login");
   }
 
-  // Agents default to seeing only their own tickets; admins default to the
-  // whole company's. Either can flip it via ?mine=me / ?mine=all.
-  const defaultMine = profile.role === "company_agent";
+  // Agents (and supervisors, who still work tickets day-to-day) default to
+  // seeing only their own tickets; admins default to the whole company's.
+  // Either can flip it via ?mine=me / ?mine=all.
+  const defaultMine =
+    profile.role === "company_agent" || profile.role === "supervisor";
   const showMineOnly = params.mine ? params.mine === "me" : defaultMine;
 
   const timezone = await getCompanyTimezone(supabase, profile.company_id);

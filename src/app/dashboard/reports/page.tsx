@@ -109,7 +109,10 @@ export default async function ReportsPage({
     .eq("id", user.id)
     .single();
 
-  if (profile?.role !== "company_admin" || !profile.company_id) {
+  if (
+    (profile?.role !== "company_admin" && profile?.role !== "supervisor") ||
+    !profile.company_id
+  ) {
     redirect("/dashboard");
   }
 

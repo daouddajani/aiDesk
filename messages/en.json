@@ -49,6 +49,7 @@
     "roleCompanyAdmin": "Company Admin",
     "roleCompanyAgent": "Agent",
     "roleSuperAdmin": "Super Admin",
+    "roleSupervisor": "Supervisor",
     "reminders": "Reminders",
     "notifications": "Notifications"
   },
@@ -379,6 +380,7 @@
     },
     "roleAdmin": "Admin",
     "roleAgent": "Agent",
+    "roleSupervisor": "Supervisor",
     "noAgents": "No agents yet.",
     "inviteForm": {
       "title": "Invite agent",
@@ -400,6 +402,8 @@
       "fullNameLabel": "Full name",
       "skillsLabel": "Skills (comma-separated)",
       "skillsPlaceholder": "networking, email, hardware",
+      "supervisorLabel": "Supervisor",
+      "supervisorHint": "Supervisors can also view team-wide Performance and Reports, in addition to their own ticket work.",
       "disabledLabel": "Disabled",
       "disabledHint": "A disabled agent can't log in, can't be assigned new tickets, and can't be reassigned a ticket by other agents.",
       "errors": {

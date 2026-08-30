@@ -28,7 +28,9 @@ export default async function DashboardLayout({
 
   if (
     !profile?.company_id ||
-    (profile.role !== "company_admin" && profile.role !== "company_agent") ||
+    (profile.role !== "company_admin" &&
+      profile.role !== "company_agent" &&
+      profile.role !== "supervisor") ||
     profile.disabled
   ) {
     // Catches an agent disabled mid-session: their cookie is still valid,

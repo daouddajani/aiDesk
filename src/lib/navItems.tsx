@@ -18,7 +18,7 @@ import {
 type Translator = Awaited<ReturnType<typeof getTranslations>>;
 
 export function buildNavItems(
-  role: "super_admin" | "company_admin" | "company_agent",
+  role: "super_admin" | "company_admin" | "company_agent" | "supervisor",
   t: Translator,
   options?: { unreadNotifications?: number },
 ): ShellNavItem[] {
@@ -48,13 +48,17 @@ export function buildNavItems(
       label: t("nav.reminders"),
       icon: <RemindersIcon />,
     },
-    ...(role === "company_admin"
+    ...(role === "company_admin" || role === "supervisor"
       ? [
           {
             href: "/dashboard/reports",
             label: t("nav.reports"),
             icon: <ReportsIcon />,
           },
+        ]
+      : []),
+    ...(role === "company_admin"
+      ? [
           {
             href: "/dashboard/agents",
             label: t("nav.agents"),
@@ -82,10 +86,11 @@ export function buildNavItems(
 }
 
 export function roleLabel(
-  role: "super_admin" | "company_admin" | "company_agent",
+  role: "super_admin" | "company_admin" | "company_agent" | "supervisor",
   t: Translator,
 ): string {
   if (role === "super_admin") return t("nav.roleSuperAdmin");
   if (role === "company_admin") return t("nav.roleCompanyAdmin");
+  if (role === "supervisor") return t("nav.roleSupervisor");
   return t("nav.roleCompanyAgent");
 }

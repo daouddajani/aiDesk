@@ -8,6 +8,7 @@ import { SubmitButton } from "@/components/SubmitButton";
 type Profile = {
   id: string;
   full_name: string | null;
+  role: string;
   skills: string[] | null;
   disabled: boolean;
 };
@@ -64,6 +65,26 @@ export function EditAgentForm({ profile }: { profile: Profile }) {
               className="w-full rounded-[10px] border border-border bg-surface-alt px-3.5 py-2.5 text-[13.5px] text-ink"
             />
           </div>
+
+          {profile.role !== "company_admin" && (
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <input
+                  id={`isSupervisor-${profile.id}`}
+                  name="isSupervisor"
+                  type="checkbox"
+                  defaultChecked={profile.role === "supervisor"}
+                  className="h-4 w-4 rounded border border-border"
+                />
+                <label htmlFor={`isSupervisor-${profile.id}`} className="text-sm">
+                  {t("agents.editForm.supervisorLabel")}
+                </label>
+              </div>
+              <p className="text-xs text-ink-sub">
+                {t("agents.editForm.supervisorHint")}
+              </p>
+            </div>
+          )}
 
           <div className="flex items-center gap-2">
             <input

@@ -24,7 +24,9 @@ async function requireCompanyMember() {
     .single();
 
   if (
-    (profile?.role !== "company_admin" && profile?.role !== "company_agent") ||
+    (profile?.role !== "company_admin" &&
+      profile?.role !== "company_agent" &&
+      profile?.role !== "supervisor") ||
     !profile.company_id ||
     profile.disabled
   ) {
@@ -130,7 +132,7 @@ export async function reassignTicket(_prevState: unknown, formData: FormData) {
     .select("id")
     .eq("id", agentId)
     .eq("company_id", ctx.companyId)
-    .in("role", ["company_admin", "company_agent"])
+    .in("role", ["company_admin", "company_agent", "supervisor"])
     .eq("disabled", false)
     .maybeSingle();
 

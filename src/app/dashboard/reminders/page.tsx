@@ -24,7 +24,9 @@ export default async function RemindersPage() {
     .single();
 
   if (
-    (profile?.role !== "company_admin" && profile?.role !== "company_agent") ||
+    (profile?.role !== "company_admin" &&
+      profile?.role !== "company_agent" &&
+      profile?.role !== "supervisor") ||
     !profile.company_id
   ) {
     redirect("/login");

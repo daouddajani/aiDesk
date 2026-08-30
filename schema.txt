@@ -14,7 +14,7 @@ create extension if not exists vector;     -- pgvector, for suggested-answer emb
 -- =========================================================================
 -- Enums
 -- =========================================================================
-create type user_role as enum ('super_admin', 'company_admin', 'company_agent');
+create type user_role as enum ('super_admin', 'company_admin', 'company_agent', 'supervisor');
 create type ticket_status as enum ('new', 'pending', 'on_process', 'closed');
 create type ticket_priority as enum ('low', 'medium', 'high', 'urgent');
 
@@ -259,7 +259,7 @@ create policy profiles_select on profiles
   using (
     id = auth.uid()
     or current_user_role() = 'super_admin'
-    or (current_user_role() in ('company_admin', 'company_agent')
+    or (current_user_role() in ('company_admin', 'company_agent', 'supervisor')
         and company_id = current_user_company_id())
   );
 

@@ -49,6 +49,7 @@
     "roleCompanyAdmin": "مدير الشركة",
     "roleCompanyAgent": "موظف",
     "roleSuperAdmin": "مشرف عام",
+    "roleSupervisor": "مشرف فريق",
     "reminders": "التذكيرات",
     "notifications": "الإشعارات"
   },
@@ -379,6 +380,7 @@
     },
     "roleAdmin": "مدير",
     "roleAgent": "موظف",
+    "roleSupervisor": "مشرف فريق",
     "noAgents": "لا يوجد موظفون بعد.",
     "inviteForm": {
       "title": "دعوة موظف",
@@ -400,6 +402,8 @@
       "fullNameLabel": "الاسم الكامل",
       "skillsLabel": "المهارات (مفصولة بفواصل)",
       "skillsPlaceholder": "الشبكات، البريد الإلكتروني، الأجهزة",
+      "supervisorLabel": "مشرف فريق",
+      "supervisorHint": "يمكن لمشرفي الفريق أيضًا الاطلاع على الأداء والتقارير على مستوى الفريق بأكمله، بالإضافة إلى عملهم الخاص على التذاكر.",
       "disabledLabel": "معطّل",
       "disabledHint": "لا يمكن للموظف المعطّل تسجيل الدخول، ولا يمكن إسناد تذاكر جديدة إليه، ولا يمكن لموظفين آخرين إعادة إسناد تذكرة إليه.",
       "errors": {

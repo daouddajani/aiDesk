@@ -105,6 +105,7 @@ export async function updateAgent(_prevState: unknown, formData: FormData) {
     .map((s) => s.trim())
     .filter(Boolean);
   const disabled = formData.get("disabled") === "on";
+  const isSupervisor = formData.get("isSupervisor") === "on";
 
   if (!profileId) {
     return { error: t("agentMissing") };
@@ -118,11 +119,30 @@ export async function updateAgent(_prevState: unknown, formData: FormData) {
     return { error: t("cannotDisableSelf") };
   }
 
+  const { data: target } = await ctx.supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", profileId)
+    .single();
+
+  if (!target) {
+    return { error: t("agentMissing") };
+  }
+
+  // The supervisor checkbox only ever toggles between company_agent and
+  // supervisor — this form has no way to grant/revoke company_admin, so an
+  // admin's own role field is left out of the update entirely rather than
+  // overwritten with a computed value.
+  const roleUpdate =
+    target.role === "company_agent" || target.role === "supervisor"
+      ? { role: isSupervisor ? "supervisor" : "company_agent" }
+      : {};
+
   // Scoping to the caller's own company is enforced by the profiles_update
   // RLS policy, not re-checked here.
   const { error } = await ctx.supabase
     .from("profiles")
-    .update({ full_name: fullName || null, skills, disabled })
+    .update({ full_name: fullName || null, skills, disabled, ...roleUpdate })
     .eq("id", profileId);
 
   if (error) {

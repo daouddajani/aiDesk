@@ -102,7 +102,9 @@ export default async function AgentsPage() {
                       <td className="px-4 py-3 text-ink-sub">
                         {member.role === "company_admin"
                           ? t("agents.roleAdmin")
-                          : t("agents.roleAgent")}
+                          : member.role === "supervisor"
+                            ? t("agents.roleSupervisor")
+                            : t("agents.roleAgent")}
                       </td>
                       <td className="px-4 py-3 text-ink-sub">
                         {(member.skills ?? []).join(", ") || "—"}
