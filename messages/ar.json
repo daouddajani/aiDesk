@@ -167,6 +167,8 @@
     "refresh": "تحديث",
     "mineOnly": "تذاكري",
     "allTickets": "كل التذاكر",
+    "filterByAgent": "الوكيل",
+    "allAgents": "كل الوكلاء",
     "search": "بحث",
     "searchPlaceholder": "الموضوع أو الاسم أو البريد الإلكتروني...",
     "clearSearch": "مسح البحث",

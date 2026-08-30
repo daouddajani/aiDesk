@@ -167,6 +167,8 @@
     "refresh": "Refresh",
     "mineOnly": "My tickets",
     "allTickets": "All tickets",
+    "filterByAgent": "Agent",
+    "allAgents": "All agents",
     "search": "Search",
     "searchPlaceholder": "Subject, name, or email...",
     "clearSearch": "Clear search",

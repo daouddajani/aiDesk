@@ -29,6 +29,7 @@ function buildHref(
   params: {
     status?: string;
     mine?: string;
+    agentId?: string;
     from?: string;
     to?: string;
     q?: string;
@@ -39,6 +40,7 @@ function buildHref(
   const query = new URLSearchParams();
   if (params.status) query.set("status", params.status);
   if (params.mine) query.set("mine", params.mine);
+  if (params.agentId) query.set("agentId", params.agentId);
   if (params.from) query.set("from", params.from);
   if (params.to) query.set("to", params.to);
   if (params.q) query.set("q", params.q);
@@ -61,6 +63,7 @@ export default async function TicketsListPage({
   searchParams: Promise<{
     status?: string;
     mine?: string;
+    agentId?: string;
     from?: string;
     to?: string;
     q?: string;
@@ -116,7 +119,15 @@ export default async function TicketsListPage({
     .lte("received_at", localDateStringToUtcISO(to, timezone, 23, 59, 59, 999))
     .order("received_at", { ascending: false });
 
-  if (showMineOnly) {
+  const canFilterByAgent = profile.role !== "company_agent";
+
+  if (canFilterByAgent && params.agentId) {
+    if (params.agentId === "unassigned") {
+      query = query.is("assigned_agent_id", null);
+    } else {
+      query = query.eq("assigned_agent_id", params.agentId);
+    }
+  } else if (showMineOnly) {
     query = query.eq("assigned_agent_id", user.id);
   }
 
@@ -168,12 +179,14 @@ export default async function TicketsListPage({
   const hrefFor = (overrides: {
     status?: string;
     mine?: string;
+    agentId?: string;
     page?: string;
     pageSize?: string;
   }) =>
     buildHref("/dashboard/tickets", {
       status: params.status,
       mine: params.mine,
+      agentId: params.agentId,
       from: params.from,
       to: params.to,
       q: params.q,
@@ -247,6 +260,30 @@ export default async function TicketsListPage({
         {params.pageSize && (
           <input type="hidden" name="pageSize" value={params.pageSize} />
         )}
+        {canFilterByAgent && (
+          <div className="space-y-1">
+            <label
+              htmlFor="agentId"
+              className="text-xs font-semibold text-ink-sub"
+            >
+              {t("dashboard.filterByAgent")}
+            </label>
+            <select
+              id="agentId"
+              name="agentId"
+              defaultValue={params.agentId ?? ""}
+              className="rounded-[10px] border border-border bg-surface px-2.5 py-1.5 text-sm text-ink"
+            >
+              <option value="">{t("dashboard.allAgents")}</option>
+              <option value="unassigned">{t("tickets.unassigned")}</option>
+              {(agents ?? []).map((agent) => (
+                <option key={agent.id} value={agent.id}>
+                  {agentNameById.get(agent.id) ?? t("common.unnamed")}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
         <div className="space-y-1">
           <label htmlFor="q" className="text-xs font-semibold text-ink-sub">
             {t("dashboard.search")}
@@ -295,6 +332,7 @@ export default async function TicketsListPage({
             href={buildHref("/dashboard/tickets", {
               status: params.status,
               mine: params.mine,
+              agentId: params.agentId,
               q: params.q,
             })}
             className="text-sm font-semibold text-ink-sub hover:underline"
@@ -307,6 +345,7 @@ export default async function TicketsListPage({
             href={buildHref("/dashboard/tickets", {
               status: params.status,
               mine: params.mine,
+              agentId: params.agentId,
               from: params.from,
               to: params.to,
             })}
