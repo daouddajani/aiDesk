@@ -370,6 +370,7 @@
     "categoryTitle": "Most common issues",
     "statusTitle": "Tickets by status",
     "dayOfWeekTitle": "Tickets by day of week",
+    "hourOfDayTitle": "Tickets by hour of day",
     "uncategorized": "Uncategorized",
     "noData": "No data for this date range yet."
   },

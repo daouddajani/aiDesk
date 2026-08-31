@@ -182,3 +182,27 @@ export function DayOfWeekChart({
     </ResponsiveContainer>
   );
 }
+
+export function HourOfDayChart({
+  data,
+}: {
+  data: { label: string; count: number }[];
+}) {
+  return (
+    <ResponsiveContainer width="100%" height={260}>
+      <BarChart data={data} margin={{ top: 8, right: 16, left: -16, bottom: 0 }}>
+        <CartesianGrid stroke="var(--color-border)" vertical={false} />
+        <XAxis
+          dataKey="label"
+          tick={AXIS_TICK}
+          axisLine={AXIS_LINE}
+          tickLine={false}
+          interval={2}
+        />
+        <YAxis allowDecimals={false} tick={AXIS_TICK} axisLine={AXIS_LINE} tickLine={false} />
+        <Tooltip {...TOOLTIP_STYLE} />
+        <Bar dataKey="count" fill="var(--color-info)" radius={[4, 4, 0, 0]} barSize={14} />
+      </BarChart>
+    </ResponsiveContainer>
+  );
+}

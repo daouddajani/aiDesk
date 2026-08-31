@@ -14,6 +14,7 @@ import {
   HorizontalBarChart,
   StatusBreakdownChart,
   DayOfWeekChart,
+  HourOfDayChart,
 } from "./charts";
 
 type Translator = Awaited<ReturnType<typeof getTranslations>>;
@@ -61,6 +62,28 @@ function eachDateInRange(from: string, to: string): string[] {
 function localWeekdayIndex(dateStr: string, timeZone: string): number {
   const [y, m, d] = toLocalDateString(dateStr, timeZone).split("-").map(Number);
   return new Date(Date.UTC(y, m - 1, d)).getUTCDay();
+}
+
+// 0..23, the company-local hour a timestamp falls in.
+function localHourIndex(dateStr: string, timeZone: string): number {
+  return Number(
+    new Intl.DateTimeFormat("en-US", {
+      timeZone,
+      hour: "2-digit",
+      hourCycle: "h23",
+    }).format(new Date(dateStr)),
+  );
+}
+
+// Locale-aware hour-of-day labels, indexed 0..23.
+function hourLabels(locale: string): string[] {
+  const formatter = new Intl.DateTimeFormat(locale, {
+    hour: "numeric",
+    timeZone: "UTC",
+  });
+  return Array.from({ length: 24 }, (_, h) =>
+    formatter.format(new Date(Date.UTC(1970, 0, 1, h))),
+  );
 }
 
 // Deterministic locale-aware weekday labels, indexed 0=Sun..6=Sat to match
@@ -224,6 +247,14 @@ export default async function ReportsPage({
   const labels = weekdayLabels(locale);
   const dayOfWeekData = weekdayCounts.map((count, i) => ({ label: labels[i], count }));
 
+  // 6. Tickets by hour of day (company-local hour the ticket was received).
+  const hourCounts = new Array(24).fill(0);
+  for (const ticket of filtered) {
+    hourCounts[localHourIndex(ticket.received_at, timezone)] += 1;
+  }
+  const hourLabelValues = hourLabels(locale);
+  const hourOfDayData = hourCounts.map((count, i) => ({ label: hourLabelValues[i], count }));
+
   const topRequestersData = topRequesters.map((r) => ({
     label: r.name || r.email,
     count: r.count,
@@ -290,6 +321,10 @@ export default async function ReportsPage({
 
         <ReportCard title={t("reports.dayOfWeekTitle")} hasData={filtered.length > 0} t={t}>
           <DayOfWeekChart data={dayOfWeekData} />
+        </ReportCard>
+
+        <ReportCard title={t("reports.hourOfDayTitle")} hasData={filtered.length > 0} t={t}>
+          <HourOfDayChart data={hourOfDayData} />
         </ReportCard>
       </div>
     </div>
