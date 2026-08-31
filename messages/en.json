@@ -360,6 +360,7 @@
   "reports": {
     "title": "Reports",
     "perDayTitle": "Tickets opened per day",
+    "hoursPerDayTitle": "Hours logged per day",
     "topRequestersTitle": "Top requesters",
     "topRequestersTable": {
       "requester": "Requester",

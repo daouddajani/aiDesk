@@ -360,6 +360,7 @@
   "reports": {
     "title": "التقارير",
     "perDayTitle": "التذاكر المفتوحة يوميًا",
+    "hoursPerDayTitle": "ساعات العمل المسجّلة يوميًا",
     "topRequestersTitle": "الأكثر إرسالًا للتذاكر",
     "topRequestersTable": {
       "requester": "المرسل",

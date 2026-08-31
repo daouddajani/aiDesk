@@ -10,6 +10,7 @@ import {
 import { DateRangeFilter } from "@/components/DateRangeFilter";
 import {
   TicketsPerDayChart,
+  HoursPerDayChart,
   HorizontalBarChart,
   StatusBreakdownChart,
   DayOfWeekChart,
@@ -25,6 +26,19 @@ type TicketRow = {
   category: string | null;
   received_at: string;
 };
+
+type TimeEntryRow = {
+  agent_id: string;
+  started_at: string;
+  ended_at: string | null;
+};
+
+// A currently-running entry (ended_at null) counts its elapsed time up to now.
+function timeEntrySeconds(entry: TimeEntryRow): number {
+  const start = new Date(entry.started_at).getTime();
+  const end = entry.ended_at ? new Date(entry.ended_at).getTime() : Date.now();
+  return Math.max(0, (end - start) / 1000);
+}
 
 const STATUS_VALUES = ["new", "pending", "on_process", "closed"] as const;
 
@@ -126,8 +140,17 @@ export default async function ReportsPage({
     .eq("company_id", profile.company_id)
     .is("archived_at", null);
 
+  const { data: timeEntries } = await supabase
+    .from("ticket_time_entries")
+    .select("agent_id, started_at, ended_at")
+    .eq("company_id", profile.company_id);
+
   const filtered = ((tickets ?? []) as TicketRow[]).filter((ticket) =>
     withinRange(ticket.received_at, timezone, from, to),
+  );
+
+  const filteredTimeEntries = ((timeEntries ?? []) as TimeEntryRow[]).filter((entry) =>
+    withinRange(entry.started_at, timezone, from, to),
   );
 
   // 1. Tickets opened per day, zero-filled so the line doesn't skip days.
@@ -139,6 +162,17 @@ export default async function ReportsPage({
   const perDayData = eachDateInRange(from, to).map((date) => ({
     date,
     count: perDayCounts.get(date) ?? 0,
+  }));
+
+  // 1b. Tracked hours logged per day, zero-filled to match the ticket trend.
+  const perDaySeconds = new Map<string, number>();
+  for (const entry of filteredTimeEntries) {
+    const day = toLocalDateString(entry.started_at, timezone);
+    perDaySeconds.set(day, (perDaySeconds.get(day) ?? 0) + timeEntrySeconds(entry));
+  }
+  const hoursPerDayData = eachDateInRange(from, to).map((date) => ({
+    date,
+    hours: (perDaySeconds.get(date) ?? 0) / 3600,
   }));
 
   // 2. Top requesters — most-recently-seen sender_name wins as the label.
@@ -206,6 +240,14 @@ export default async function ReportsPage({
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <ReportCard title={t("reports.perDayTitle")} hasData={filtered.length > 0} t={t}>
           <TicketsPerDayChart data={perDayData} />
+        </ReportCard>
+
+        <ReportCard
+          title={t("reports.hoursPerDayTitle")}
+          hasData={hoursPerDayData.some((d) => d.hours > 0)}
+          t={t}
+        >
+          <HoursPerDayChart data={hoursPerDayData} />
         </ReportCard>
 
         <ReportCard title={t("reports.statusTitle")} hasData={filtered.length > 0} t={t}>

@@ -12,6 +12,7 @@ import {
   CartesianGrid,
   Tooltip,
 } from "recharts";
+import { formatDuration } from "@/lib/duration";
 
 const AXIS_TICK = { fill: "var(--color-ink-sub)", fontSize: 12 };
 const AXIS_LINE = { stroke: "var(--color-border)" };
@@ -55,6 +56,47 @@ export function TicketsPerDayChart({
           type="monotone"
           dataKey="count"
           stroke="var(--color-primary)"
+          strokeWidth={2}
+          dot={false}
+        />
+      </LineChart>
+    </ResponsiveContainer>
+  );
+}
+
+// Fractional hours -> "Xh Xm" style label via the app-wide duration formatter.
+function formatHours(hours: unknown) {
+  if (typeof hours !== "number") return "";
+  return formatDuration(hours * 3600);
+}
+
+export function HoursPerDayChart({
+  data,
+}: {
+  data: { date: string; hours: number }[];
+}) {
+  return (
+    <ResponsiveContainer width="100%" height={260}>
+      <LineChart data={data} margin={{ top: 8, right: 16, left: -16, bottom: 0 }}>
+        <CartesianGrid stroke="var(--color-border)" vertical={false} />
+        <XAxis
+          dataKey="date"
+          tickFormatter={shortDate}
+          tick={AXIS_TICK}
+          axisLine={AXIS_LINE}
+          tickLine={false}
+        />
+        <YAxis
+          tickFormatter={formatHours}
+          tick={AXIS_TICK}
+          axisLine={AXIS_LINE}
+          tickLine={false}
+        />
+        <Tooltip {...TOOLTIP_STYLE} labelFormatter={shortDate} formatter={formatHours} />
+        <Line
+          type="monotone"
+          dataKey="hours"
+          stroke="var(--color-warning)"
           strokeWidth={2}
           dot={false}
         />
