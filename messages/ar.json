@@ -192,6 +192,7 @@
   },
   "tickets": {
     "from": "من {name} ({email})",
+    "watchers": "أيضًا في هذا الموضوع:",
     "assignedTo": "مسندة إلى:",
     "unassigned": "غير مسندة",
     "back": "العودة إلى التذاكر",

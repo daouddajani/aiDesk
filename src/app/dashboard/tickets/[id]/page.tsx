@@ -179,7 +179,7 @@ export default async function TicketDetailPage({
   const { data: ticket } = await supabase
     .from("tickets")
     .select(
-      "id, subject, sender_email, sender_name, description, status, assigned_agent_id, ai_suggested_agent_id, received_at, solution_text, archived_at",
+      "id, subject, sender_email, sender_name, description, status, assigned_agent_id, ai_suggested_agent_id, received_at, solution_text, archived_at, watcher_emails",
     )
     .eq("id", id)
     .single();
@@ -281,6 +281,11 @@ export default async function TicketDetailPage({
     commentAttachmentsByCommentId.set(a.comment_id, list);
   }
 
+  const watcherEmails = (ticket.watcher_emails ?? []) as {
+    name: string | null;
+    address: string;
+  }[];
+
   return (
     <div className="space-y-4">
       <Link
@@ -300,6 +305,14 @@ export default async function TicketDetailPage({
               <h1 className="mt-1 text-[21px] font-extrabold text-ink">
                 {ticket.subject}
               </h1>
+              {watcherEmails.length > 0 && (
+                <div className="mt-1 text-[12px] text-ink-sub">
+                  {t("watchers")}{" "}
+                  {watcherEmails
+                    .map((w) => (w.name ? `${w.name} <${w.address}>` : w.address))
+                    .join(", ")}
+                </div>
+              )}
             </div>
             <div className="flex flex-wrap items-center gap-2">
               {!ticket.archived_at && ticket.status !== "closed" && (

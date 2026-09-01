@@ -192,6 +192,7 @@
   },
   "tickets": {
     "from": "From {name} ({email})",
+    "watchers": "Also on this thread:",
     "assignedTo": "Assigned to:",
     "unassigned": "Unassigned",
     "back": "Back to tickets",
