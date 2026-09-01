@@ -76,54 +76,54 @@ async function sendGraphReply(
     return {};
   }
 
-  // Cc or attachments require the multi-step draft flow: create the reply
-  // as a draft, optionally add Cc recipients and attach files to it, then
-  // send — the plain /reply endpoint only takes a text comment and always
-  // replies to the original sender alone.
-  const createRes = await fetch(`${base}/createReply`, {
+  // Cc or attachments: the plain /reply endpoint can't add Cc recipients,
+  // and the draft-based createReply/PATCH/attachments flow that would
+  // support it needs Mail.ReadWrite — a scope some tenants gate behind
+  // admin approval. Send as a fresh message via /sendMail instead (only
+  // needs Mail.Send, already granted), preserving threading manually via
+  // In-Reply-To/References headers set to the original message's RFC
+  // Message-ID (its internetMessageId — distinct from the Graph id used to
+  // address the message above) rather than relying on Graph's automatic
+  // reply-threading.
+  const lookupRes = await fetch(`${base}?$select=internetMessageId`, {
+    headers,
+  });
+  if (!lookupRes.ok) return { error: await lookupRes.text() };
+  const { internetMessageId } = (await lookupRes.json()) as {
+    internetMessageId?: string;
+  };
+
+  const subject = ticket.subject.toLowerCase().startsWith("re:")
+    ? ticket.subject
+    : `Re: ${ticket.subject}`;
+
+  const sendRes = await fetch("https://graph.microsoft.com/v1.0/me/sendMail", {
     method: "POST",
     headers,
-    body: JSON.stringify({ comment: bodyText }),
-  });
-  if (!createRes.ok) return { error: await createRes.text() };
-  const draft = await createRes.json();
-
-  if (cc.length > 0) {
-    const patchRes = await fetch(
-      `https://graph.microsoft.com/v1.0/me/messages/${draft.id}`,
-      {
-        method: "PATCH",
-        headers,
-        body: JSON.stringify({
-          ccRecipients: cc.map((r) => ({
-            emailAddress: { address: r.address, name: r.name ?? undefined },
-          })),
-        }),
-      },
-    );
-    if (!patchRes.ok) return { error: await patchRes.text() };
-  }
-
-  for (const attachment of attachments) {
-    await fetch(
-      `https://graph.microsoft.com/v1.0/me/messages/${draft.id}/attachments`,
-      {
-        method: "POST",
-        headers,
-        body: JSON.stringify({
+    body: JSON.stringify({
+      message: {
+        subject,
+        body: { contentType: "Text", content: bodyText },
+        toRecipients: [{ emailAddress: { address: ticket.sender_email } }],
+        ccRecipients: cc.map((r) => ({
+          emailAddress: { address: r.address, name: r.name ?? undefined },
+        })),
+        attachments: attachments.map((attachment) => ({
           "@odata.type": "#microsoft.graph.fileAttachment",
           name: attachment.filename,
           contentType: attachment.mimeType,
           contentBytes: attachment.content.toString("base64"),
-        }),
+        })),
+        internetMessageHeaders: internetMessageId
+          ? [
+              { name: "In-Reply-To", value: internetMessageId },
+              { name: "References", value: internetMessageId },
+            ]
+          : [],
       },
-    );
-  }
-
-  const sendRes = await fetch(
-    `https://graph.microsoft.com/v1.0/me/messages/${draft.id}/send`,
-    { method: "POST", headers: { Authorization: `Bearer ${tokens.access_token}` } },
-  );
+      saveToSentItems: true,
+    }),
+  });
   if (!sendRes.ok) return { error: await sendRes.text() };
   return {};
 }

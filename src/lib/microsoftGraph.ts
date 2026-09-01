@@ -7,8 +7,12 @@ import {
 const AUTHORITY = "https://login.microsoftonline.com";
 
 // offline_access is required to get a refresh_token back from the token
-// endpoint instead of just a short-lived access_token.
-const GRAPH_SCOPES = "offline_access Mail.Read Mail.ReadWrite Mail.Send User.Read";
+// endpoint instead of just a short-lived access_token. Deliberately not
+// requesting Mail.ReadWrite: some tenants gate it behind admin approval
+// that can get stuck, and it's avoidable — Cc'd/attachment replies are
+// sent via /sendMail (Mail.Send) instead of the createReply/PATCH draft
+// flow, which is the only thing that would have needed it.
+const GRAPH_SCOPES = "offline_access Mail.Read Mail.Send User.Read";
 
 function requireEnv(name: string) {
   const value = process.env[name];
@@ -25,10 +29,6 @@ export function buildMicrosoftAuthorizeUrl(redirectUri: string, state: string) {
     redirect_uri: redirectUri,
     response_mode: "query",
     scope: GRAPH_SCOPES,
-    // Without this, Azure can silently reuse a prior consent grant instead
-    // of prompting for a newly-added scope (e.g. Mail.ReadWrite added after
-    // a mailbox was already connected under the old, narrower scope list).
-    prompt: "consent",
     state,
   });
 
