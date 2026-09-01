@@ -80,19 +80,11 @@ async function sendGraphReply(
   // and the draft-based createReply/PATCH/attachments flow that would
   // support it needs Mail.ReadWrite — a scope some tenants gate behind
   // admin approval. Send as a fresh message via /sendMail instead (only
-  // needs Mail.Send, already granted), preserving threading manually via
-  // In-Reply-To/References headers set to the original message's RFC
-  // Message-ID (its internetMessageId — distinct from the Graph id used to
-  // address the message above) rather than relying on Graph's automatic
-  // reply-threading.
-  const lookupRes = await fetch(`${base}?$select=internetMessageId`, {
-    headers,
-  });
-  if (!lookupRes.ok) return { error: await lookupRes.text() };
-  const { internetMessageId } = (await lookupRes.json()) as {
-    internetMessageId?: string;
-  };
-
+  // needs Mail.Send, already granted). Graph rejects internetMessageHeaders
+  // entries whose name isn't "X-"-prefixed (standard MIME headers like
+  // In-Reply-To/References are reserved and can't be set this way), so
+  // there's no way to force native thread-grouping here — the "Re:"
+  // subject is the only threading signal this path can carry.
   const subject = ticket.subject.toLowerCase().startsWith("re:")
     ? ticket.subject
     : `Re: ${ticket.subject}`;
@@ -114,12 +106,6 @@ async function sendGraphReply(
           contentType: attachment.mimeType,
           contentBytes: attachment.content.toString("base64"),
         })),
-        internetMessageHeaders: internetMessageId
-          ? [
-              { name: "In-Reply-To", value: internetMessageId },
-              { name: "References", value: internetMessageId },
-            ]
-          : [],
       },
       saveToSentItems: true,
     }),
