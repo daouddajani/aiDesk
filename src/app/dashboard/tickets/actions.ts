@@ -620,3 +620,24 @@ export async function archiveTicket(_prevState: unknown, formData: FormData) {
   revalidatePath("/dashboard/archived");
   return { success: true };
 }
+
+export async function deleteComment(_prevState: unknown, formData: FormData) {
+  const t = await getTranslations("tickets.comment.delete.errors");
+  const ctx = await requireCompanyAdmin();
+  if (!ctx) return { error: t("unauthorized") };
+
+  const ticketId = String(formData.get("ticketId") ?? "");
+  const commentId = String(formData.get("commentId") ?? "");
+  if (!ticketId || !commentId) return { error: t("commentMissing") };
+
+  const { error } = await ctx.supabase
+    .from("ticket_comments")
+    .delete()
+    .eq("id", commentId)
+    .eq("ticket_id", ticketId);
+
+  if (error) return { error: t("failed") };
+
+  revalidatePath(`/dashboard/tickets/${ticketId}`);
+  return { success: true };
+}

@@ -17,6 +17,7 @@ import { ReopenTicketForm } from "./ReopenTicketForm";
 import { ArchiveTicketForm } from "./ArchiveTicketForm";
 import { AddReminderForm } from "./AddReminderForm";
 import { TicketTimer } from "./TicketTimer";
+import { DeleteCommentButton } from "./DeleteCommentButton";
 
 const CARD_SHADOW =
   "shadow-card";
@@ -403,8 +404,14 @@ export default async function TicketDetailPage({
                           ? ` · ${t("tickets.internalNoteTag")}`
                           : ""}
                       </span>
-                      <span>
+                      <span className="flex items-center gap-2">
                         {formatDateTime(comment.created_at, timezone)}
+                        {profile.role === "company_admin" && (
+                          <DeleteCommentButton
+                            ticketId={ticket.id}
+                            commentId={comment.id}
+                          />
+                        )}
                       </span>
                     </div>
                     <p className="leading-relaxed whitespace-pre-wrap text-ink">

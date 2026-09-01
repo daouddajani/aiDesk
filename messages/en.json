@@ -273,6 +273,14 @@
         "sendFailed": "Comment saved, but the reply email failed to send: {message}",
         "rateLimited": "Too many comments in a short time. Please wait a bit and try again.",
         "attachmentFailed": "Comment saved, but the attachment failed to upload: {message}"
+      },
+      "delete": {
+        "submit": "Delete",
+        "errors": {
+          "unauthorized": "Not authorized.",
+          "commentMissing": "Missing comment.",
+          "failed": "Could not delete the comment. Please try again."
+        }
       }
     },
     "closeForm": {
