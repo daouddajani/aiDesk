@@ -8,7 +8,7 @@ const AUTHORITY = "https://login.microsoftonline.com";
 
 // offline_access is required to get a refresh_token back from the token
 // endpoint instead of just a short-lived access_token.
-const GRAPH_SCOPES = "offline_access Mail.Read Mail.Send User.Read";
+const GRAPH_SCOPES = "offline_access Mail.Read Mail.ReadWrite Mail.Send User.Read";
 
 function requireEnv(name: string) {
   const value = process.env[name];
