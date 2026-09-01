@@ -25,6 +25,10 @@ export function buildMicrosoftAuthorizeUrl(redirectUri: string, state: string) {
     redirect_uri: redirectUri,
     response_mode: "query",
     scope: GRAPH_SCOPES,
+    // Without this, Azure can silently reuse a prior consent grant instead
+    // of prompting for a newly-added scope (e.g. Mail.ReadWrite added after
+    // a mailbox was already connected under the old, narrower scope list).
+    prompt: "consent",
     state,
   });
 
