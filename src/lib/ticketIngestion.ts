@@ -36,6 +36,10 @@ export type IncomingEmail = {
   // filter again on the next poll.
   sourceMessageId: string;
   attachments: IncomingEmailAttachment[];
+  // Everyone in the To/Cc line of the original message — filtered down to
+  // external, non-agent, non-mailbox addresses and stored as the ticket's
+  // watcher list, so future replies can Cc them too.
+  recipients: { name: string | null; address: string }[];
 };
 
 // email(lowercase) -> profile id, for agents of the company being polled.
@@ -52,7 +56,40 @@ export type NewTicketNotificationOpts = {
   notification: { enabled: boolean; email: string | null };
   mailboxProvider: "microsoft" | "imap" | null;
   mailboxImapConfig: { smtpHost: string; smtpPort: number; username: string } | null;
+  // The company's own connected inbox address — excluded from the watcher
+  // list derived from an inbound email's To/Cc (it's always in To, and must
+  // never end up Cc'd on its own outbound notification).
+  mailboxEmail: string | null;
 };
+
+// Dedupes an inbound message's To/Cc line down to the external parties who
+// should be Cc'd on future replies: drops the sender (tracked separately as
+// sender_email), the company's own mailbox address, and anyone who is a
+// known agent (agents already get in-app notifications).
+function deriveWatcherEmails(
+  recipients: { name: string | null; address: string }[],
+  fromEmail: string | null,
+  mailboxEmail: string | null,
+  agentEmailMap: AgentEmailMap,
+): { name: string | null; address: string }[] {
+  const excluded = new Set(
+    [fromEmail, mailboxEmail].filter((e): e is string => Boolean(e)).map((e) => e.toLowerCase()),
+  );
+
+  const seen = new Set<string>();
+  const watchers: { name: string | null; address: string }[] = [];
+
+  for (const recipient of recipients) {
+    const lower = recipient.address.toLowerCase();
+    if (excluded.has(lower)) continue;
+    if (agentEmailMap.has(lower)) continue;
+    if (seen.has(lower)) continue;
+    seen.add(lower);
+    watchers.push(recipient);
+  }
+
+  return watchers;
+}
 
 function sanitizeFilename(name: string) {
   return name.replace(/[/\\]/g, "_").slice(0, 200) || "attachment";
@@ -307,10 +344,18 @@ export async function createTicketFromEmail(
   aiSuggestedAgentId: string | null = null,
   category: string | null = null,
   opts: NewTicketNotificationOpts,
+  agentEmailMap: AgentEmailMap = new Map(),
 ): Promise<{ ticketId: string; duplicate?: false } | { duplicate: true } | { error: string }> {
   if (!email.fromEmail) {
     return { error: "Message has no sender address, skipped." };
   }
+
+  const watcherEmails = deriveWatcherEmails(
+    email.recipients,
+    email.fromEmail,
+    opts.mailboxEmail,
+    agentEmailMap,
+  );
 
   const { data: ticketRows, error: insertError } = await adminClient
     .from("tickets")
@@ -328,6 +373,7 @@ export async function createTicketFromEmail(
         category,
         graph_conversation_id: email.conversationId,
         source_message_id: email.sourceMessageId,
+        watcher_emails: watcherEmails,
       },
       { onConflict: "company_id,source_message_id", ignoreDuplicates: true },
     )
@@ -418,6 +464,7 @@ export async function ingestIncomingEmail(
     aiSuggestedAgentId,
     category,
     opts,
+    agentEmailMap,
   );
   if ("ticketId" in created) return { ...created, matched: false };
   return created;

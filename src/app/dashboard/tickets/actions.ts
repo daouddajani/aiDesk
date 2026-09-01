@@ -226,7 +226,9 @@ export async function addComment(_prevState: unknown, formData: FormData) {
 
   const { data: ticket } = await ctx.supabase
     .from("tickets")
-    .select("id, company_id, status, subject, sender_email, source_message_id")
+    .select(
+      "id, company_id, status, subject, sender_email, source_message_id, watcher_emails",
+    )
     .eq("id", ticketId)
     .single();
 
@@ -320,6 +322,7 @@ export async function addComment(_prevState: unknown, formData: FormData) {
               },
             ]
           : [],
+        (ticket.watcher_emails ?? []) as { name: string | null; address: string }[],
       );
 
       if (sendError) {

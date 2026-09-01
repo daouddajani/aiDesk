@@ -124,6 +124,9 @@ export type GraphMessage = {
   inferenceClassification: "focused" | "other" | null;
   hasAttachments: boolean;
   inlineImages: ExtractedInlineImage[];
+  // Everyone in the To/Cc line of the original message — used to build the
+  // ticket's watcher list so replies can Cc them, not just the sender.
+  recipients: { name: string | null; address: string }[];
 };
 
 // Reads only the Inbox folder, so mail Microsoft's own spam filter has
@@ -135,7 +138,7 @@ export async function listNewInboxMessages(
   sinceIso: string,
 ): Promise<GraphMessage[]> {
   const select =
-    "id,subject,from,receivedDateTime,body,conversationId,inferenceClassification,hasAttachments";
+    "id,subject,from,receivedDateTime,body,conversationId,inferenceClassification,hasAttachments,toRecipients,ccRecipients";
   let url: string | null =
     "https://graph.microsoft.com/v1.0/me/mailFolders/inbox/messages" +
     `?$filter=${encodeURIComponent(`receivedDateTime gt ${sinceIso}`)}` +
@@ -168,6 +171,15 @@ export async function listNewInboxMessages(
         inferenceClassification: m.inferenceClassification ?? null,
         hasAttachments: Boolean(m.hasAttachments),
         inlineImages: isHtml ? extractInlineImages(m.body.content ?? "") : [],
+        recipients: [
+          ...(m.toRecipients ?? []),
+          ...(m.ccRecipients ?? []),
+        ]
+          .map((r: { emailAddress?: { name?: string; address?: string } }) => ({
+            name: r.emailAddress?.name || null,
+            address: r.emailAddress?.address ?? "",
+          }))
+          .filter((r: { address: string }) => r.address),
       });
     }
 

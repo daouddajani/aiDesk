@@ -15,6 +15,9 @@ export type ParsedIncomingMessage = {
   // way to detect "this is a reply to an earlier message" over plain IMAP,
   // since there's no server-assigned thread id like Graph's conversationId.
   threadRefs: string[];
+  // Everyone in the To/Cc line of the original message — used to build the
+  // ticket's watcher list so replies can Cc them, not just the sender.
+  recipients: { name: string | null; address: string }[];
   attachments: {
     filename: string;
     mimeType: string;
@@ -83,6 +86,20 @@ export async function fetchNewImapMessages(
                 ? [parsed.references]
                 : []),
           ].filter((id): id is string => Boolean(id)),
+          recipients: [
+            ...(parsed.to
+              ? Array.isArray(parsed.to)
+                ? parsed.to.flatMap((a) => a.value)
+                : parsed.to.value
+              : []),
+            ...(parsed.cc
+              ? Array.isArray(parsed.cc)
+                ? parsed.cc.flatMap((a) => a.value)
+                : parsed.cc.value
+              : []),
+          ]
+            .map((v) => ({ name: v.name || null, address: v.address ?? "" }))
+            .filter((r) => r.address),
           attachments: [
             ...(parsed.attachments ?? []).map((a) => ({
               filename: a.filename ?? "attachment",

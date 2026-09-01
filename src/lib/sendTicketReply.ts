@@ -8,6 +8,8 @@ type ReplyAttachment = {
   content: Buffer;
 };
 
+export type ReplyRecipient = { name: string | null; address: string };
+
 type ReplyCompany = {
   id: string;
   mailbox_provider: "microsoft" | "imap" | null;
@@ -43,6 +45,7 @@ async function sendGraphReply(
   ticket: ReplyTicket,
   bodyText: string,
   attachments: ReplyAttachment[],
+  cc: ReplyRecipient[],
 ): Promise<{ error?: string }> {
   if (!ticket.source_message_id) {
     return { error: "This ticket has no source email to reply to." };
@@ -63,7 +66,7 @@ async function sendGraphReply(
   };
   const base = `https://graph.microsoft.com/v1.0/me/messages/${ticket.source_message_id}`;
 
-  if (attachments.length === 0) {
+  if (attachments.length === 0 && cc.length === 0) {
     const res = await fetch(`${base}/reply`, {
       method: "POST",
       headers,
@@ -73,9 +76,10 @@ async function sendGraphReply(
     return {};
   }
 
-  // Attachments require the multi-step draft flow: create the reply as a
-  // draft, attach files to it, then send — the plain /reply endpoint only
-  // takes a text comment.
+  // Cc or attachments require the multi-step draft flow: create the reply
+  // as a draft, optionally add Cc recipients and attach files to it, then
+  // send — the plain /reply endpoint only takes a text comment and always
+  // replies to the original sender alone.
   const createRes = await fetch(`${base}/createReply`, {
     method: "POST",
     headers,
@@ -83,6 +87,22 @@ async function sendGraphReply(
   });
   if (!createRes.ok) return { error: await createRes.text() };
   const draft = await createRes.json();
+
+  if (cc.length > 0) {
+    const patchRes = await fetch(
+      `https://graph.microsoft.com/v1.0/me/messages/${draft.id}`,
+      {
+        method: "PATCH",
+        headers,
+        body: JSON.stringify({
+          ccRecipients: cc.map((r) => ({
+            emailAddress: { address: r.address, name: r.name ?? undefined },
+          })),
+        }),
+      },
+    );
+    if (!patchRes.ok) return { error: await patchRes.text() };
+  }
 
   for (const attachment of attachments) {
     await fetch(
@@ -114,6 +134,7 @@ async function sendImapReply(
   ticket: ReplyTicket,
   bodyText: string,
   attachments: ReplyAttachment[],
+  cc: ReplyRecipient[],
 ): Promise<{ error?: string }> {
   if (!company.mailbox_imap_config) {
     return { error: "Mailbox is not connected." };
@@ -141,6 +162,7 @@ async function sendImapReply(
     await transport.sendMail({
       from: config.username,
       to: ticket.sender_email,
+      cc: cc.length > 0 ? cc.map((r) => ({ name: r.name ?? undefined, address: r.address })) : undefined,
       subject,
       text: bodyText,
       inReplyTo: ticket.source_message_id ?? undefined,
@@ -258,12 +280,13 @@ export async function sendTicketReply(
   ticket: ReplyTicket,
   bodyText: string,
   attachments: ReplyAttachment[] = [],
+  cc: ReplyRecipient[] = [],
 ): Promise<{ error?: string }> {
   if (company.mailbox_provider === "microsoft") {
-    return sendGraphReply(adminClient, company, ticket, bodyText, attachments);
+    return sendGraphReply(adminClient, company, ticket, bodyText, attachments, cc);
   }
   if (company.mailbox_provider === "imap") {
-    return sendImapReply(adminClient, company, ticket, bodyText, attachments);
+    return sendImapReply(adminClient, company, ticket, bodyText, attachments, cc);
   }
   return { error: "No mailbox connected for this company." };
 }

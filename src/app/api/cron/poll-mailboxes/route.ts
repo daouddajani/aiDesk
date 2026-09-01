@@ -116,6 +116,7 @@ type MailboxCompany = {
   id: string;
   default_agent_id: string | null;
   blocked_sender_emails: string[] | null;
+  mailbox_email: string | null;
   mailbox_provider: "microsoft" | "imap";
   mailbox_last_synced_at: string | null;
   mailbox_last_uid: number | null;
@@ -228,6 +229,7 @@ async function pollMicrosoftCompany(
       conversationId: message.conversationId,
       threadRefs: [],
       sourceMessageId: message.id,
+      recipients: message.recipients,
       attachments: [
         ...attachments.map((a) => ({
           filename: a.filename,
@@ -264,6 +266,7 @@ async function pollMicrosoftCompany(
         },
         mailboxProvider: company.mailbox_provider,
         mailboxImapConfig: company.mailbox_imap_config,
+        mailboxEmail: company.mailbox_email,
       },
     );
     if ("ticketId" in result) {
@@ -382,6 +385,7 @@ async function pollImapCompany(
       conversationId: null,
       threadRefs: message.threadRefs,
       sourceMessageId: message.messageId ?? `imap-uid-${message.uid}`,
+      recipients: message.recipients,
       attachments: message.attachments,
     };
 
@@ -401,6 +405,7 @@ async function pollImapCompany(
         },
         mailboxProvider: company.mailbox_provider,
         mailboxImapConfig: company.mailbox_imap_config,
+        mailboxEmail: company.mailbox_email,
       },
     );
     if ("ticketId" in result) {
@@ -430,7 +435,7 @@ export async function GET(request: Request) {
   const { data: companies, error } = await adminClient
     .from("companies")
     .select(
-      "id, default_agent_id, blocked_sender_emails, mailbox_provider, mailbox_last_synced_at, mailbox_last_uid, mailbox_imap_config, new_ticket_notification_enabled, new_ticket_notification_email, helpdesk_url",
+      "id, default_agent_id, blocked_sender_emails, mailbox_email, mailbox_provider, mailbox_last_synced_at, mailbox_last_uid, mailbox_imap_config, new_ticket_notification_enabled, new_ticket_notification_email, helpdesk_url",
     )
     .not("mailbox_provider", "is", null);
 
