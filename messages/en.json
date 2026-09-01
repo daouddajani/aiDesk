@@ -262,7 +262,7 @@
     },
     "comment": {
       "label": "Comment",
-      "placeholder": "Write a reply or internal note...",
+      "placeholder": "Write a reply or internal note... (type ~email@example.com to add someone)",
       "internalLabel": "Internal note (not emailed to requester)",
       "submit": "Post",
       "errors": {

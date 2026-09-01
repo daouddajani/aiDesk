@@ -203,19 +203,44 @@ export async function stopTimer(_prevState: unknown, formData: FormData) {
   return { success: true };
 }
 
+// A "~email@address" token anywhere in a non-internal reply adds that
+// address as a ticket watcher and is stripped from both the stored comment
+// and the outbound email — it's a command, not content. Falls back to the
+// untouched text if stripping would leave nothing (a comment that's only a
+// mention) rather than storing/sending an empty body.
+const MENTION_PATTERN = /~([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})/g;
+
+function extractAndStripMentions(
+  text: string,
+): { cleanedBody: string; mentions: string[] } {
+  const mentions = Array.from(text.matchAll(MENTION_PATTERN), (m) => m[1]);
+  const stripped = text
+    .replace(MENTION_PATTERN, "")
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+  return { cleanedBody: stripped || text.trim(), mentions };
+}
+
 export async function addComment(_prevState: unknown, formData: FormData) {
   const t = await getTranslations("tickets.comment.errors");
   const ctx = await requireCompanyMember();
   if (!ctx) return { error: t("unauthorized") };
 
   const ticketId = String(formData.get("ticketId") ?? "");
-  const body = String(formData.get("body") ?? "").trim();
+  const rawBody = String(formData.get("body") ?? "").trim();
   const isInternal = formData.get("isInternal") === "on";
   const attachmentFile = formData.get("attachment");
 
-  if (!ticketId || !body) {
+  if (!ticketId || !rawBody) {
     return { error: t("bodyRequired") };
   }
+
+  // Mentions only have meaning on replies that actually get emailed — a
+  // literal "~" typed into an internal note is left untouched.
+  const { cleanedBody: body, mentions } = isInternal
+    ? { cleanedBody: rawBody, mentions: [] as string[] }
+    : extractAndStripMentions(rawBody);
 
   // 20 comments per 5 minutes per agent — generous for real use, blocks
   // scripted spam/abuse of the (email-sending) reply path.
@@ -227,7 +252,7 @@ export async function addComment(_prevState: unknown, formData: FormData) {
   const { data: ticket } = await ctx.supabase
     .from("tickets")
     .select(
-      "id, company_id, status, subject, sender_email, source_message_id, watcher_emails",
+      "id, company_id, status, subject, sender_email, source_message_id, watcher_emails, description",
     )
     .eq("id", ticketId)
     .single();
@@ -299,11 +324,54 @@ export async function addComment(_prevState: unknown, formData: FormData) {
     const adminClient = createAdminClient();
     const { data: company } = await adminClient
       .from("companies")
-      .select("id, mailbox_provider, mailbox_imap_config")
+      .select("id, mailbox_provider, mailbox_imap_config, mailbox_email")
       .eq("id", ticket.company_id)
       .single();
 
     if (company) {
+      const existingWatchers = (ticket.watcher_emails ?? []) as {
+        name: string | null;
+        address: string;
+      }[];
+      const existingAddresses = new Set(
+        existingWatchers.map((w) => w.address.toLowerCase()),
+      );
+      const excluded = new Set(
+        [ticket.sender_email, company.mailbox_email]
+          .filter((e): e is string => Boolean(e))
+          .map((e) => e.toLowerCase()),
+      );
+      const seen = new Set<string>();
+      const newMentions = mentions.filter((address) => {
+        const lower = address.toLowerCase();
+        if (existingAddresses.has(lower) || excluded.has(lower) || seen.has(lower)) {
+          return false;
+        }
+        seen.add(lower);
+        return true;
+      });
+
+      const watchers =
+        newMentions.length > 0
+          ? [
+              ...existingWatchers,
+              ...newMentions.map((address) => ({ name: null, address })),
+            ]
+          : existingWatchers;
+
+      if (newMentions.length > 0) {
+        await ctx.supabase
+          .from("tickets")
+          .update({ watcher_emails: watchers })
+          .eq("id", ticketId);
+      }
+
+      // A newly-added watcher wasn't on the original thread, so the reply
+      // alone has no context for them — prepend the original ticket
+      // description to this one send when that's the case.
+      const outboundBody =
+        newMentions.length > 0 ? `${ticket.description}\n\n---\n\n${body}` : body;
+
       const { error: sendError } = await sendTicketReply(
         adminClient,
         company,
@@ -312,7 +380,7 @@ export async function addComment(_prevState: unknown, formData: FormData) {
           sender_email: ticket.sender_email,
           subject: ticket.subject,
         },
-        body,
+        outboundBody,
         attachmentBuffer && attachmentMeta
           ? [
               {
@@ -322,7 +390,7 @@ export async function addComment(_prevState: unknown, formData: FormData) {
               },
             ]
           : [],
-        (ticket.watcher_emails ?? []) as { name: string | null; address: string }[],
+        watchers,
       );
 
       if (sendError) {
