@@ -308,9 +308,7 @@ export default async function TicketDetailPage({
               {watcherEmails.length > 0 && (
                 <div className="mt-1 text-[12px] text-ink-sub">
                   {t("watchers")}{" "}
-                  {watcherEmails
-                    .map((w) => (w.name ? `${w.name} <${w.address}>` : w.address))
-                    .join(", ")}
+                  {watcherEmails.map((w) => w.address).join(", ")}
                 </div>
               )}
             </div>
