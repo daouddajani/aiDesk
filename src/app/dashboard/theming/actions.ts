@@ -5,6 +5,7 @@ import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isValidHexColor } from "@/lib/color";
+import { CARD_COLOR_KEYS } from "@/lib/companyTheme";
 
 const ALLOWED_LOGO_TYPES = [
   "image/png",
@@ -50,8 +51,17 @@ export async function updateCompanyTheme(
     return { error: t("invalidColor") };
   }
 
+  const cardColors: Record<string, string> = {};
+  for (const key of CARD_COLOR_KEYS) {
+    const value = String(formData.get(`cardColor_${key}`) ?? "");
+    if (!isValidHexColor(value)) {
+      return { error: t("invalidColor") };
+    }
+    cardColors[key] = value;
+  }
+
   const update: Record<string, unknown> = {
-    theme_config: { primaryColor, accentColor, linkHoverColor },
+    theme_config: { primaryColor, accentColor, linkHoverColor, cardColors },
   };
 
   const logo = formData.get("logo");

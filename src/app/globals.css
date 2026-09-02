@@ -23,6 +23,22 @@
   --color-info: #2563eb;
   --color-info-soft: #e8f0ff;
 
+  /* Dashboard KPI status cards — defaults mirror the existing status badge
+     colors (new=info, pending=warning, on-process=primary, closed=ink-sub)
+     so the visual scheme is unchanged until a company customizes it. */
+  --color-kpi-total: #7c6df2;
+  --color-kpi-total-soft: #f1eefe;
+  --color-kpi-open: #0d9488;
+  --color-kpi-open-soft: #e6fbf8;
+  --color-kpi-new: #2563eb;
+  --color-kpi-new-soft: #e8f0ff;
+  --color-kpi-pending: #c07800;
+  --color-kpi-pending-soft: #fdf1de;
+  --color-kpi-on-process: #4338ca;
+  --color-kpi-on-process-soft: #eef0ff;
+  --color-kpi-closed: #5c6480;
+  --color-kpi-closed-soft: #f8f9fd;
+
   --shadow-card: 0 1px 2px rgba(20, 24, 50, 0.04), 0 8px 24px -12px rgba(20, 24, 50, 0.12);
 }
 
@@ -49,6 +65,19 @@
   --color-danger-soft: #3a1a1a;
   --color-info: #6ea8fe;
   --color-info-soft: #182a4d;
+
+  --color-kpi-total: #a89bff;
+  --color-kpi-total-soft: #2b2657;
+  --color-kpi-open: #2dd4bf;
+  --color-kpi-open-soft: #0f2e2b;
+  --color-kpi-new: #6ea8fe;
+  --color-kpi-new-soft: #182a4d;
+  --color-kpi-pending: #e0a53f;
+  --color-kpi-pending-soft: #3a2c12;
+  --color-kpi-on-process: #8b85f5;
+  --color-kpi-on-process-soft: #262b52;
+  --color-kpi-closed: #9aa2bd;
+  --color-kpi-closed-soft: #1b2236;
 
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.5);
 }

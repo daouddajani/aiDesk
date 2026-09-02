@@ -13,11 +13,25 @@ const STATUS_BADGE_CLASSES: Record<string, string> = {
   closed: "bg-surface-alt text-ink-sub",
 };
 
-function KpiCard({ label, value }: { label: string; value: number }) {
+function KpiCard({
+  label,
+  value,
+  softBgClass,
+  textClass,
+}: {
+  label: string;
+  value: number;
+  softBgClass: string;
+  textClass: string;
+}) {
   return (
-    <div className="rounded-2xl border border-border bg-surface p-5 shadow-card">
-      <div className="text-[12.5px] font-semibold text-ink-sub">{label}</div>
-      <div className="mt-1.5 text-[26px] font-extrabold text-ink">{value}</div>
+    <div
+      className={`rounded-2xl border border-border p-5 shadow-card ${softBgClass}`}
+    >
+      <div className={`text-[12.5px] font-semibold ${textClass}`}>{label}</div>
+      <div className={`mt-1.5 text-[26px] font-extrabold ${textClass}`}>
+        {value}
+      </div>
     </div>
   );
 }
@@ -95,12 +109,42 @@ export default async function DashboardHomePage() {
       </div>
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
-        <KpiCard label={t("home.kpiTotal")} value={counts.total} />
-        <KpiCard label={t("home.kpiOpen")} value={counts.open} />
-        <KpiCard label={t("home.kpiNew")} value={counts.new} />
-        <KpiCard label={t("home.kpiPending")} value={counts.pending} />
-        <KpiCard label={t("home.kpiOnProcess")} value={counts.on_process} />
-        <KpiCard label={t("home.kpiClosed")} value={counts.closed} />
+        <KpiCard
+          label={t("home.kpiTotal")}
+          value={counts.total}
+          softBgClass="bg-kpi-total-soft"
+          textClass="text-kpi-total"
+        />
+        <KpiCard
+          label={t("home.kpiOpen")}
+          value={counts.open}
+          softBgClass="bg-kpi-open-soft"
+          textClass="text-kpi-open"
+        />
+        <KpiCard
+          label={t("home.kpiNew")}
+          value={counts.new}
+          softBgClass="bg-kpi-new-soft"
+          textClass="text-kpi-new"
+        />
+        <KpiCard
+          label={t("home.kpiPending")}
+          value={counts.pending}
+          softBgClass="bg-kpi-pending-soft"
+          textClass="text-kpi-pending"
+        />
+        <KpiCard
+          label={t("home.kpiOnProcess")}
+          value={counts.on_process}
+          softBgClass="bg-kpi-on-process-soft"
+          textClass="text-kpi-on-process"
+        />
+        <KpiCard
+          label={t("home.kpiClosed")}
+          value={counts.closed}
+          softBgClass="bg-kpi-closed-soft"
+          textClass="text-kpi-closed"
+        />
       </div>
 
       <div className="rounded-2xl border border-border bg-surface p-5 shadow-card">

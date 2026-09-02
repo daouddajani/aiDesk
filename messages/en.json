@@ -523,6 +523,8 @@
       "primaryColor": "Primary color",
       "accentColor": "Accent color",
       "linkHoverColor": "Link hover color",
+      "cardColorsTitle": "Dashboard status cards",
+      "cardColorsHint": "Sets the color of each status card on the dashboard home page.",
       "reset": "Reset to default",
       "success": "Theme saved.",
       "errors": {

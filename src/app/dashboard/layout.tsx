@@ -4,7 +4,11 @@ import { createClient } from "@/lib/supabase/server";
 import { getInitials } from "@/lib/initials";
 import { buildNavItems, roleLabel } from "@/lib/navItems";
 import { AppShell } from "@/components/shell/AppShell";
-import type { CompanyThemeConfig } from "@/lib/companyTheme";
+import {
+  DEFAULT_CARD_COLORS,
+  CARD_COLOR_KEYS,
+  type CompanyThemeConfig,
+} from "@/lib/companyTheme";
 
 export default async function DashboardLayout({
   children,
@@ -65,6 +69,14 @@ export default async function DashboardLayout({
           // Falls back to the primary color for themes saved before the
           // link-hover picker existed (theme_config predates that field).
           linkHoverColor: themeConfig.linkHoverColor ?? themeConfig.primaryColor,
+          // Same fallback idea, per card, for themes saved before the
+          // status card colors existed.
+          cardColors: Object.fromEntries(
+            CARD_COLOR_KEYS.map((key) => [
+              key,
+              themeConfig.cardColors?.[key] ?? DEFAULT_CARD_COLORS[key],
+            ]),
+          ) as Record<(typeof CARD_COLOR_KEYS)[number], string>,
         }
       : null;
 

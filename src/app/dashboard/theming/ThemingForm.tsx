@@ -4,7 +4,39 @@ import { useActionState } from "react";
 import { useTranslations } from "next-intl";
 import { updateCompanyTheme, resetCompanyTheme } from "./actions";
 import { SubmitButton } from "@/components/SubmitButton";
-import { DEFAULT_THEME_COLORS, type CompanyThemeConfig } from "@/lib/companyTheme";
+import {
+  DEFAULT_THEME_COLORS,
+  DEFAULT_CARD_COLORS,
+  CARD_COLOR_KEYS,
+  type CompanyThemeConfig,
+} from "@/lib/companyTheme";
+
+function ColorField({
+  id,
+  name,
+  label,
+  defaultValue,
+}: {
+  id: string;
+  name: string;
+  label: string;
+  defaultValue: string;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <label htmlFor={id} className="text-sm">
+        {label}
+      </label>
+      <input
+        id={id}
+        name={name}
+        type="color"
+        defaultValue={defaultValue}
+        className="h-9 w-16 cursor-pointer rounded-[8px] border border-border bg-surface-alt"
+      />
+    </div>
+  );
+}
 
 export function ThemingForm({
   logoUrl,
@@ -14,6 +46,7 @@ export function ThemingForm({
   themeConfig: CompanyThemeConfig;
 }) {
   const t = useTranslations("settings.theming");
+  const tHome = useTranslations("home");
   const tCommon = useTranslations("common");
   const [state, formAction] = useActionState(updateCompanyTheme, undefined);
   const [resetState, resetFormAction] = useActionState(
@@ -25,6 +58,15 @@ export function ThemingForm({
   const accentColor = themeConfig.accentColor ?? DEFAULT_THEME_COLORS.accentColor;
   const linkHoverColor =
     themeConfig.linkHoverColor ?? DEFAULT_THEME_COLORS.linkHoverColor;
+
+  const cardLabels: Record<(typeof CARD_COLOR_KEYS)[number], string> = {
+    total: tHome("kpiTotal"),
+    open: tHome("kpiOpen"),
+    new: tHome("kpiNew"),
+    pending: tHome("kpiPending"),
+    onProcess: tHome("kpiOnProcess"),
+    closed: tHome("kpiClosed"),
+  };
 
   return (
     <div className="grid max-w-lg gap-6">
@@ -60,43 +102,41 @@ export function ThemingForm({
           <p className="text-xs font-semibold text-ink-sub">{t("logoHint")}</p>
         </div>
 
-        <div className="flex items-center justify-between gap-4">
-          <label htmlFor="primaryColor" className="text-sm">
-            {t("primaryColor")}
-          </label>
-          <input
-            id="primaryColor"
-            name="primaryColor"
-            type="color"
-            defaultValue={primaryColor}
-            className="h-9 w-16 cursor-pointer rounded-[8px] border border-border bg-surface-alt"
-          />
-        </div>
+        <ColorField
+          id="primaryColor"
+          name="primaryColor"
+          label={t("primaryColor")}
+          defaultValue={primaryColor}
+        />
+        <ColorField
+          id="accentColor"
+          name="accentColor"
+          label={t("accentColor")}
+          defaultValue={accentColor}
+        />
+        <ColorField
+          id="linkHoverColor"
+          name="linkHoverColor"
+          label={t("linkHoverColor")}
+          defaultValue={linkHoverColor}
+        />
 
-        <div className="flex items-center justify-between gap-4">
-          <label htmlFor="accentColor" className="text-sm">
-            {t("accentColor")}
-          </label>
-          <input
-            id="accentColor"
-            name="accentColor"
-            type="color"
-            defaultValue={accentColor}
-            className="h-9 w-16 cursor-pointer rounded-[8px] border border-border bg-surface-alt"
-          />
-        </div>
-
-        <div className="flex items-center justify-between gap-4">
-          <label htmlFor="linkHoverColor" className="text-sm">
-            {t("linkHoverColor")}
-          </label>
-          <input
-            id="linkHoverColor"
-            name="linkHoverColor"
-            type="color"
-            defaultValue={linkHoverColor}
-            className="h-9 w-16 cursor-pointer rounded-[8px] border border-border bg-surface-alt"
-          />
+        <div className="mt-2 border-t border-border pt-4">
+          <h2 className="text-sm font-semibold">{t("cardColorsTitle")}</h2>
+          <p className="mt-1 text-xs font-semibold text-ink-sub">
+            {t("cardColorsHint")}
+          </p>
+          <div className="mt-3 grid gap-4">
+            {CARD_COLOR_KEYS.map((key) => (
+              <ColorField
+                key={key}
+                id={`cardColor_${key}`}
+                name={`cardColor_${key}`}
+                label={cardLabels[key]}
+                defaultValue={themeConfig.cardColors?.[key] ?? DEFAULT_CARD_COLORS[key]}
+              />
+            ))}
+          </div>
         </div>
 
         {state?.error && <p className="text-sm text-danger">{state.error}</p>}

@@ -2,6 +2,12 @@ import { getTranslations } from "next-intl/server";
 import { signOut } from "@/app/actions";
 import { getThemeCookie } from "@/lib/theme";
 import { deriveSoftVariant } from "@/lib/color";
+import {
+  CARD_COLOR_CSS_VAR,
+  CARD_COLOR_SOFT_CSS_VAR,
+  CARD_COLOR_KEYS,
+  type CardColorKey,
+} from "@/lib/companyTheme";
 import { ThemeToggleButton } from "@/components/ThemeToggleButton";
 import { LanguageToggleButton } from "@/components/LanguageToggleButton";
 import { MobileNav } from "./MobileNav";
@@ -35,6 +41,7 @@ export async function AppShell({
     primaryColor: string;
     accentColor: string;
     linkHoverColor: string;
+    cardColors: Record<CardColorKey, string>;
   } | null;
   children: React.ReactNode;
 }) {
@@ -50,6 +57,15 @@ export async function AppShell({
         "--color-primary-soft": deriveSoftVariant(
           themeColors.primaryColor,
           isDark,
+        ),
+        ...Object.fromEntries(
+          CARD_COLOR_KEYS.flatMap((key) => {
+            const color = themeColors.cardColors[key];
+            return [
+              [CARD_COLOR_CSS_VAR[key], color],
+              [CARD_COLOR_SOFT_CSS_VAR[key], deriveSoftVariant(color, isDark)],
+            ];
+          }),
         ),
       } as React.CSSProperties)
     : undefined;
