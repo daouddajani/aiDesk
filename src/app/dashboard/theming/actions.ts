@@ -41,12 +41,17 @@ export async function updateCompanyTheme(
 
   const primaryColor = String(formData.get("primaryColor") ?? "");
   const accentColor = String(formData.get("accentColor") ?? "");
-  if (!isValidHexColor(primaryColor) || !isValidHexColor(accentColor)) {
+  const linkHoverColor = String(formData.get("linkHoverColor") ?? "");
+  if (
+    !isValidHexColor(primaryColor) ||
+    !isValidHexColor(accentColor) ||
+    !isValidHexColor(linkHoverColor)
+  ) {
     return { error: t("invalidColor") };
   }
 
   const update: Record<string, unknown> = {
-    theme_config: { primaryColor, accentColor },
+    theme_config: { primaryColor, accentColor, linkHoverColor },
   };
 
   const logo = formData.get("logo");

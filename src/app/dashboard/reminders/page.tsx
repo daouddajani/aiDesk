@@ -83,7 +83,7 @@ export default async function RemindersPage() {
                   <td className="px-4 py-3.5">
                     <Link
                       href={`/dashboard/tickets/${reminder.ticket_id}`}
-                      className="font-medium text-ink hover:text-primary"
+                      className="font-medium text-ink hover:text-link-hover"
                     >
                       {subjectByTicketId.get(reminder.ticket_id) ?? reminder.ticket_id}
                     </Link>

@@ -143,7 +143,7 @@ export default async function DashboardHomePage() {
                   <td className="px-3 py-3">
                     <Link
                       href={`/dashboard/tickets/${ticket.id}`}
-                      className="font-medium text-ink hover:text-primary"
+                      className="font-medium text-ink hover:text-link-hover"
                     >
                       {ticket.subject}
                     </Link>

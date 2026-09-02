@@ -522,6 +522,7 @@
       "logoHint": "PNG أو JPEG أو WebP أو SVG. الحد الأقصى 2 ميجابايت.",
       "primaryColor": "اللون الأساسي",
       "accentColor": "اللون الثانوي",
+      "linkHoverColor": "لون الرابط عند التمرير",
       "reset": "إعادة التعيين إلى الافتراضي",
       "success": "تم حفظ المظهر.",
       "errors": {

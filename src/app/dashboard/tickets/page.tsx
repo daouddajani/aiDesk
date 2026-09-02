@@ -390,7 +390,7 @@ export default async function TicketsListPage({
                   <td className="px-4 py-3.5">
                     <Link
                       href={`/dashboard/tickets/${ticket.id}`}
-                      className="font-medium text-ink hover:text-primary"
+                      className="font-medium text-ink hover:text-link-hover"
                     >
                       {ticket.subject}
                     </Link>

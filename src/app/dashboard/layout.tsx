@@ -62,6 +62,9 @@ export default async function DashboardLayout({
       ? {
           primaryColor: themeConfig.primaryColor,
           accentColor: themeConfig.accentColor,
+          // Falls back to the primary color for themes saved before the
+          // link-hover picker existed (theme_config predates that field).
+          linkHoverColor: themeConfig.linkHoverColor ?? themeConfig.primaryColor,
         }
       : null;
 

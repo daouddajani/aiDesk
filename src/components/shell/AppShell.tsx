@@ -31,7 +31,11 @@ export async function AppShell({
   // ticket notifications simply don't render for them.
   companyId?: string;
   logoUrl?: string | null;
-  themeColors?: { primaryColor: string; accentColor: string } | null;
+  themeColors?: {
+    primaryColor: string;
+    accentColor: string;
+    linkHoverColor: string;
+  } | null;
   children: React.ReactNode;
 }) {
   const t = await getTranslations("common");
@@ -42,6 +46,7 @@ export async function AppShell({
     ? ({
         "--color-primary": themeColors.primaryColor,
         "--color-accent": themeColors.accentColor,
+        "--color-link-hover": themeColors.linkHoverColor,
         "--color-primary-soft": deriveSoftVariant(
           themeColors.primaryColor,
           isDark,

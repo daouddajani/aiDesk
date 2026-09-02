@@ -93,7 +93,7 @@ export default async function NotificationsPage() {
                     <td className="px-4 py-3.5">
                       <Link
                         href={`/dashboard/tickets/${notification.ticket_id}`}
-                        className={`hover:text-primary ${unread ? "font-bold text-ink" : "font-medium text-ink"}`}
+                        className={`hover:text-link-hover ${unread ? "font-bold text-ink" : "font-medium text-ink"}`}
                       >
                         {notification.ticket_subject}
                       </Link>

@@ -522,6 +522,7 @@
       "logoHint": "PNG, JPEG, WebP, or SVG. Max 2MB.",
       "primaryColor": "Primary color",
       "accentColor": "Accent color",
+      "linkHoverColor": "Link hover color",
       "reset": "Reset to default",
       "success": "Theme saved.",
       "errors": {

@@ -23,6 +23,8 @@ export function ThemingForm({
 
   const primaryColor = themeConfig.primaryColor ?? DEFAULT_THEME_COLORS.primaryColor;
   const accentColor = themeConfig.accentColor ?? DEFAULT_THEME_COLORS.accentColor;
+  const linkHoverColor =
+    themeConfig.linkHoverColor ?? DEFAULT_THEME_COLORS.linkHoverColor;
 
   return (
     <div className="grid max-w-lg gap-6">
@@ -80,6 +82,19 @@ export function ThemingForm({
             name="accentColor"
             type="color"
             defaultValue={accentColor}
+            className="h-9 w-16 cursor-pointer rounded-[8px] border border-border bg-surface-alt"
+          />
+        </div>
+
+        <div className="flex items-center justify-between gap-4">
+          <label htmlFor="linkHoverColor" className="text-sm">
+            {t("linkHoverColor")}
+          </label>
+          <input
+            id="linkHoverColor"
+            name="linkHoverColor"
+            type="color"
+            defaultValue={linkHoverColor}
             className="h-9 w-16 cursor-pointer rounded-[8px] border border-border bg-surface-alt"
           />
         </div>

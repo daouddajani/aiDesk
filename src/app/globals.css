@@ -13,6 +13,7 @@
   --color-primary: #4338ca;
   --color-primary-soft: #eef0ff;
   --color-accent: #7c6df2;
+  --color-link-hover: #4338ca;
   --color-success: #0f9d58;
   --color-success-soft: #e7f7ee;
   --color-warning: #c07800;
@@ -39,6 +40,7 @@
   --color-primary: #8b85f5;
   --color-primary-soft: #262b52;
   --color-accent: #a89bff;
+  --color-link-hover: #8b85f5;
   --color-success: #3ecf8e;
   --color-success-soft: #173328;
   --color-warning: #e0a53f;
