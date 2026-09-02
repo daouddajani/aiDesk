@@ -40,7 +40,6 @@ export async function updateCompanySettings(
 
   const name = String(formData.get("name") ?? "").trim();
   const timezone = String(formData.get("timezone") ?? "").trim() || "UTC";
-  const logoUrl = String(formData.get("logoUrl") ?? "").trim();
   const defaultAgentId = String(formData.get("defaultAgentId") ?? "").trim();
   const blockedSenderEmails = Array.from(
     new Set(
@@ -81,7 +80,6 @@ export async function updateCompanySettings(
     .update({
       name,
       timezone,
-      logo_url: logoUrl || null,
       default_agent_id: defaultAgentId || null,
       blocked_sender_emails: blockedSenderEmails,
       new_ticket_notification_enabled: newTicketNotificationEnabled,

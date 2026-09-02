@@ -8,7 +8,6 @@ import { ME_TIMEZONES } from "@/lib/timezones";
 
 type Company = {
   name: string;
-  logo_url: string | null;
   timezone: string;
   default_agent_id: string | null;
   blocked_sender_emails: string[] | null;
@@ -49,19 +48,6 @@ export function CompanySettingsForm({
           name="name"
           required
           defaultValue={company.name}
-          className="w-full rounded-[10px] border border-border bg-surface-alt px-3.5 py-2.5 text-[13.5px] text-ink"
-        />
-      </div>
-
-      <div className="space-y-1">
-        <label htmlFor="logoUrl" className="text-sm">
-          {t("logoUrl")}
-        </label>
-        <input
-          id="logoUrl"
-          name="logoUrl"
-          type="url"
-          defaultValue={company.logo_url ?? ""}
           className="w-full rounded-[10px] border border-border bg-surface-alt px-3.5 py-2.5 text-[13.5px] text-ink"
         />
       </div>

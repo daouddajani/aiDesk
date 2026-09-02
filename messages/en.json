@@ -42,6 +42,7 @@
     "agents": "Agents",
     "mailbox": "Mailbox",
     "settings": "Company Settings",
+    "theming": "Theming",
     "archived": "Archived",
     "profile": "My Profile",
     "adminTitle": "AiDesk Admin",
@@ -470,7 +471,6 @@
   "settings": {
     "title": "Company settings",
     "name": "Company name",
-    "logoUrl": "Logo URL (optional)",
     "timezone": "Timezone",
     "defaultAgent": "Default fallback agent",
     "defaultAgentHint": "New tickets are auto-assigned to this agent until someone takes ownership.",
@@ -514,6 +514,23 @@
         "keyRequired": "Add an API key to enable AI features.",
         "keyRequiredOnProviderChange": "Add an API key for the new provider.",
         "saveFailed": "Could not save AI settings. Please try again."
+      }
+    },
+    "theming": {
+      "title": "Theming",
+      "logo": "Logo",
+      "logoHint": "PNG, JPEG, WebP, or SVG. Max 2MB.",
+      "primaryColor": "Primary color",
+      "accentColor": "Accent color",
+      "reset": "Reset to default",
+      "success": "Theme saved.",
+      "errors": {
+        "unauthorized": "Not authorized.",
+        "invalidColor": "Choose valid colors for both fields.",
+        "invalidLogoType": "Logo must be a PNG, JPEG, WebP, or SVG image.",
+        "logoTooLarge": "Logo must be 2MB or smaller.",
+        "logoUploadFailed": "Could not upload the logo. Please try again.",
+        "saveFailed": "Could not save theme settings. Please try again."
       }
     }
   },

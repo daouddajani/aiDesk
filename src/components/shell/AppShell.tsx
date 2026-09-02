@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { signOut } from "@/app/actions";
 import { getThemeCookie } from "@/lib/theme";
+import { deriveSoftVariant } from "@/lib/color";
 import { ThemeToggleButton } from "@/components/ThemeToggleButton";
 import { LanguageToggleButton } from "@/components/LanguageToggleButton";
 import { MobileNav } from "./MobileNav";
@@ -19,6 +20,8 @@ export async function AppShell({
   navItems,
   user,
   companyId,
+  logoUrl,
+  themeColors,
   children,
 }: {
   navItems: ShellNavItem[];
@@ -27,17 +30,39 @@ export async function AppShell({
   // super_admin (/admin) and the shared /profile page don't pass it, and
   // ticket notifications simply don't render for them.
   companyId?: string;
+  logoUrl?: string | null;
+  themeColors?: { primaryColor: string; accentColor: string } | null;
   children: React.ReactNode;
 }) {
   const t = await getTranslations("common");
   const theme = await getThemeCookie();
   const isDark = theme === "dark";
 
+  const themeStyle = themeColors
+    ? ({
+        "--color-primary": themeColors.primaryColor,
+        "--color-accent": themeColors.accentColor,
+        "--color-primary-soft": deriveSoftVariant(
+          themeColors.primaryColor,
+          isDark,
+        ),
+      } as React.CSSProperties)
+    : undefined;
+
   const brand = (
     <div className="flex items-center gap-3 px-5 py-5">
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[11px] bg-gradient-to-br from-primary to-accent text-sm font-extrabold text-white">
-        AI
-      </div>
+      {logoUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={logoUrl}
+          alt=""
+          className="h-9 w-9 shrink-0 rounded-[11px] object-contain"
+        />
+      ) : (
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[11px] bg-gradient-to-br from-primary to-accent text-sm font-extrabold text-white">
+          AI
+        </div>
+      )}
       <div className="text-[17px] font-extrabold tracking-tight text-ink">
         AiDesk
       </div>
@@ -46,7 +71,10 @@ export async function AppShell({
 
   return (
     <SidebarCollapseProvider>
-      <div className="flex min-h-screen flex-col bg-bg md:flex-row">
+      <div
+        className="flex min-h-screen flex-col bg-bg md:flex-row"
+        style={themeStyle}
+      >
         {companyId && <TicketNotifications companyId={companyId} />}
         {companyId && <TicketUpdateNotifications userId={user.id} />}
         <MobileNav brandLabel="AiDesk">

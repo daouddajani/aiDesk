@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getInitials } from "@/lib/initials";
 import { buildNavItems, roleLabel } from "@/lib/navItems";
 import { AppShell } from "@/components/shell/AppShell";
+import type { CompanyThemeConfig } from "@/lib/companyTheme";
 
 export default async function DashboardLayout({
   children,
@@ -41,12 +42,28 @@ export default async function DashboardLayout({
 
   const displayName = profile.full_name ?? user.email ?? "?";
 
-  const { count: unreadNotifications } = await supabase
-    .from("ticket_notifications")
-    .select("id", { count: "exact", head: true })
-    .eq("agent_id", user.id)
-    .eq("company_id", profile.company_id)
-    .is("read_at", null);
+  const [{ count: unreadNotifications }, { data: company }] = await Promise.all([
+    supabase
+      .from("ticket_notifications")
+      .select("id", { count: "exact", head: true })
+      .eq("agent_id", user.id)
+      .eq("company_id", profile.company_id)
+      .is("read_at", null),
+    supabase
+      .from("companies")
+      .select("logo_url, theme_config")
+      .eq("id", profile.company_id)
+      .single(),
+  ]);
+
+  const themeConfig = (company?.theme_config ?? {}) as CompanyThemeConfig;
+  const themeColors =
+    themeConfig.primaryColor && themeConfig.accentColor
+      ? {
+          primaryColor: themeConfig.primaryColor,
+          accentColor: themeConfig.accentColor,
+        }
+      : null;
 
   return (
     <AppShell
@@ -60,6 +77,8 @@ export default async function DashboardLayout({
         initials: getInitials(displayName),
       }}
       companyId={profile.company_id}
+      logoUrl={company?.logo_url ?? null}
+      themeColors={themeColors}
     >
       {children}
     </AppShell>

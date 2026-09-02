@@ -10,6 +10,7 @@ import {
   AgentsIcon,
   MailboxIcon,
   SettingsIcon,
+  ThemingIcon,
   ArchiveIcon,
   ProfileIcon,
   CompaniesIcon,
@@ -73,6 +74,11 @@ export function buildNavItems(
             href: "/dashboard/settings",
             label: t("nav.settings"),
             icon: <SettingsIcon />,
+          },
+          {
+            href: "/dashboard/theming",
+            label: t("nav.theming"),
+            icon: <ThemingIcon />,
           },
           {
             href: "/dashboard/archived",
