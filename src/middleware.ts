@@ -11,7 +11,7 @@ function buildCsp(nonce: string) {
     default-src 'self';
     script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${isDev ? " 'unsafe-eval'" : ""};
     style-src 'self' ${isDev ? "'unsafe-inline'" : `'nonce-${nonce}'`};
-    img-src 'self' blob: data:;
+    img-src 'self' blob: data: ${supabaseUrl};
     font-src 'self';
     connect-src 'self' ${supabaseUrl} ${supabaseWsUrl};
     object-src 'none';
