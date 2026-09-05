@@ -11,6 +11,7 @@ import { formatDateTime } from "@/lib/formatDate";
 import { getCompanyTimezone } from "@/lib/companyTimezone";
 import { TakeOwnershipButton } from "./TakeOwnershipButton";
 import { ReassignTicketForm } from "./ReassignTicketForm";
+import { EditCategoryForm } from "./EditCategoryForm";
 import { CommentForm } from "./CommentForm";
 import { CloseTicketForm } from "./CloseTicketForm";
 import { ReopenTicketForm } from "./ReopenTicketForm";
@@ -213,7 +214,7 @@ export default async function TicketDetailPage({
   const { data: ticket } = await supabase
     .from("tickets")
     .select(
-      "id, subject, sender_email, sender_name, description, status, assigned_agent_id, ai_suggested_agent_id, received_at, solution_text, archived_at, watcher_emails",
+      "id, subject, sender_email, sender_name, description, status, assigned_agent_id, ai_suggested_agent_id, received_at, solution_text, archived_at, watcher_emails, category",
     )
     .eq("id", id)
     .single();
@@ -515,6 +516,17 @@ export default async function TicketDetailPage({
                   }))}
               />
             </div>
+          )}
+          {profile.role === "company_admin" && (
+            <>
+              <div className="my-1.5 h-px bg-border" />
+              <MetaRow label={t("tickets.category.label")}>
+                {ticket.category ?? t("tickets.category.uncategorized")}
+              </MetaRow>
+              <div className="pb-2">
+                <EditCategoryForm ticketId={ticket.id} category={ticket.category} />
+              </div>
+            </>
           )}
           {!ticket.assigned_agent_id && ticket.ai_suggested_agent_id && (
             <MetaRow label={t("tickets.aiSuggestedAgent")}>

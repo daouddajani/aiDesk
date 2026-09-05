@@ -247,6 +247,17 @@
         "failed": "Could not reassign the ticket. Please try again."
       }
     },
+    "category": {
+      "label": "Category",
+      "placeholder": "e.g. password reset",
+      "submit": "Save",
+      "uncategorized": "Uncategorized",
+      "errors": {
+        "unauthorized": "Not authorized.",
+        "ticketMissing": "Ticket not found.",
+        "failed": "Could not update the category. Please try again."
+      }
+    },
     "reopenForm": {
       "trigger": "Reopen ticket",
       "title": "Reopen ticket",

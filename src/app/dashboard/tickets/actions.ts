@@ -634,6 +634,32 @@ export async function archiveTicket(_prevState: unknown, formData: FormData) {
   return { success: true };
 }
 
+export async function updateTicketCategory(
+  _prevState: unknown,
+  formData: FormData,
+) {
+  const t = await getTranslations("tickets.category.errors");
+  const ctx = await requireCompanyAdmin();
+  if (!ctx) return { error: t("unauthorized") };
+
+  const ticketId = String(formData.get("ticketId") ?? "");
+  if (!ticketId) return { error: t("ticketMissing") };
+
+  const raw = String(formData.get("category") ?? "").trim();
+  // Same 100-char cap the AI classifier applies when it first sets this.
+  const category = raw ? raw.slice(0, 100) : null;
+
+  const { error } = await ctx.supabase
+    .from("tickets")
+    .update({ category })
+    .eq("id", ticketId);
+
+  if (error) return { error: t("failed") };
+
+  revalidatePath(`/dashboard/tickets/${ticketId}`);
+  return { success: true };
+}
+
 export async function deleteComment(_prevState: unknown, formData: FormData) {
   const t = await getTranslations("tickets.comment.delete.errors");
   const ctx = await requireCompanyAdmin();
