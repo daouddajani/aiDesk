@@ -38,7 +38,7 @@ export default async function NotificationsPage() {
   const { data: notifications } = await supabase
     .from("ticket_notifications")
     .select(
-      "id, ticket_id, ticket_subject, is_internal, author_label, comment_preview, read_at, created_at",
+      "id, ticket_id, ticket_subject, is_internal, is_mention, author_label, comment_preview, read_at, created_at",
     )
     .eq("agent_id", user.id)
     .order("created_at", { ascending: false })
@@ -99,9 +99,11 @@ export default async function NotificationsPage() {
                       </Link>
                     </td>
                     <td className="px-4 py-3.5 text-ink-sub">
-                      {notification.is_internal
-                        ? t("notificationsPage.internalBadge")
-                        : t("notificationsPage.replyBadge")}
+                      {notification.is_mention
+                        ? t("notificationsPage.mentionBadge")
+                        : notification.is_internal
+                          ? t("notificationsPage.internalBadge")
+                          : t("notificationsPage.replyBadge")}
                     </td>
                     <td className="px-4 py-3.5 text-ink-sub">
                       {notification.author_label}

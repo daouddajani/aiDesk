@@ -31,6 +31,7 @@
     "newTicket": "تذكرة جديدة",
     "newInternalComment": "تعليق داخلي جديد",
     "newReply": "رد جديد",
+    "mentioned": "أشار إليك",
     "from": "من",
     "view": "عرض التذكرة"
   },
@@ -266,6 +267,7 @@
       "placeholder": "اكتب ردًا أو ملاحظة داخلية... (اكتب ~email@example.com لإضافة شخص)",
       "internalLabel": "ملاحظة داخلية (لا تُرسل بالبريد إلى مقدّم الطلب)",
       "submit": "نشر",
+      "mentionEmpty": "لا يوجد وكلاء مطابقون",
       "errors": {
         "unauthorized": "غير مصرح لك.",
         "bodyRequired": "نص التعليق مطلوب.",
@@ -580,6 +582,7 @@
     },
     "internalBadge": "ملاحظة داخلية",
     "replyBadge": "رد",
+    "mentionBadge": "أشار إليك",
     "empty": "لا توجد إشعارات حتى الآن.",
     "markRead": {
       "submit": "تحديد كمقروء"

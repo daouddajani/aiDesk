@@ -31,6 +31,7 @@
     "newTicket": "New ticket",
     "newInternalComment": "New internal comment",
     "newReply": "New reply",
+    "mentioned": "Mentioned you",
     "from": "from",
     "view": "View ticket"
   },
@@ -266,6 +267,7 @@
       "placeholder": "Write a reply or internal note... (type ~email@example.com to add someone)",
       "internalLabel": "Internal note (not emailed to requester)",
       "submit": "Post",
+      "mentionEmpty": "No matching agents",
       "errors": {
         "unauthorized": "Not authorized.",
         "bodyRequired": "A comment body is required.",
@@ -580,6 +582,7 @@
     },
     "internalBadge": "Internal note",
     "replyBadge": "Reply",
+    "mentionBadge": "Mentioned you",
     "empty": "You have no notifications yet.",
     "markRead": {
       "submit": "Mark as read"

@@ -222,6 +222,19 @@ function extractAndStripMentions(
   return { cleanedBody: stripped || text.trim(), mentions };
 }
 
+// An "@[Full Name](agentId)" token is inserted by the comment box's agent
+// picker so a mentioned teammate gets notified (handled entirely by the
+// notify_assigned_agent_on_comment DB trigger — no app code needed for
+// that part). It stays in the stored body so the Activity feed can render
+// it as a highlighted mention, but the requester's inbox shouldn't see
+// internal markdown/ids, so it's flattened to plain "@Full Name" text
+// before any outbound reply email is sent.
+const MENTION_AGENT_PATTERN = /@\[([^\]]+)\]\([0-9a-fA-F-]{36}\)/g;
+
+function stripMentionMarkup(text: string): string {
+  return text.replace(MENTION_AGENT_PATTERN, "@$1");
+}
+
 export async function addComment(_prevState: unknown, formData: FormData) {
   const t = await getTranslations("tickets.comment.errors");
   const ctx = await requireCompanyMember();
@@ -380,7 +393,7 @@ export async function addComment(_prevState: unknown, formData: FormData) {
           sender_email: ticket.sender_email,
           subject: ticket.subject,
         },
-        outboundBody,
+        stripMentionMarkup(outboundBody),
         attachmentBuffer && attachmentMeta
           ? [
               {

@@ -29,6 +29,39 @@ const STATUS_BADGE_CLASSES: Record<string, string> = {
   closed: "bg-surface-alt text-ink-sub",
 };
 
+// Renders a comment body, replacing "@[Name](agentId)" mention tokens with
+// a highlighted span (the name is re-resolved live via agentNameById so a
+// later rename still displays correctly, falling back to the embedded name
+// for an agent that no longer exists).
+const MENTION_RENDER_PATTERN = /@\[([^\]]+)\]\(([0-9a-fA-F-]{36})\)/g;
+
+function renderCommentBody(
+  body: string,
+  agentNameById: Map<string, string>,
+): React.ReactNode[] {
+  const nodes: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let key = 0;
+
+  for (const match of body.matchAll(MENTION_RENDER_PATTERN)) {
+    const [full, embeddedName, agentId] = match;
+    const index = match.index ?? 0;
+    if (index > lastIndex) {
+      nodes.push(body.slice(lastIndex, index));
+    }
+    nodes.push(
+      <strong key={`mention-${key++}`} className="font-bold text-primary">
+        @{agentNameById.get(agentId) ?? embeddedName}
+      </strong>,
+    );
+    lastIndex = index + full.length;
+  }
+  if (lastIndex < body.length) {
+    nodes.push(body.slice(lastIndex));
+  }
+  return nodes;
+}
+
 type Attachment = {
   id: string;
   filename: string;
@@ -415,7 +448,7 @@ export default async function TicketDetailPage({
                       </span>
                     </div>
                     <p className="leading-relaxed whitespace-pre-wrap text-ink">
-                      {comment.body}
+                      {renderCommentBody(comment.body, agentNameById)}
                     </p>
                     {commentAttachmentsByCommentId
                       .get(comment.id)
@@ -438,7 +471,15 @@ export default async function TicketDetailPage({
           </div>
 
           <div className="mt-6">
-            <CommentForm ticketId={ticket.id} />
+            <CommentForm
+              ticketId={ticket.id}
+              agentOptions={(agents ?? [])
+                .filter((a) => !a.disabled)
+                .map((a) => ({
+                  id: a.id,
+                  name: agentNameById.get(a.id) ?? t("common.unnamed"),
+                }))}
+            />
           </div>
         </div>
 

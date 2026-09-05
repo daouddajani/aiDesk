@@ -10,6 +10,7 @@ type Toast = {
   ticketId: string;
   ticketSubject: string;
   isInternal: boolean;
+  isMention: boolean;
   authorLabel: string;
   commentPreview: string;
 };
@@ -49,6 +50,7 @@ export function TicketUpdateNotifications({ userId }: { userId: string }) {
               ticket_id: string;
               ticket_subject: string;
               is_internal: boolean;
+              is_mention: boolean;
               author_label: string;
               comment_preview: string;
             };
@@ -59,6 +61,7 @@ export function TicketUpdateNotifications({ userId }: { userId: string }) {
                 ticketId: notification.ticket_id,
                 ticketSubject: notification.ticket_subject,
                 isInternal: notification.is_internal,
+                isMention: notification.is_mention,
                 authorLabel: notification.author_label,
                 commentPreview: notification.comment_preview,
               },
@@ -88,6 +91,7 @@ export function TicketUpdateNotifications({ userId }: { userId: string }) {
           onDismiss={() => dismiss(toast.id)}
           newInternalCommentLabel={t("newInternalComment")}
           newReplyLabel={t("newReply")}
+          mentionedLabel={t("mentioned")}
           fromLabel={t("from")}
           viewLabel={t("view")}
         />
@@ -101,6 +105,7 @@ function UpdateToast({
   onDismiss,
   newInternalCommentLabel,
   newReplyLabel,
+  mentionedLabel,
   fromLabel,
   viewLabel,
 }: {
@@ -108,6 +113,7 @@ function UpdateToast({
   onDismiss: () => void;
   newInternalCommentLabel: string;
   newReplyLabel: string;
+  mentionedLabel: string;
   fromLabel: string;
   viewLabel: string;
 }) {
@@ -122,7 +128,11 @@ function UpdateToast({
       <span className="mt-0.5 inline-flex h-2 w-2 shrink-0 rounded-full bg-info" />
       <div className="min-w-0 flex-1">
         <div className="text-[11.5px] font-bold tracking-wide text-info uppercase">
-          {toast.isInternal ? newInternalCommentLabel : newReplyLabel}
+          {toast.isMention
+            ? mentionedLabel
+            : toast.isInternal
+              ? newInternalCommentLabel
+              : newReplyLabel}
         </div>
         <div className="mt-0.5 truncate text-[13.5px] font-semibold text-ink">
           {toast.ticketSubject}
