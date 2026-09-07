@@ -29,6 +29,23 @@ function offsetMinutesAt(utcMillis: number, timeZone: string): number {
   return (asUTC - utcMillis) / 60000;
 }
 
+/** The local wall-clock hour/minute that `date` falls on in `timeZone`. */
+export function getLocalHourMinute(
+  date: string | Date,
+  timeZone: string,
+): { hour: number; minute: number } {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    hourCycle: "h23",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).formatToParts(new Date(date));
+  return {
+    hour: Number(parts.find((p) => p.type === "hour")?.value ?? "0"),
+    minute: Number(parts.find((p) => p.type === "minute")?.value ?? "0"),
+  };
+}
+
 /** A `YYYY-MM-DD` local wall-clock date/time in `timeZone`, as a UTC ISO instant. */
 export function localDateStringToUtcISO(
   dateString: string,

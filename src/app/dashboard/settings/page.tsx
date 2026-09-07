@@ -4,7 +4,9 @@ import { createClient } from "@/lib/supabase/server";
 import { buildAgentNameMap } from "@/lib/agentNames";
 import { CompanySettingsForm } from "./CompanySettingsForm";
 import { AISettingsForm } from "./AISettingsForm";
+import { WorkingHoursSettingsForm } from "./WorkingHoursSettingsForm";
 import type { AIProviderName, CompanyAIConfig } from "@/lib/ai";
+import type { WorkingHoursConfig } from "@/lib/workingHours";
 import { getCompanyTimezone } from "@/lib/companyTimezone";
 import {
   localDateStringToUtcISO,
@@ -43,7 +45,7 @@ export default async function CompanySettingsPage() {
       supabase
         .from("companies")
         .select(
-          "name, timezone, default_agent_id, blocked_sender_emails, company_ai_config, ai_secret_id, ai_embeddings_secret_id, new_ticket_notification_enabled, new_ticket_notification_email, helpdesk_url",
+          "name, timezone, default_agent_id, blocked_sender_emails, company_ai_config, ai_secret_id, ai_embeddings_secret_id, new_ticket_notification_enabled, new_ticket_notification_email, helpdesk_url, working_hours_config",
         )
         .eq("id", profile.company_id)
         .single(),
@@ -69,6 +71,8 @@ export default async function CompanySettingsPage() {
     0,
   );
   const aiConfig = (company.company_ai_config ?? {}) as CompanyAIConfig;
+  const workingHoursConfig = (company.working_hours_config ??
+    {}) as WorkingHoursConfig;
 
   return (
     <main className="grid gap-6 p-6 md:grid-cols-2">
@@ -90,6 +94,7 @@ export default async function CompanySettingsPage() {
         hasEmbeddingsKey={Boolean(company.ai_embeddings_secret_id)}
         monthTokens={monthTokens}
       />
+      <WorkingHoursSettingsForm config={workingHoursConfig} />
     </main>
   );
 }

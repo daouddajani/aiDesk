@@ -5,9 +5,17 @@ import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { AIProviderName, CompanyAIConfig } from "@/lib/ai";
+import {
+  DAY_KEYS,
+  parseHHMM,
+  type DayOfWeekKey,
+  type WorkingHoursDay,
+} from "@/lib/workingHours";
 
 const AI_PROVIDERS: AIProviderName[] = ["openai", "anthropic", "gemini"];
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const HHMM_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
+const MAX_AUTO_REPLY_BODY_LENGTH = 4000;
 
 function normalizeHelpdeskUrl(raw: string) {
   const trimmed = raw.trim().replace(/\/+$/, "");
@@ -90,6 +98,70 @@ export async function updateCompanySettings(
 
   if (error) {
     return { error: t("updateFailed") };
+  }
+
+  revalidatePath("/dashboard/settings");
+  return { success: true };
+}
+
+export async function updateWorkingHoursSettings(
+  _prevState: unknown,
+  formData: FormData,
+) {
+  const t = await getTranslations("settings.workingHours.errors");
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return { error: t("unauthorized") };
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role, company_id")
+    .eq("id", user.id)
+    .single();
+
+  if (profile?.role !== "company_admin" || !profile.company_id) {
+    return { error: t("unauthorized") };
+  }
+
+  const enabled = formData.get("enabled") === "on";
+  const autoReplyBody = String(formData.get("autoReplyBody") ?? "").trim();
+
+  const days = {} as Record<DayOfWeekKey, WorkingHoursDay>;
+  for (const key of DAY_KEYS) {
+    const dayEnabled = formData.get(`day_${key}_enabled`) === "on";
+    const start = String(formData.get(`day_${key}_start`) ?? "").trim() || "09:00";
+    const end = String(formData.get(`day_${key}_end`) ?? "").trim() || "17:00";
+
+    if (!HHMM_RE.test(start) || !HHMM_RE.test(end)) {
+      return { error: t("invalidTime") };
+    }
+    if (dayEnabled && parseHHMM(start) >= parseHHMM(end)) {
+      return { error: t("startBeforeEnd") };
+    }
+
+    days[key] = { enabled: dayEnabled, start, end };
+  }
+
+  if (enabled && !autoReplyBody) {
+    return { error: t("bodyRequired") };
+  }
+  if (autoReplyBody.length > MAX_AUTO_REPLY_BODY_LENGTH) {
+    return { error: t("bodyTooLong") };
+  }
+
+  // Scoping to the caller's own company is enforced by the companies_update
+  // RLS policy, not re-checked here.
+  const { error } = await supabase
+    .from("companies")
+    .update({ working_hours_config: { enabled, days, autoReplyBody } })
+    .eq("id", profile.company_id);
+
+  if (error) {
+    return { error: t("saveFailed") };
   }
 
   revalidatePath("/dashboard/settings");

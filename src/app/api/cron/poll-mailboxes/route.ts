@@ -13,6 +13,7 @@ import {
 } from "@/lib/ticketIngestion";
 import { getAIProviderForCompany, type AIProvider, type AgentSkills } from "@/lib/ai";
 import { stripQuotedReply } from "@/lib/emailQuote";
+import type { WorkingHoursConfig } from "@/lib/workingHours";
 
 export const maxDuration = 300;
 
@@ -130,6 +131,8 @@ type MailboxCompany = {
   new_ticket_notification_enabled: boolean;
   new_ticket_notification_email: string | null;
   helpdesk_url: string | null;
+  timezone: string;
+  working_hours_config: WorkingHoursConfig | null;
 };
 
 async function pollMicrosoftCompany(
@@ -267,6 +270,8 @@ async function pollMicrosoftCompany(
         mailboxProvider: company.mailbox_provider,
         mailboxImapConfig: company.mailbox_imap_config,
         mailboxEmail: company.mailbox_email,
+        companyTimezone: company.timezone || "UTC",
+        workingHoursConfig: company.working_hours_config ?? null,
       },
     );
     if ("ticketId" in result) {
@@ -406,6 +411,8 @@ async function pollImapCompany(
         mailboxProvider: company.mailbox_provider,
         mailboxImapConfig: company.mailbox_imap_config,
         mailboxEmail: company.mailbox_email,
+        companyTimezone: company.timezone || "UTC",
+        workingHoursConfig: company.working_hours_config ?? null,
       },
     );
     if ("ticketId" in result) {
@@ -435,7 +442,7 @@ export async function GET(request: Request) {
   const { data: companies, error } = await adminClient
     .from("companies")
     .select(
-      "id, default_agent_id, blocked_sender_emails, mailbox_email, mailbox_provider, mailbox_last_synced_at, mailbox_last_uid, mailbox_imap_config, new_ticket_notification_enabled, new_ticket_notification_email, helpdesk_url",
+      "id, default_agent_id, blocked_sender_emails, mailbox_email, mailbox_provider, mailbox_last_synced_at, mailbox_last_uid, mailbox_imap_config, new_ticket_notification_enabled, new_ticket_notification_email, helpdesk_url, timezone, working_hours_config",
     )
     .not("mailbox_provider", "is", null);
 

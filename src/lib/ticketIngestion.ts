@@ -1,6 +1,10 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import crypto from "node:crypto";
 import { sendCompanyMail } from "@/lib/sendTicketReply";
+import {
+  isOutsideWorkingHours,
+  type WorkingHoursConfig,
+} from "@/lib/workingHours";
 
 export type IncomingEmailAttachment = {
   filename: string;
@@ -60,6 +64,10 @@ export type NewTicketNotificationOpts = {
   // list derived from an inbound email's To/Cc (it's always in To, and must
   // never end up Cc'd on its own outbound notification).
   mailboxEmail: string | null;
+  // Needed to interpret the company's configured working hours against the
+  // email's own timestamp (not ingestion-time now()).
+  companyTimezone: string;
+  workingHoursConfig: WorkingHoursConfig | null;
 };
 
 // Dedupes an inbound message's To/Cc line down to the external parties who
@@ -122,6 +130,28 @@ async function sendNewTicketNotification(
   // Non-fatal: ticket creation has already succeeded by the time this runs.
   if (error) {
     console.error(`new-ticket notification failed for ${ticket.id}: ${error}`);
+  }
+}
+
+async function sendOutOfHoursAutoReply(
+  adminClient: SupabaseClient,
+  mailboxCompany: {
+    id: string;
+    mailbox_provider: "microsoft" | "imap" | null;
+    mailbox_imap_config: { smtpHost: string; smtpPort: number; username: string } | null;
+  },
+  toEmail: string,
+  ticketSubject: string,
+  autoReplyBody: string,
+) {
+  const subject = `We received your message: ${ticketSubject}`;
+  const html = `<p>${autoReplyBody.replace(/\n/g, "<br>")}</p>`;
+
+  const { error } = await sendCompanyMail(adminClient, mailboxCompany, toEmail, subject, html);
+
+  // Non-fatal: ticket creation has already succeeded by the time this runs.
+  if (error) {
+    console.error(`out-of-hours auto-reply failed for ${toEmail}: ${error}`);
   }
 }
 
@@ -485,6 +515,28 @@ export async function createTicketFromEmail(
         senderEmail: email.fromEmail,
       },
     );
+  }
+
+  try {
+    if (
+      opts.workingHoursConfig?.enabled &&
+      opts.workingHoursConfig.autoReplyBody &&
+      isOutsideWorkingHours(opts.workingHoursConfig, email.receivedAt, opts.companyTimezone)
+    ) {
+      await sendOutOfHoursAutoReply(
+        adminClient,
+        {
+          id: companyId,
+          mailbox_provider: opts.mailboxProvider,
+          mailbox_imap_config: opts.mailboxImapConfig,
+        },
+        email.fromEmail,
+        email.subject || "(no subject)",
+        opts.workingHoursConfig.autoReplyBody,
+      );
+    }
+  } catch (err) {
+    console.error(`out-of-hours check failed for ticket ${ticket.id}:`, err);
   }
 
   return { ticketId: ticket.id };

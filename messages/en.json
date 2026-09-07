@@ -529,6 +529,34 @@
         "saveFailed": "Could not save AI settings. Please try again."
       }
     },
+    "workingHours": {
+      "title": "Working hours",
+      "description": "Set your team's working hours, and customers who email you outside those hours automatically get your custom reply below.",
+      "enabledLabel": "Enable working hours",
+      "days": {
+        "mon": "Monday",
+        "tue": "Tuesday",
+        "wed": "Wednesday",
+        "thu": "Thursday",
+        "fri": "Friday",
+        "sat": "Saturday",
+        "sun": "Sunday"
+      },
+      "startLabel": "Start",
+      "endLabel": "End",
+      "autoReplyBodyLabel": "Out-of-hours auto-reply message",
+      "autoReplyBodyPlaceholder": "Thanks for reaching out! We've received your message and will get back to you during business hours.",
+      "autoReplyBodyHint": "Sent from your connected mailbox to whoever emails you outside working hours. The subject line is generated automatically.",
+      "success": "Working hours saved.",
+      "errors": {
+        "unauthorized": "Not authorized.",
+        "invalidTime": "Enter valid start/end times for every day.",
+        "startBeforeEnd": "Start time must be before end time for each enabled day.",
+        "bodyRequired": "Add an auto-reply message to enable working hours.",
+        "bodyTooLong": "Auto-reply message is too long (max 4000 characters).",
+        "saveFailed": "Could not save working hours. Please try again."
+      }
+    },
     "theming": {
       "title": "Theming",
       "logo": "Logo",
