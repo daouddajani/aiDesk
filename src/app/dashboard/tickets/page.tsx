@@ -97,12 +97,9 @@ export default async function TicketsListPage({
     redirect("/login");
   }
 
-  // Agents (and supervisors, who still work tickets day-to-day) default to
-  // seeing only their own tickets; admins default to the whole company's.
-  // Either can flip it via ?mine=me / ?mine=all.
-  const defaultMine =
-    profile.role === "company_agent" || profile.role === "supervisor";
-  const showMineOnly = params.mine ? params.mine === "me" : defaultMine;
+  // Everyone defaults to seeing the whole company's tickets; either can flip
+  // to just their own via ?mine=me / ?mine=all.
+  const showMineOnly = params.mine === "me";
 
   const timezone = await getCompanyTimezone(supabase, profile.company_id);
   const from = params.from || daysAgoLocalDateString(timezone, 15);
