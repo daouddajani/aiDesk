@@ -185,8 +185,33 @@ async function persistAttachments(
   }
 }
 
+// Postgres ILIKE treats "%" and "_" as wildcards wherever they appear in the
+// pattern — and both are legal characters in an email local-part (e.g.
+// "john_doe@x.com"). Used unescaped, an ilike("sender_email", ...) lookup
+// would also match "john.doe@x.com". Escaping turns the call below into an
+// exact, only-case-insensitive comparison. This is a different concern from
+// escapeOrValue (src/app/dashboard/tickets/page.tsx), which escapes
+// PostgREST .or() filter-string syntax, not ILIKE pattern semantics — don't
+// conflate the two.
+function escapeIlikeWildcards(value: string): string {
+  return value.replace(/\\/g, "\\\\").replace(/%/g, "\\%").replace(/_/g, "\\_");
+}
+
+// Strips a leading, possibly-repeated Re:/RE:/Fwd:/FW: prefix so a subject
+// can be compared across a reply chain. Only handles the Latin conventions
+// actually seen in production subjects — no invented support for other
+// locales' reply-prefix conventions.
+function normalizeSubject(subject: string | null): string {
+  let s = (subject ?? "").trim();
+  while (/^(re|fwd|fw)\s*:\s*/i.test(s)) {
+    s = s.replace(/^(re|fwd|fw)\s*:\s*/i, "");
+  }
+  return s.toLowerCase();
+}
+
 // Looks for a ticket this reply belongs to: Graph conversationId first, then
-// IMAP In-Reply-To/References chain. Picks the earliest ticket in the
+// IMAP In-Reply-To/References chain, then (see the comment further down) a
+// same-sender/same-subject fallback. Picks the earliest ticket in the
 // company if more than one somehow shares the same thread signal. A DB error
 // here must not be treated as "no match" — that would silently create a
 // duplicate ticket for what's actually a reply, so it's surfaced as an
@@ -200,7 +225,7 @@ async function persistAttachments(
 // record it as a reply to itself, duplicating the original body as a fake
 // activity entry. Falling through instead lets createTicketFromEmail's own
 // (company_id, source_message_id) dedup correctly recognize it as a no-op.
-async function findMatchingTicketId(
+export async function findMatchingTicketId(
   adminClient: SupabaseClient,
   companyId: string,
   email: IncomingEmail,
@@ -233,6 +258,54 @@ async function findMatchingTicketId(
     if (data && data.source_message_id !== email.sourceMessageId) {
       return { ticketId: data.id };
     }
+  }
+
+  // Last-resort fallback for when neither thread signal above matches: same
+  // sender + normalized subject, most-recently-received ticket wins (the
+  // opposite of the two tiers above, which take the earliest — with no
+  // thread signal at all, a reused subject is presumed to continue whatever
+  // conversation is currently active, not resurrect the original one).
+  //
+  // This exists because a Microsoft-connected company's agent reply that
+  // carries an attachment or a Cc can't go out through Graph's native
+  // /reply endpoint (the only one that preserves conversationId) — see the
+  // comment on sendGraphReply in sendTicketReply.ts. It falls back to
+  // /sendMail, a detached new message Exchange is free to assign a
+  // different conversationId to, so the customer's next reply matches
+  // neither tier above and would otherwise become a duplicate ticket.
+  //
+  // Known trade-off, accepted: a customer reusing an identical subject line
+  // for a genuinely new, unrelated issue gets appended to the old ticket
+  // instead of starting a new one. Judged rarer and less harmful than the
+  // duplicate-ticket bug this tier fixes.
+  //
+  // company_id + sender_email filtering happens at the DB level, bounded by
+  // limit(10) so a prolific sender's whole history is never scanned; the
+  // prefix-stripping comparison has no clean PostgREST equivalent, so it
+  // runs in JS against this small bounded set. Self-exclusion is applied
+  // across the whole candidate array (not just the top row), since here
+  // multiple candidates are possible. An empty/absent subject normalizes to
+  // "" and never matches — createTicketFromEmail always stores the literal
+  // placeholder "(no subject)" for a blank subject, so subject-less repeats
+  // simply fall through to creating their own ticket; no signal is the
+  // least reliable signal, not worth guessing on.
+  if (email.fromEmail) {
+    const { data, error } = await adminClient
+      .from("tickets")
+      .select("id, subject, source_message_id")
+      .eq("company_id", companyId)
+      .ilike("sender_email", escapeIlikeWildcards(email.fromEmail))
+      .order("received_at", { ascending: false })
+      .limit(10);
+    if (error) return { error: error.message };
+
+    const incomingSubject = normalizeSubject(email.subject);
+    const match = (data ?? []).find(
+      (ticket) =>
+        ticket.source_message_id !== email.sourceMessageId &&
+        normalizeSubject(ticket.subject) === incomingSubject,
+    );
+    if (match) return { ticketId: match.id };
   }
 
   return { ticketId: null };
