@@ -45,6 +45,9 @@ export function ReopenTicketForm({ ticketId }: { ticketId: string }) {
               rows={3}
               placeholder={t("reasonPlaceholder")}
               className="w-full resize-y rounded-[10px] border border-border bg-surface-alt px-3.5 py-2.5 text-[13.5px] text-ink placeholder:text-ink-sub"
+              data-gramm="false"
+              data-gramm_editor="false"
+              data-enable-grammarly="false"
             />
           </div>
 

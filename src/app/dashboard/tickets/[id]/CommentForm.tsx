@@ -134,6 +134,9 @@ export function CommentForm({
           rows={4}
           value={body}
           placeholder={t("placeholder")}
+          data-gramm="false"
+          data-gramm_editor="false"
+          data-enable-grammarly="false"
           onChange={(e) => {
             setBody(e.target.value);
             updateMentionQuery(e.target);
