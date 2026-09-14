@@ -241,7 +241,9 @@ function normalizeSubject(subject: string | null): string {
 
 // Looks for a ticket this reply belongs to: Graph conversationId first, then
 // IMAP In-Reply-To/References chain, then (see the comment further down) a
-// same-sender/same-subject fallback. Picks the earliest ticket in the
+// same-sender/same-subject fallback, then a same-watcher/same-subject
+// fallback for a Cc'd watcher replying instead of the original sender.
+// Picks the earliest ticket in the
 // company if more than one somehow shares the same thread signal. A DB error
 // here must not be treated as "no match" — that would silently create a
 // duplicate ticket for what's actually a reply, so it's surfaced as an
@@ -335,6 +337,46 @@ export async function findMatchingTicketId(
         ticket.source_message_id !== email.sourceMessageId &&
         normalizeSubject(ticket.subject) === incomingSubject,
     );
+    if (match) return { ticketId: match.id };
+  }
+
+  // Rescues a watcher's reply (as opposed to the original requester's — see
+  // the tier above) from the same conversationId-loss failure mode: a
+  // watcher's fromEmail is never equal to ticket.sender_email, so the
+  // sender-ilike tier above can't produce candidate rows for them, and a
+  // watcher's reply has no thread signal either (Graph loses conversationId
+  // on the outbound Cc'd send; the watcher's mail client has no
+  // In-Reply-To/References chain to a message it never received directly).
+  // Only attempted when the sender-based tier above found nothing, so the
+  // common path never pays for this extra round-trip.
+  //
+  // watcher_emails is a jsonb array of {name, address}; addresses are stored
+  // in whatever case they were captured in (agent-typed ~mentions, or parsed
+  // from an inbound email's To/Cc header) — never guaranteed lowercase.
+  // PostgREST's jsonb containment operator requires exact object-shape+case
+  // equality, so it can't reliably match just the address case-insensitively
+  // — same reasoning as the subject-prefix comparison above, applied here.
+  // There's also no way to pre-filter by watcher email at the DB level
+  // cheaply, so this scans more broadly than the sender-scoped tier: bounded
+  // to company_id only, capped at limit(25), ordered by received_at desc
+  // (most-recently-received wins, same reasoning as the tier above).
+  if (email.fromEmail) {
+    const { data, error } = await adminClient
+      .from("tickets")
+      .select("id, subject, source_message_id, watcher_emails")
+      .eq("company_id", companyId)
+      .order("received_at", { ascending: false })
+      .limit(25);
+    if (error) return { error: error.message };
+
+    const incomingSubject = normalizeSubject(email.subject);
+    const lowerFrom = email.fromEmail.toLowerCase();
+    const match = (data ?? []).find((ticket) => {
+      if (ticket.source_message_id === email.sourceMessageId) return false;
+      if (normalizeSubject(ticket.subject) !== incomingSubject) return false;
+      const watchers = (ticket.watcher_emails ?? []) as { address: string }[];
+      return watchers.some((w) => w.address.toLowerCase() === lowerFrom);
+    });
     if (match) return { ticketId: match.id };
   }
 

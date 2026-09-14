@@ -379,11 +379,13 @@ export async function addComment(_prevState: unknown, formData: FormData) {
           .eq("id", ticketId);
       }
 
-      // A newly-added watcher wasn't on the original thread, so the reply
-      // alone has no context for them — prepend the original ticket
-      // description to this one send when that's the case.
+      // Watchers only ever see this thread through Cc, with no native
+      // mail-client context (they're not the ticket's original recipient) —
+      // every reply that goes out to at least one watcher gets the original
+      // ticket description prepended, not just the turn a watcher is newly
+      // added on.
       const outboundBody =
-        newMentions.length > 0 ? `${ticket.description}\n\n---\n\n${body}` : body;
+        watchers.length > 0 ? `${ticket.description}\n\n---\n\n${body}` : body;
 
       const { error: sendError } = await sendTicketReply(
         adminClient,
