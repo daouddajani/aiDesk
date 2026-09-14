@@ -342,6 +342,12 @@ export async function addComment(_prevState: unknown, formData: FormData) {
       .single();
 
     if (company) {
+      const { data: authorProfile } = await ctx.supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", ctx.userId)
+        .single();
+      const agentName = authorProfile?.full_name?.trim() || "Support Agent";
       const existingWatchers = (ticket.watcher_emails ?? []) as {
         name: string | null;
         address: string;
@@ -379,13 +385,19 @@ export async function addComment(_prevState: unknown, formData: FormData) {
           .eq("id", ticketId);
       }
 
+      // The client has no other way to see who answered — the reply comes
+      // from the shared company mailbox, not the agent's own address.
+      const signedBody = `${body}\n\n— ${agentName}`;
+
       // Watchers only ever see this thread through Cc, with no native
       // mail-client context (they're not the ticket's original recipient) —
       // every reply that goes out to at least one watcher gets the original
       // ticket description prepended, not just the turn a watcher is newly
       // added on.
       const outboundBody =
-        watchers.length > 0 ? `${ticket.description}\n\n---\n\n${body}` : body;
+        watchers.length > 0
+          ? `${ticket.description}\n\n---\n\n${signedBody}`
+          : signedBody;
 
       const { error: sendError } = await sendTicketReply(
         adminClient,
