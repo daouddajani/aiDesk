@@ -236,6 +236,30 @@
         "failed": "Could not take ownership. Please try again."
       }
     },
+    "newTicket": {
+      "trigger": "New ticket",
+      "title": "New ticket",
+      "subjectLabel": "Subject",
+      "subjectPlaceholder": "Short summary of the issue",
+      "senderNameLabel": "Client name",
+      "senderNamePlaceholder": "Optional",
+      "senderEmailLabel": "Client email",
+      "senderEmailPlaceholder": "client@example.com",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "What does the client need help with?",
+      "assigneeLabel": "Assign to",
+      "unassignedOption": "Unassigned",
+      "assignToMe": "Myself",
+      "cancel": "Cancel",
+      "submit": "Create ticket",
+      "errors": {
+        "unauthorized": "Not authorized.",
+        "fieldsRequired": "Subject, description, and client email are required.",
+        "invalidEmail": "Enter a valid client email.",
+        "invalidAgent": "That agent isn't part of your company.",
+        "failed": "Could not create the ticket. Please try again."
+      }
+    },
     "reassign": {
       "placeholder": "Reassign to...",
       "submit": "Reassign",

@@ -14,6 +14,7 @@ import {
 import { resolvePagination } from "@/lib/pagination";
 import { TicketPagination } from "@/components/TicketPagination";
 import { TicketsRefreshButton } from "@/components/TicketsRefreshButton";
+import { NewTicketForm } from "./NewTicketForm";
 
 const STATUS_VALUES = ["new", "pending", "on_process", "closed"] as const;
 
@@ -199,6 +200,15 @@ export default async function TicketsListPage({
             {t("dashboard.title")}
           </h1>
           <TicketsRefreshButton label={t("dashboard.refresh")} />
+          <NewTicketForm
+            currentUserId={user.id}
+            agentOptions={(agents ?? [])
+              .filter((agent) => !agent.disabled && agent.id !== user.id)
+              .map((agent) => ({
+                id: agent.id,
+                name: agentNameById.get(agent.id) ?? t("common.unnamed"),
+              }))}
+          />
         </div>
 
         <div className="flex items-center gap-1 rounded-[10px] border border-border bg-surface p-1">

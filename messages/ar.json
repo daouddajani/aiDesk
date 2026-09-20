@@ -236,6 +236,30 @@
         "failed": "تعذّر تولّي التذكرة. حاول مرة أخرى."
       }
     },
+    "newTicket": {
+      "trigger": "تذكرة جديدة",
+      "title": "تذكرة جديدة",
+      "subjectLabel": "الموضوع",
+      "subjectPlaceholder": "ملخص قصير للمشكلة",
+      "senderNameLabel": "اسم العميل",
+      "senderNamePlaceholder": "اختياري",
+      "senderEmailLabel": "بريد العميل الإلكتروني",
+      "senderEmailPlaceholder": "client@example.com",
+      "descriptionLabel": "الوصف",
+      "descriptionPlaceholder": "ما الذي يحتاج العميل المساعدة فيه؟",
+      "assigneeLabel": "إسناد إلى",
+      "unassignedOption": "غير مُسندة",
+      "assignToMe": "لي أنا",
+      "cancel": "إلغاء",
+      "submit": "إنشاء التذكرة",
+      "errors": {
+        "unauthorized": "غير مصرح لك.",
+        "fieldsRequired": "الموضوع والوصف وبريد العميل الإلكتروني مطلوبة.",
+        "invalidEmail": "أدخل بريدًا إلكترونيًا صالحًا للعميل.",
+        "invalidAgent": "هذا الموظف ليس ضمن شركتك.",
+        "failed": "تعذّر إنشاء التذكرة. حاول مرة أخرى."
+      }
+    },
     "reassign": {
       "placeholder": "إعادة الإسناد إلى...",
       "submit": "إعادة الإسناد",

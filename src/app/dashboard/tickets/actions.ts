@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -97,6 +98,71 @@ async function assignTicket(
   }
 
   return null;
+}
+
+export async function createTicket(_prevState: unknown, formData: FormData) {
+  const t = await getTranslations("tickets.newTicket.errors");
+  const ctx = await requireCompanyMember();
+  if (!ctx) return { error: t("unauthorized") };
+
+  const subject = String(formData.get("subject") ?? "").trim();
+  const description = String(formData.get("description") ?? "").trim();
+  const senderEmail = String(formData.get("senderEmail") ?? "").trim();
+  const senderName = String(formData.get("senderName") ?? "").trim();
+  const agentId = String(formData.get("agentId") ?? "").trim();
+
+  if (!subject || !description || !senderEmail) {
+    return { error: t("fieldsRequired") };
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(senderEmail)) {
+    return { error: t("invalidEmail") };
+  }
+
+  if (agentId) {
+    // Same company/role/enabled check reassignTicket() already does —
+    // assigned_agent_id has no FK-level company check.
+    const { data: agent } = await ctx.supabase
+      .from("profiles")
+      .select("id")
+      .eq("id", agentId)
+      .eq("company_id", ctx.companyId)
+      .in("role", ["company_admin", "company_agent", "supervisor"])
+      .eq("disabled", false)
+      .maybeSingle();
+    if (!agent) return { error: t("invalidAgent") };
+  }
+
+  const { data: ticket, error } = await ctx.supabase
+    .from("tickets")
+    .insert({
+      company_id: ctx.companyId,
+      subject,
+      description,
+      sender_email: senderEmail,
+      sender_name: senderName || null,
+      status: agentId ? "pending" : "new",
+      assigned_agent_id: agentId || null,
+      source_message_id: `manual:${crypto.randomUUID()}`,
+      received_at: new Date().toISOString(),
+      watcher_emails: [],
+    })
+    .select("id")
+    .single();
+
+  if (error || !ticket) return { error: t("failed") };
+
+  if (agentId) {
+    await ctx.supabase.from("ticket_assignment_log").insert({
+      ticket_id: ticket.id,
+      company_id: ctx.companyId,
+      changed_by: ctx.userId,
+      previous_agent_id: null,
+      new_agent_id: agentId,
+    });
+  }
+
+  revalidatePath("/dashboard/tickets");
+  redirect(`/dashboard/tickets/${ticket.id}`);
 }
 
 export async function takeOwnership(_prevState: unknown, formData: FormData) {
