@@ -70,6 +70,9 @@ export async function AppShell({
       } as React.CSSProperties)
     : undefined;
 
+  // TEMPORARY diagnostic — remove once the theme-apply bug is found.
+  console.log("[theme-debug-appshell]", JSON.stringify({ themeColors, themeStyle }));
+
   const brand = (
     <div className="flex items-center gap-3 px-5 py-5">
       {logoUrl ? (
