@@ -80,6 +80,13 @@ export default async function DashboardLayout({
         }
       : null;
 
+  // TEMPORARY diagnostic — remove once the theme-apply bug is found.
+  console.log("[theme-debug]", JSON.stringify({
+    companyId: profile.company_id,
+    rawThemeConfig: company?.theme_config,
+    computedThemeColors: themeColors,
+  }));
+
   return (
     <AppShell
       navItems={buildNavItems(profile.role, t, {
