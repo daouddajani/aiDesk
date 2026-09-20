@@ -5,13 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { buildAgentNameMap } from "@/lib/agentNames";
 import { formatDateTime } from "@/lib/formatDate";
 import { getCompanyTimezone } from "@/lib/companyTimezone";
-
-const STATUS_BADGE_CLASSES: Record<string, string> = {
-  new: "bg-info-soft text-info",
-  pending: "bg-warning-soft text-warning",
-  on_process: "bg-primary-soft text-primary",
-  closed: "bg-surface-alt text-ink-sub",
-};
+import { STATUS_BADGE_CLASSES } from "@/lib/companyTheme";
 
 function KpiCard({
   label,

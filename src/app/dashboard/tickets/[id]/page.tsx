@@ -19,16 +19,10 @@ import { ArchiveTicketForm } from "./ArchiveTicketForm";
 import { AddReminderForm } from "./AddReminderForm";
 import { TicketTimer } from "./TicketTimer";
 import { DeleteCommentButton } from "./DeleteCommentButton";
+import { STATUS_BADGE_CLASSES } from "@/lib/companyTheme";
 
 const CARD_SHADOW =
   "shadow-card";
-
-const STATUS_BADGE_CLASSES: Record<string, string> = {
-  new: "bg-info-soft text-info",
-  pending: "bg-warning-soft text-warning",
-  on_process: "bg-primary-soft text-primary",
-  closed: "bg-surface-alt text-ink-sub",
-};
 
 // Renders a comment body, replacing "@[Name](agentId)" mention tokens with
 // a highlighted span (the name is re-resolved live via agentNameById so a

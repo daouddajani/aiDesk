@@ -58,3 +58,15 @@ export const CARD_COLOR_KEYS: CardColorKey[] = [
   "onProcess",
   "closed",
 ];
+
+// Ticket status pill colors — driven by the same per-company --color-kpi-*
+// variables AppShell injects from theme_config.cardColors, so a status
+// badge anywhere in the app (ticket list, ticket detail, performance,
+// dashboard recent-tickets table) matches the "Dashboard status cards"
+// colors a company customizes in Theming settings.
+export const STATUS_BADGE_CLASSES: Record<string, string> = {
+  new: "bg-kpi-new-soft text-kpi-new",
+  pending: "bg-kpi-pending-soft text-kpi-pending",
+  on_process: "bg-kpi-on-process-soft text-kpi-on-process",
+  closed: "bg-kpi-closed-soft text-kpi-closed",
+};

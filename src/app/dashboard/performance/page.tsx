@@ -10,15 +10,9 @@ import { toLocalDateString } from "@/lib/timezone";
 import { resolvePagination } from "@/lib/pagination";
 import { TicketPagination } from "@/components/TicketPagination";
 import { DateRangeFilter, buildHref } from "@/components/DateRangeFilter";
+import { STATUS_BADGE_CLASSES } from "@/lib/companyTheme";
 
 type Translator = Awaited<ReturnType<typeof getTranslations>>;
-
-const STATUS_BADGE_CLASSES: Record<string, string> = {
-  new: "bg-info-soft text-info",
-  pending: "bg-warning-soft text-warning",
-  on_process: "bg-primary-soft text-primary",
-  closed: "bg-surface-alt text-ink-sub",
-};
 
 type TicketRow = {
   id: string;

@@ -15,15 +15,9 @@ import { resolvePagination } from "@/lib/pagination";
 import { TicketPagination } from "@/components/TicketPagination";
 import { TicketsRefreshButton } from "@/components/TicketsRefreshButton";
 import { NewTicketForm } from "./NewTicketForm";
+import { STATUS_BADGE_CLASSES } from "@/lib/companyTheme";
 
 const STATUS_VALUES = ["new", "pending", "on_process", "closed"] as const;
-
-const STATUS_BADGE_CLASSES: Record<string, string> = {
-  new: "bg-info-soft text-info",
-  pending: "bg-warning-soft text-warning",
-  on_process: "bg-primary-soft text-primary",
-  closed: "bg-surface-alt text-ink-sub",
-};
 
 function buildHref(
   base: string,
