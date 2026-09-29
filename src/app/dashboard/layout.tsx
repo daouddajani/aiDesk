@@ -5,8 +5,7 @@ import { getInitials } from "@/lib/initials";
 import { buildNavItems, roleLabel } from "@/lib/navItems";
 import { AppShell } from "@/components/shell/AppShell";
 import {
-  DEFAULT_CARD_COLORS,
-  CARD_COLOR_KEYS,
+  resolveThemeColors,
   type CompanyThemeConfig,
 } from "@/lib/companyTheme";
 
@@ -60,25 +59,9 @@ export default async function DashboardLayout({
       .single(),
   ]);
 
-  const themeConfig = (company?.theme_config ?? {}) as CompanyThemeConfig;
-  const themeColors =
-    themeConfig.primaryColor && themeConfig.accentColor
-      ? {
-          primaryColor: themeConfig.primaryColor,
-          accentColor: themeConfig.accentColor,
-          // Falls back to the primary color for themes saved before the
-          // link-hover picker existed (theme_config predates that field).
-          linkHoverColor: themeConfig.linkHoverColor ?? themeConfig.primaryColor,
-          // Same fallback idea, per card, for themes saved before the
-          // status card colors existed.
-          cardColors: Object.fromEntries(
-            CARD_COLOR_KEYS.map((key) => [
-              key,
-              themeConfig.cardColors?.[key] ?? DEFAULT_CARD_COLORS[key],
-            ]),
-          ) as Record<(typeof CARD_COLOR_KEYS)[number], string>,
-        }
-      : null;
+  const themeColors = resolveThemeColors(
+    company?.theme_config as CompanyThemeConfig | null,
+  );
 
   // TEMPORARY diagnostic — remove once the theme-apply bug is found.
   console.log("[theme-debug]", JSON.stringify({

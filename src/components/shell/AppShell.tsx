@@ -32,9 +32,10 @@ export async function AppShell({
 }: {
   navItems: ShellNavItem[];
   user: { id: string; name: string; roleLabel: string; initials: string };
-  // Only company_admin/company_agent (the /dashboard shell) have one —
-  // super_admin (/admin) and the shared /profile page don't pass it, and
-  // ticket notifications simply don't render for them.
+  // company_admin/company_agent/supervisor have one, passed from both the
+  // /dashboard shell and the shared /profile page (so their own company's
+  // logo/theme/notifications show there too) — super_admin (/admin) has no
+  // company and doesn't pass it, so ticket notifications don't render there.
   companyId?: string;
   logoUrl?: string | null;
   themeColors?: {
