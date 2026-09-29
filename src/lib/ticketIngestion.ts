@@ -306,10 +306,10 @@ export async function findMatchingTicketId(
   // different conversationId to, so the customer's next reply matches
   // neither tier above and would otherwise become a duplicate ticket.
   //
-  // Known trade-off, accepted: a customer reusing an identical subject line
-  // for a genuinely new, unrelated issue gets appended to the old ticket
-  // instead of starting a new one. Judged rarer and less harmful than the
-  // duplicate-ticket bug this tier fixes.
+  // Closed tickets are excluded: once a ticket is resolved, a same-subject
+  // reply weeks later is far more likely to be a new, unrelated issue than
+  // a continuation, so it's better to start a fresh ticket than silently
+  // reopen a closed one's comment thread.
   //
   // company_id + sender_email filtering happens at the DB level, bounded by
   // limit(10) so a prolific sender's whole history is never scanned; the
@@ -326,6 +326,7 @@ export async function findMatchingTicketId(
       .from("tickets")
       .select("id, subject, source_message_id")
       .eq("company_id", companyId)
+      .neq("status", "closed")
       .ilike("sender_email", escapeIlikeWildcards(email.fromEmail))
       .order("received_at", { ascending: false })
       .limit(10);
@@ -365,6 +366,7 @@ export async function findMatchingTicketId(
       .from("tickets")
       .select("id, subject, source_message_id, watcher_emails")
       .eq("company_id", companyId)
+      .neq("status", "closed")
       .order("received_at", { ascending: false })
       .limit(25);
     if (error) return { error: error.message };
