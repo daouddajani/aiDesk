@@ -282,8 +282,16 @@ create policy tickets_update on tickets
   for update to authenticated
   using (company_id = current_user_company_id());
 
--- No insert/delete policy for `authenticated`: tickets are created by the
--- mailbox-polling job, which runs with the service_role key (bypasses RLS).
+-- Tickets are created both by the mailbox-polling job (service_role key,
+-- bypasses RLS) and by agents creating a ticket directly from the dashboard
+-- (authenticated client) — the latter needs this insert policy. Role
+-- eligibility (company_admin/company_agent/supervisor) is enforced at the
+-- app layer in requireCompanyMember(), same as tickets_update above.
+create policy tickets_insert on tickets
+  for insert to authenticated
+  with check (company_id = current_user_company_id());
+
+-- No delete policy for `authenticated`: nothing in the app deletes tickets.
 
 -- --- ticket_comments ---
 create policy ticket_comments_select on ticket_comments

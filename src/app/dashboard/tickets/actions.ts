@@ -149,7 +149,10 @@ export async function createTicket(_prevState: unknown, formData: FormData) {
     .select("id")
     .single();
 
-  if (error || !ticket) return { error: t("failed") };
+  if (error || !ticket) {
+    console.error("createTicket insert failed", error);
+    return { error: t("failed") };
+  }
 
   if (agentId) {
     await ctx.supabase.from("ticket_assignment_log").insert({
