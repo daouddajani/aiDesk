@@ -608,6 +608,8 @@
     "language": "Language",
     "languageEnglish": "English",
     "languageArabic": "Arabic",
+    "autoRefreshLabel": "Auto-refresh tickets page",
+    "autoRefreshIntervalLabel": "Refresh interval (minutes)",
     "submit": "Save changes",
     "success": "Profile updated.",
     "errors": {

@@ -19,7 +19,9 @@ export default async function ProfilePage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role, full_name, locale")
+    .select(
+      "role, full_name, locale, auto_refresh_enabled, auto_refresh_interval_minutes",
+    )
     .eq("id", user.id)
     .single();
 
@@ -39,7 +41,12 @@ export default async function ProfilePage() {
         initials: getInitials(displayName),
       }}
     >
-      <ProfileForm fullName={profile.full_name} locale={profile.locale} />
+      <ProfileForm
+        fullName={profile.full_name}
+        locale={profile.locale}
+        autoRefreshEnabled={profile.auto_refresh_enabled}
+        autoRefreshIntervalMinutes={profile.auto_refresh_interval_minutes}
+      />
     </AppShell>
   );
 }

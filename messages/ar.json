@@ -608,6 +608,8 @@
     "language": "اللغة",
     "languageEnglish": "الإنجليزية",
     "languageArabic": "العربية",
+    "autoRefreshLabel": "تحديث صفحة التذاكر تلقائيًا",
+    "autoRefreshIntervalLabel": "فاصل التحديث (بالدقائق)",
     "submit": "حفظ التغييرات",
     "success": "تم تحديث الملف الشخصي.",
     "errors": {

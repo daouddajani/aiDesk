@@ -23,9 +23,20 @@ export async function updateProfile(_prevState: unknown, formData: FormData) {
     ? (languageRaw as Locale)
     : "en";
 
+  const autoRefreshEnabled = formData.get("autoRefreshEnabled") === "on";
+  const rawInterval = Number(formData.get("autoRefreshIntervalMinutes"));
+  const autoRefreshIntervalMinutes = Number.isFinite(rawInterval)
+    ? Math.min(60, Math.max(1, Math.round(rawInterval)))
+    : 5;
+
   const { error } = await supabase
     .from("profiles")
-    .update({ full_name: fullName || null, locale: language })
+    .update({
+      full_name: fullName || null,
+      locale: language,
+      auto_refresh_enabled: autoRefreshEnabled,
+      auto_refresh_interval_minutes: autoRefreshIntervalMinutes,
+    })
     .eq("id", user.id);
 
   if (error) {

@@ -14,6 +14,7 @@ import {
 import { resolvePagination } from "@/lib/pagination";
 import { TicketPagination } from "@/components/TicketPagination";
 import { TicketsRefreshButton } from "@/components/TicketsRefreshButton";
+import { TicketsAutoRefresh } from "@/components/TicketsAutoRefresh";
 import { NewTicketForm } from "./NewTicketForm";
 import { STATUS_BADGE_CLASSES } from "@/lib/companyTheme";
 
@@ -79,7 +80,7 @@ export default async function TicketsListPage({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role, company_id")
+    .select("role, company_id, auto_refresh_enabled, auto_refresh_interval_minutes")
     .eq("id", user.id)
     .single();
 
@@ -194,6 +195,10 @@ export default async function TicketsListPage({
             {t("dashboard.title")}
           </h1>
           <TicketsRefreshButton label={t("dashboard.refresh")} />
+          <TicketsAutoRefresh
+            enabled={profile.auto_refresh_enabled}
+            intervalMinutes={profile.auto_refresh_interval_minutes}
+          />
           <NewTicketForm
             currentUserId={user.id}
             agentOptions={(agents ?? [])
