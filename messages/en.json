@@ -167,6 +167,7 @@
   "dashboard": {
     "title": "Tickets",
     "refresh": "Refresh",
+    "lastRefreshed": "Last refreshed",
     "mineOnly": "My tickets",
     "allTickets": "All tickets",
     "filterByAgent": "Agent",
