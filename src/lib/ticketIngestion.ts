@@ -99,8 +99,12 @@ function deriveWatcherEmails(
   return watchers;
 }
 
-function sanitizeFilename(name: string) {
-  return name.replace(/[/\\]/g, "_").slice(0, 200) || "attachment";
+// Supabase Storage rejects object keys containing non-ASCII characters
+// (an Arabic filename gets a 400 "Invalid key"), so the key is a random id
+// plus an ASCII-only form of the name. The original name is kept in the
+// attachments.filename column, which is what the UI shows.
+export function attachmentStorageKey(name: string) {
+  return `${crypto.randomUUID()}-${name.replace(/[^A-Za-z0-9._-]/g, "_").slice(-100)}`;
 }
 
 async function sendNewTicketNotification(
@@ -187,7 +191,7 @@ async function persistAttachments(
       if (existing) continue;
     }
 
-    const path = `${ownerPathPrefix}/${sanitizeFilename(attachment.filename)}`;
+    const path = `${ownerPathPrefix}/${attachmentStorageKey(attachment.filename)}`;
 
     const { error: uploadError } = await adminClient.storage
       .from("attachments")
@@ -199,9 +203,14 @@ async function persistAttachments(
     // Storage bucket policies (mime type / 25MB size limit) reject
     // disallowed attachments here; skip just that attachment, not the
     // whole ticket/comment.
-    if (uploadError) continue;
+    if (uploadError) {
+      console.error(
+        `attachment upload failed for ${attachment.filename} on ${JSON.stringify(row)}: ${uploadError.message}`,
+      );
+      continue;
+    }
 
-    await adminClient.from("attachments").insert({
+    const { error: insertError } = await adminClient.from("attachments").insert({
       ...row,
       company_id: companyId,
       storage_path: path,
@@ -212,6 +221,12 @@ async function persistAttachments(
       is_inline: attachment.isInline,
       content_hash: contentHash,
     });
+
+    if (insertError) {
+      console.error(
+        `attachment row insert failed for ${attachment.filename} on ${JSON.stringify(row)}: ${insertError.message}`,
+      );
+    }
   }
 }
 

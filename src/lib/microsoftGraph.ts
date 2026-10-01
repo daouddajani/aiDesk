@@ -213,6 +213,9 @@ export async function listMessageAttachments(
   );
 
   if (!response.ok) {
+    console.error(
+      `listMessageAttachments failed for message ${messageId}: ${response.status} ${await response.text()}`,
+    );
     return [];
   }
 

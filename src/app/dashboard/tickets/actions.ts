@@ -10,6 +10,7 @@ import { getAIProviderForCompany } from "@/lib/ai";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { getCompanyTimezone } from "@/lib/companyTimezone";
 import { localDateStringToUtcISO } from "@/lib/timezone";
+import { attachmentStorageKey } from "@/lib/ticketIngestion";
 
 async function requireCompanyMember() {
   const supabase = await createClient();
@@ -369,7 +370,7 @@ export async function addComment(_prevState: unknown, formData: FormData) {
       size: attachmentFile.size,
     };
 
-    const path = `${ctx.companyId}/${comment.id}/${attachmentMeta.filename.replace(/[/\\]/g, "_")}`;
+    const path = `${ctx.companyId}/${comment.id}/${attachmentStorageKey(attachmentMeta.filename)}`;
     const { error: uploadError } = await ctx.supabase.storage
       .from("attachments")
       .upload(path, attachmentBuffer, { contentType: attachmentMeta.mimeType });
