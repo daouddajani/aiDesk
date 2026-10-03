@@ -53,7 +53,8 @@
     "roleSuperAdmin": "مشرف عام",
     "roleSupervisor": "مشرف فريق",
     "reminders": "التذكيرات",
-    "notifications": "الإشعارات"
+    "notifications": "الإشعارات",
+    "tags": "الوسوم"
   },
   "login": {
     "title": "تسجيل الدخول",
@@ -661,5 +662,16 @@
       "notificationMissing": "الإشعار غير موجود.",
       "failed": "تعذّر تحديث الإشعارات. حاول مرة أخرى."
     }
+  },
+  "tagsPage": {
+    "title": "الوسوم",
+    "filterLabel": "الوسم",
+    "allTags": "كل الوسوم",
+    "apply": "تطبيق",
+    "table": {
+      "subject": "الموضوع",
+      "tag": "الوسم"
+    },
+    "noTickets": "لا توجد تذاكر بهذا الوسم."
   }
 }

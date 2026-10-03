@@ -53,7 +53,8 @@
     "roleSuperAdmin": "Super Admin",
     "roleSupervisor": "Supervisor",
     "reminders": "Reminders",
-    "notifications": "Notifications"
+    "notifications": "Notifications",
+    "tags": "Tags"
   },
   "login": {
     "title": "Sign in",
@@ -661,5 +662,16 @@
       "notificationMissing": "Missing notification.",
       "failed": "Could not update notifications. Please try again."
     }
+  },
+  "tagsPage": {
+    "title": "Tags",
+    "filterLabel": "Tag",
+    "allTags": "All tags",
+    "apply": "Apply",
+    "table": {
+      "subject": "Subject",
+      "tag": "Tag"
+    },
+    "noTickets": "No tickets match this tag."
   }
 }

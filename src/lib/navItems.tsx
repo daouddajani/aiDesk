@@ -14,6 +14,7 @@ import {
   ArchiveIcon,
   ProfileIcon,
   CompaniesIcon,
+  TagsIcon,
 } from "@/components/shell/icons";
 
 type Translator = Awaited<ReturnType<typeof getTranslations>>;
@@ -60,6 +61,11 @@ export function buildNavItems(
       : []),
     ...(role === "company_admin"
       ? [
+          {
+            href: "/dashboard/tags",
+            label: t("nav.tags"),
+            icon: <TagsIcon />,
+          },
           {
             href: "/dashboard/agents",
             label: t("nav.agents"),

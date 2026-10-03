@@ -109,3 +109,10 @@ export const CompaniesIcon = () => (
     <path d="M9 9h1M9 13h1M14 9h1M14 13h1M10 21v-4h4v4"></path>
   </svg>
 );
+
+export const TagsIcon = () => (
+  <svg {...common}>
+    <path d="M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L3 13V3h10l7.59 7.59a2 2 0 0 1 0 2.82z"></path>
+    <circle cx="7.5" cy="7.5" r="1.5"></circle>
+  </svg>
+);

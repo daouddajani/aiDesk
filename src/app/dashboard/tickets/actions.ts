@@ -741,6 +741,7 @@ export async function updateTicketCategory(
   if (error) return { error: t("failed") };
 
   revalidatePath(`/dashboard/tickets/${ticketId}`);
+  revalidatePath("/dashboard/tags");
   return { success: true };
 }
 
