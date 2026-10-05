@@ -694,6 +694,21 @@
       "textRequired": "Enter the question text.",
       "textTooLong": "Questions can be at most 300 characters.",
       "failed": "Something went wrong. Please try again."
+    },
+    "email": {
+      "title": "Survey email",
+      "bodyLabel": "Message",
+      "bodyHint": "Sent to the customer when their ticket is closed. Use '{subject}' to insert the ticket subject. The survey link is added below the message. Clear the field to restore the default text.",
+      "linkTextLabel": "Link text",
+      "linkTextHint": "The clickable text of the survey link. Clear it to restore the default.",
+      "save": "Save email",
+      "saved": "Survey email saved.",
+      "errors": {
+        "unauthorized": "You are not allowed to do that.",
+        "bodyTooLong": "The message can be at most 4000 characters.",
+        "linkTextTooLong": "The link text can be at most 100 characters.",
+        "failed": "Something went wrong. Please try again."
+      }
     }
   },
   "surveyResults": {

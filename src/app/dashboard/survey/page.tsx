@@ -8,6 +8,8 @@ import {
   MoveQuestionButton,
   ArchiveQuestionButton,
 } from "./QuestionForms";
+import { SurveyEmailForm } from "./SurveyEmailForm";
+import { DEFAULT_SURVEY_EMAIL_BODY, DEFAULT_SURVEY_LINK_TEXT } from "@/lib/surveyFaces";
 
 export default async function SurveyBuilderPage() {
   const t = await getTranslations("surveyBuilder");
@@ -33,7 +35,7 @@ export default async function SurveyBuilderPage() {
   const [{ data: company }, { data: questions }] = await Promise.all([
     supabase
       .from("companies")
-      .select("survey_enabled")
+      .select("survey_enabled, survey_email_body, survey_email_link_text")
       .eq("id", profile.company_id)
       .single(),
     supabase
@@ -65,6 +67,11 @@ export default async function SurveyBuilderPage() {
         </Link>
       </div>
       <p className="text-sm text-ink-sub">{t("description")}</p>
+
+      <SurveyEmailForm
+        body={company.survey_email_body ?? DEFAULT_SURVEY_EMAIL_BODY}
+        linkText={company.survey_email_link_text ?? DEFAULT_SURVEY_LINK_TEXT}
+      />
 
       <div className="space-y-4 rounded-2xl border border-border bg-surface p-5 shadow-card">
         <AddQuestionForm />

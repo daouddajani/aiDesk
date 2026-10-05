@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { sendCompanyMail } from "./sendTicketReply";
+import { DEFAULT_SURVEY_EMAIL_BODY, DEFAULT_SURVEY_LINK_TEXT } from "./surveyFaces";
 
 
 function escapeHtml(s: string) {
@@ -27,7 +28,9 @@ export async function sendSurveyInvitation(adminClient: SupabaseClient, ticketId
     await Promise.all([
       adminClient
         .from("companies")
-        .select("id, name, survey_enabled, helpdesk_url, mailbox_provider, mailbox_imap_config")
+        .select(
+          "id, name, survey_enabled, helpdesk_url, mailbox_provider, mailbox_imap_config, survey_email_body, survey_email_link_text",
+        )
         .eq("id", ticket.company_id)
         .single(),
       adminClient
@@ -60,13 +63,17 @@ export async function sendSurveyInvitation(adminClient: SupabaseClient, ticketId
   if (insertError || !response) return;
 
   const surveyUrl = `${company.helpdesk_url}/survey/${token}`;
-  const subject = escapeHtml(ticket.subject || "");
+  const body = (company.survey_email_body ?? DEFAULT_SURVEY_EMAIL_BODY).replaceAll(
+    "{subject}",
+    ticket.subject || "",
+  );
+  const linkText = company.survey_email_link_text ?? DEFAULT_SURVEY_LINK_TEXT;
   const { error } = await sendCompanyMail(
     adminClient,
     company,
     ticket.sender_email,
     `How did we do? ${ticket.subject || ""}`.trim(),
-    `<p>Your request <strong>${subject}</strong> has been resolved.</p><p>We'd appreciate a minute of your time to tell us how we did.</p><p><a href="${surveyUrl}">Take the survey</a></p><p>${escapeHtml(company.name ?? "")}</p>`,
+    `<p>${escapeHtml(body).replace(/\n/g, "<br>")}</p><p><a href="${surveyUrl}">${escapeHtml(linkText)}</a></p>`,
   );
 
   if (error) {
