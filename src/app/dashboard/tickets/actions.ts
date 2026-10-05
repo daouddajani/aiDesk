@@ -11,6 +11,7 @@ import { checkRateLimit } from "@/lib/rateLimit";
 import { getCompanyTimezone } from "@/lib/companyTimezone";
 import { localDateStringToUtcISO } from "@/lib/timezone";
 import { attachmentStorageKey } from "@/lib/ticketIngestion";
+import { sendSurveyInvitation } from "@/lib/survey";
 
 async function requireCompanyMember() {
   const supabase = await createClient();
@@ -561,6 +562,13 @@ export async function closeTicket(_prevState: unknown, formData: FormData) {
     } catch {
       // Non-fatal, see comment above.
     }
+  }
+
+  // Customer satisfaction survey — also best effort, never blocks the close.
+  try {
+    await sendSurveyInvitation(createAdminClient(), ticketId);
+  } catch (err) {
+    console.error(`survey invitation failed for ${ticketId}:`, err);
   }
 
   revalidatePath(`/dashboard/tickets/${ticketId}`);

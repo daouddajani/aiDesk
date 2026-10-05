@@ -54,7 +54,8 @@
     "roleSupervisor": "Supervisor",
     "reminders": "Reminders",
     "notifications": "Notifications",
-    "tags": "Tags"
+    "tags": "Tags",
+    "survey": "Survey"
   },
   "login": {
     "title": "Sign in",
@@ -529,7 +530,8 @@
       "updateFailed": "Could not update company settings. Please try again.",
       "invalidNotificationEmail": "Enter a valid notification email address.",
       "notificationEmailRequired": "Add a notification email to enable this.",
-      "helpdeskUrlRequired": "Add a helpdesk URL to enable this."
+      "helpdeskUrlRequired": "Add a helpdesk URL to enable this.",
+      "surveyHelpdeskUrlRequired": "Set the help desk URL to enable the survey — the survey link is built from it."
     },
     "ai": {
       "title": "AI features",
@@ -602,7 +604,9 @@
         "logoUploadFailed": "Could not upload the logo. Please try again.",
         "saveFailed": "Could not save theme settings. Please try again."
       }
-    }
+    },
+    "surveyEnabledLabel": "Send a satisfaction survey when a ticket is closed",
+    "surveyEnabledHint": "The customer gets an email link to a short survey. Build the questions under Survey in the menu. Requires the help desk URL above."
   },
   "profile": {
     "title": "My Profile",
@@ -673,5 +677,81 @@
       "tag": "Tag"
     },
     "noTickets": "No tickets match this tag."
+  },
+  "surveyBuilder": {
+    "title": "Customer survey",
+    "description": "Each question is answered on a 5-face scale from very unhappy to very happy. Customers can also leave a comment at the end.",
+    "viewResults": "View results",
+    "newQuestionPlaceholder": "e.g. How satisfied are you with the response time?",
+    "addQuestion": "Add question",
+    "noQuestions": "No questions yet. Surveys are only sent once at least one question exists.",
+    "save": "Save",
+    "delete": "Delete",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "errors": {
+      "unauthorized": "You are not allowed to do that.",
+      "textRequired": "Enter the question text.",
+      "textTooLong": "Questions can be at most 300 characters.",
+      "failed": "Something went wrong. Please try again."
+    }
+  },
+  "surveyResults": {
+    "title": "Survey results",
+    "editSurvey": "Edit survey",
+    "apply": "Apply",
+    "periodHint": "Covers surveys sent in the selected period.",
+    "average": "Average",
+    "negative": "Negative (😞/🙁)",
+    "noData": "No responses in this period.",
+    "unassigned": "Unassigned",
+    "unknownAgent": "Unknown agent",
+    "kpi": {
+      "sent": "Surveys sent",
+      "responses": "Responses",
+      "responseRate": "Response rate",
+      "average": "Average score"
+    },
+    "byQuestion": {
+      "title": "By question",
+      "question": "Question",
+      "deleted": "deleted"
+    },
+    "byAgent": {
+      "title": "By agent",
+      "agent": "Agent",
+      "responses": "Responses"
+    },
+    "responses": {
+      "title": "Responses",
+      "date": "Submitted",
+      "ticket": "Ticket",
+      "comment": "Comment",
+      "allAgents": "All agents",
+      "commentsOnly": "With comments only"
+    }
+  },
+  "surveyPublic": {
+    "title": "How did we do?",
+    "ticket": "About your request: {subject}",
+    "faces": {
+      "1": "Very unhappy",
+      "2": "Unhappy",
+      "3": "Neutral",
+      "4": "Happy",
+      "5": "Very happy"
+    },
+    "commentLabel": "Anything else you'd like to tell us? (optional)",
+    "commentPlaceholder": "Your comment",
+    "submit": "Submit",
+    "thanks": "Thank you! Your feedback has been received.",
+    "alreadySubmitted": "Thank you — we've already received your feedback for this request.",
+    "errors": {
+      "invalid": "This survey link is not valid.",
+      "alreadySubmitted": "This survey has already been submitted.",
+      "answerAll": "Please choose a face for every question.",
+      "rateLimited": "Too many attempts. Please wait a minute and try again.",
+      "failed": "Something went wrong. Please try again."
+    }
   }
 }

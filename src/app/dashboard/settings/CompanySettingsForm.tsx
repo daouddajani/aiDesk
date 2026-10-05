@@ -14,6 +14,7 @@ type Company = {
   new_ticket_notification_enabled: boolean;
   new_ticket_notification_email: string | null;
   helpdesk_url: string | null;
+  survey_enabled: boolean;
 };
 
 type AgentOption = {
@@ -141,6 +142,19 @@ export function CompanySettingsForm({
         <p className="text-xs font-semibold text-ink-sub">
           {t("newTicketNotificationEmailHint")}
         </p>
+      </div>
+
+      <div className="space-y-1">
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            name="surveyEnabled"
+            defaultChecked={company.survey_enabled}
+            className="h-4 w-4 rounded border-border"
+          />
+          {t("surveyEnabledLabel")}
+        </label>
+        <p className="text-xs font-semibold text-ink-sub">{t("surveyEnabledHint")}</p>
       </div>
 
       {state?.error && <p className="text-sm text-danger">{state.error}</p>}

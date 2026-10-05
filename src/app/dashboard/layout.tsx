@@ -54,7 +54,7 @@ export default async function DashboardLayout({
       .is("read_at", null),
     supabase
       .from("companies")
-      .select("logo_url, theme_config")
+      .select("logo_url, theme_config, survey_enabled")
       .eq("id", profile.company_id)
       .single(),
   ]);
@@ -74,6 +74,7 @@ export default async function DashboardLayout({
     <AppShell
       navItems={buildNavItems(profile.role, t, {
         unreadNotifications: unreadNotifications ?? 0,
+        surveyEnabled: company?.survey_enabled ?? false,
       })}
       user={{
         id: user.id,

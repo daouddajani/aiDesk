@@ -66,6 +66,7 @@ export async function updateCompanySettings(
   const helpdeskUrl = normalizeHelpdeskUrl(
     String(formData.get("helpdeskUrl") ?? ""),
   );
+  const surveyEnabled = formData.get("surveyEnabled") === "on";
 
   if (!name) {
     return { error: t("nameRequired") };
@@ -80,6 +81,10 @@ export async function updateCompanySettings(
   if (newTicketNotificationEnabled && !helpdeskUrl) {
     return { error: t("helpdeskUrlRequired") };
   }
+  // The survey link the customer receives is built from the helpdesk URL.
+  if (surveyEnabled && !helpdeskUrl) {
+    return { error: t("surveyHelpdeskUrlRequired") };
+  }
 
   // Scoping to the caller's own company is enforced by the companies_update
   // RLS policy, not re-checked here.
@@ -93,6 +98,7 @@ export async function updateCompanySettings(
       new_ticket_notification_enabled: newTicketNotificationEnabled,
       new_ticket_notification_email: newTicketNotificationEmail || null,
       helpdesk_url: helpdeskUrl || null,
+      survey_enabled: surveyEnabled,
     })
     .eq("id", profile.company_id);
 
@@ -101,6 +107,8 @@ export async function updateCompanySettings(
   }
 
   revalidatePath("/dashboard/settings");
+  // The Survey nav item appears/disappears with this toggle.
+  revalidatePath("/dashboard", "layout");
   return { success: true };
 }
 

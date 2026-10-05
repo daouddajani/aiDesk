@@ -15,6 +15,7 @@ import {
   ProfileIcon,
   CompaniesIcon,
   TagsIcon,
+  SurveyIcon,
 } from "@/components/shell/icons";
 
 type Translator = Awaited<ReturnType<typeof getTranslations>>;
@@ -22,7 +23,7 @@ type Translator = Awaited<ReturnType<typeof getTranslations>>;
 export function buildNavItems(
   role: "super_admin" | "company_admin" | "company_agent" | "supervisor",
   t: Translator,
-  options?: { unreadNotifications?: number },
+  options?: { unreadNotifications?: number; surveyEnabled?: boolean },
 ): ShellNavItem[] {
   if (role === "super_admin") {
     return [
@@ -66,6 +67,15 @@ export function buildNavItems(
             label: t("nav.tags"),
             icon: <TagsIcon />,
           },
+          ...(options?.surveyEnabled
+            ? [
+                {
+                  href: "/dashboard/survey",
+                  label: t("nav.survey"),
+                  icon: <SurveyIcon />,
+                },
+              ]
+            : []),
           {
             href: "/dashboard/agents",
             label: t("nav.agents"),
